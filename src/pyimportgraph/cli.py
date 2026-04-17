@@ -135,7 +135,7 @@ Examples:
     project_path: Path = args.project_path.resolve()
     package_names: list[str] = args.package_names
 
-    package_map = build_package_dependency_map(package_names)
+    package_map = build_package_dependency_map(package_names, project_root=project_path)
     symbol_report = build_symbol_usage_report(project_path)
 
     if command == "summary":

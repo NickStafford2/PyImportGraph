@@ -5,7 +5,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from pyimportgraph.model.module_naming import package_name
 
+import sys
 import grimp
+
+from contextlib import contextmanager
+
+
+@contextmanager
+def _prepend_to_sys_path(path: str | Path):
+    path_str = str(Path(path).resolve())
+    original = list(sys.path)
+    sys.path.insert(0, path_str)
+    try:
+        yield
+    finally:
+        sys.path[:] = original
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +41,7 @@ class PackageDependencyMap:
 def build_package_dependency_map(
     package_names: list[str],
     *,
+    project_root: str | Path | None = None,
     include_external_packages: bool = False,
     exclude_type_checking_imports: bool = False,
     cache_dir: str | Path | None = ".grimp_cache",
@@ -34,13 +49,23 @@ def build_package_dependency_map(
     if not package_names:
         raise ValueError("package_names must not be empty")
 
-    graph: grimp.ImportGraph = grimp.build_graph(
-        package_names[0],
-        *package_names[1:],
-        include_external_packages=include_external_packages,
-        exclude_type_checking_imports=exclude_type_checking_imports,
-        cache_dir=str(cache_dir) if cache_dir is not None else None,
-    )
+    if project_root is None:
+        graph: grimp.ImportGraph = grimp.build_graph(
+            package_names[0],
+            *package_names[1:],
+            include_external_packages=include_external_packages,
+            exclude_type_checking_imports=exclude_type_checking_imports,
+            cache_dir=str(cache_dir) if cache_dir is not None else None,
+        )
+    else:
+        with _prepend_to_sys_path(project_root):
+            graph = grimp.build_graph(
+                package_names[0],
+                *package_names[1:],
+                include_external_packages=include_external_packages,
+                exclude_type_checking_imports=exclude_type_checking_imports,
+                cache_dir=str(cache_dir) if cache_dir is not None else None,
+            )
 
     all_packages = {package_name(module) for module in graph.modules}
     imports_by_package: dict[str, set[str]] = {
