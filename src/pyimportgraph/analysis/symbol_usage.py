@@ -5,6 +5,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from pyimportgraph.model.module_naming import package_name
+
 
 @dataclass(frozen=True, slots=True)
 class Definition:
@@ -79,7 +81,7 @@ def build_symbol_usage_report(project_root: str | Path) -> SymbolUsageReport:
         if definition is None:
             continue
 
-        importer_package = _package_name(item.importer_module)
+        importer_package = package_name(item.importer_module)
         defining_package = definition.package_name
 
         if importer_package == defining_package:
@@ -155,7 +157,7 @@ def _parse_module(path: Path, module_name: str) -> _ParsedModule:
 class _ModuleVisitor(ast.NodeVisitor):
     def __init__(self, module_name: str) -> None:
         self.module_name = module_name
-        self.package_name = _package_name(module_name)
+        self.package_name = package_name(module_name)
         self.scope_depth = 0
         self.definitions: dict[str, Definition] = {}
         self.from_imports: list[_FromImport] = []
@@ -268,10 +270,6 @@ def _module_name_from_path(project_root: Path, path: Path) -> str:
         return ".".join(parts[:-1])
 
     return ".".join(parts[:-1] + [path.stem])
-
-
-def _package_name(module_name: str) -> str:
-    return module_name.split(".", 1)[0]
 
 
 def _extract_assigned_names(target: ast.AST) -> list[str]:

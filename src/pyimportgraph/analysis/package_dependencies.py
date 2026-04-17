@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+from pyimportgraph.model.module_naming import package_name
 
 import grimp
 
@@ -41,18 +42,18 @@ def build_package_dependency_map(
         cache_dir=str(cache_dir) if cache_dir is not None else None,
     )
 
-    all_packages = {_package_name(module) for module in graph.modules}
+    all_packages = {package_name(module) for module in graph.modules}
     imports_by_package: dict[str, set[str]] = {
         package: set() for package in all_packages if package is not None
     }
 
     for importer_module in graph.modules:
-        importer_package = _package_name(importer_module)
+        importer_package = package_name(importer_module)
         if importer_package is None:
             continue
 
         for imported_module in graph.find_modules_directly_imported_by(importer_module):
-            imported_package = _package_name(imported_module)
+            imported_package = package_name(imported_module)
             if imported_package is None:
                 continue
             if imported_package == importer_package:
@@ -66,10 +67,3 @@ def build_package_dependency_map(
             for package, imported_packages in sorted(imports_by_package.items())
         }
     )
-
-
-def _package_name(module_name: str) -> str | None:
-    parts = module_name.split(".")
-    if not parts:
-        return None
-    return parts[0]
