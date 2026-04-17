@@ -8,40 +8,126 @@ from pyimportgraph.analysis import (
     build_symbol_usage_report,
 )
 
+from pyimportgraph.reporting.summary import render_summary
+from pyimportgraph.reporting.packages import render_packages
+from pyimportgraph.reporting.symbols import render_all_symbols
+from pyimportgraph.reporting.external_symbols import render_external_symbols
+from pyimportgraph.reporting.package_detail import render_package_detail
+from pyimportgraph.reporting.who_uses import render_who_uses
+from pyimportgraph.reporting.full_report import render_full_report
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="pyimportgraph",
         description=(
-            "Analyze Python package boundaries and cross-package symbol usage."
+            "Analyze Python project architecture.\n\n"
+            "PyImportGraph helps you understand package boundaries, dependencies,\n"
+            "and cross-package symbol usage."
         ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument(
+
+    _ = parser.add_argument(
         "project_path",
         type=Path,
-        help="Path to the Python project to analyze.",
+        help="Path to the Python project (root or src directory).",
     )
-    parser.add_argument(
+
+    _ = parser.add_argument(
         "--package",
         dest="package_names",
         action="append",
         required=True,
         help=(
-            "Top-level package name to analyze with Grimp. "
-            "Repeat for multiple packages."
+            "Top-level package(s) to analyze.\n"
+            "Repeat for multiple packages.\n\n"
+            "Example:\n"
+            "  --package myapp\n"
+            "  --package mylib"
         ),
     )
 
-    subparsers = parser.add_subparsers(dest="command")
-    subparsers.add_parser("summary", help="Show a high-level architecture summary.")
-    subparsers.add_parser(
+    _ = parser.add_argument(
+        "--version",
+        action="version",
+        version="pyimportgraph 0.1.0",
+    )
+
+    sub = parser.add_subparsers(
+        dest="command",
+        title="commands",
+        metavar="<command>",
+    )
+
+    _ = sub.add_parser(
+        "summary",
+        help="High-level overview of project structure.",
+        description="Show a concise summary of packages and cross-package usage.",
+    )
+
+    _ = sub.add_parser(
         "packages",
-        help="Show which packages import which other packages.",
+        help="Show package dependency graph.",
+        description="Display which packages import which other packages.",
     )
-    subparsers.add_parser(
+
+    _ = sub.add_parser(
+        "symbols",
+        help="List all symbol definitions.",
+        description="List all top-level functions, classes, and assignments.",
+    )
+
+    _ = sub.add_parser(
         "external-symbols",
-        help="Show symbols defined in one package and imported by another.",
+        help="Show cross-package symbol usage.",
+        description="Show symbols defined in one package and used in another.",
     )
+
+    pkg_cmd = sub.add_parser(
+        "package",
+        help="Inspect a specific package.",
+        description="Show symbols defined in a package and how they are used.",
+    )
+    _ = pkg_cmd.add_argument(
+        "name",
+        help="Package name (e.g. pyimportgraph.analysis)",
+    )
+
+    who_cmd = sub.add_parser(
+        "who-uses",
+        help="Find where a symbol is used.",
+        description="Show all cross-package usages of a symbol.",
+    )
+    _ = who_cmd.add_argument(
+        "symbol",
+        help="Symbol name (e.g. build_symbol_usage_report)",
+    )
+
+    _ = sub.add_parser(
+        "report",
+        help="Full architecture report.",
+        description="Generate a complete report of dependencies and symbol usage.",
+    )
+
+    parser.epilog = """
+Examples:
+
+  Analyze a src-based project:
+    pyimportgraph src --package myapp summary
+
+  Show package dependencies:
+    pyimportgraph src --package myapp packages
+
+  Inspect a package:
+    pyimportgraph src --package myapp package myapp.services
+
+  Find who uses a symbol:
+    pyimportgraph src --package myapp who-uses create_user
+
+  Generate full report:
+    pyimportgraph src --package myapp report
+"""
 
     args = parser.parse_args()
     command = args.command or "summary"
@@ -49,119 +135,25 @@ def main() -> None:
     project_path: Path = args.project_path.resolve()
     package_names: list[str] = args.package_names
 
-    if command == "packages":
-        print(_render_package_dependencies(package_names))
-        return
-
-    if command == "external-symbols":
-        print(_render_external_symbols(project_path))
-        return
-
-    if command == "summary":
-        print(_render_summary(project_path, package_names))
-        return
-
-    raise ValueError(f"Unsupported command: {command}")
-
-
-def _render_summary(project_path: Path, package_names: list[str]) -> str:
     package_map = build_package_dependency_map(package_names)
     symbol_report = build_symbol_usage_report(project_path)
 
-    lines = [
-        "PyImportGraph summary",
-        "=====================",
-        f"Analyzed packages: {', '.join(package_names)}",
-        f"Package count:     {len(package_map.imports_by_package)}",
-        f"External symbol uses: {len(symbol_report.external_uses)}",
-        "",
-        "Package dependencies",
-        "--------------------",
-    ]
-
-    if not package_map.imports_by_package:
-        lines.append("(none)")
+    if command == "summary":
+        print(render_summary(package_map, symbol_report))
+    elif command == "packages":
+        print(render_packages(package_map))
+    elif command == "symbols":
+        print(render_all_symbols(symbol_report))
+    elif command == "external-symbols":
+        print(render_external_symbols(symbol_report))
+    elif command == "package":
+        print(render_package_detail(symbol_report, args.name))
+    elif command == "who-uses":
+        print(render_who_uses(symbol_report, args.symbol))
+    elif command == "report":
+        print(render_full_report(package_map, symbol_report))
     else:
-        for package, imports in package_map.imports_by_package.items():
-            rendered_imports = ", ".join(imports) if imports else "(none)"
-            lines.append(f"{package:<24} -> {rendered_imports}")
-
-    lines.extend(
-        [
-            "",
-            "Cross-package symbol usage",
-            "--------------------------",
-        ]
-    )
-
-    grouped_uses = symbol_report.by_defining_package()
-    if not grouped_uses:
-        lines.append("(none)")
-    else:
-        for package, uses in grouped_uses.items():
-            lines.append(f"{package}: {len(uses)} external use(s)")
-
-    return "\n".join(lines)
-
-
-def _render_package_dependencies(package_names: list[str]) -> str:
-    package_map = build_package_dependency_map(package_names)
-    imported_by = package_map.imported_by()
-
-    lines = [
-        "Package dependencies",
-        "====================",
-    ]
-
-    if not package_map.imports_by_package:
-        lines.append("(none)")
-        return "\n".join(lines)
-
-    for package, imports in package_map.imports_by_package.items():
-        lines.append(package)
-        lines.append("-" * len(package))
-        lines.append(f"imports:     {', '.join(imports) if imports else '(none)'}")
-        lines.append(
-            f"imported by: {', '.join(imported_by.get(package, [])) if imported_by.get(package) else '(none)'}"
-        )
-        lines.append("")
-
-    if lines[-1] == "":
-        lines.pop()
-
-    return "\n".join(lines)
-
-
-def _render_external_symbols(project_path: Path) -> str:
-    report = build_symbol_usage_report(project_path)
-    grouped = report.by_defining_package()
-
-    lines = [
-        "Cross-package symbol usage",
-        "==========================",
-    ]
-
-    if not grouped:
-        lines.append("(none)")
-        return "\n".join(lines)
-
-    for package, uses in grouped.items():
-        lines.append(package)
-        lines.append("-" * len(package))
-
-        for use in uses:
-            lines.append(
-                f"{use.symbol_name} ({use.kind}) "
-                f"defined in {use.defining_module} "
-                f"-> imported by {use.imported_by_module}:{use.line}"
-            )
-
-        lines.append("")
-
-    if lines[-1] == "":
-        lines.pop()
-
-    return "\n".join(lines)
+        raise ValueError(f"Unsupported command: {command}")
 
 
 if __name__ == "__main__":
