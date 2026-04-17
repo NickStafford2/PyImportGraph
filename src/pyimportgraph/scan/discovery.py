@@ -31,15 +31,19 @@ def _should_skip_path(path: Path) -> bool:
         ".git",
         ".hg",
         ".svn",
+        ".venv",
+        "venv",
+        "env",
+        "node_modules",
+        "__pycache__",
         ".mypy_cache",
         ".pytest_cache",
         ".ruff_cache",
-        ".venv",
-        "venv",
-        "__pycache__",
+        ".tox",
+        ".nox",
+        ".eggs",
         "build",
         "dist",
-        ".tox",
     }
     return any(part in skip_parts for part in path.parts)
 
