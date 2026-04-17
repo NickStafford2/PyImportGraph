@@ -2,25 +2,24 @@ from __future__ import annotations
 
 from pyimportgraph.analysis import PackageDependencyMap
 
+from pyimportgraph.reporting._format import render_section, render_table
+
 
 def render_packages(package_map: PackageDependencyMap) -> str:
     imported_by = package_map.imported_by()
 
-    lines = [
-        "Package dependencies",
-        "====================",
+    rows = [
+        (
+            package,
+            ", ".join(imports) or "(none)",
+            ", ".join(imported_by.get(package, [])) or "(none)",
+        )
+        for package, imports in package_map.imports_by_package.items()
     ]
 
-    for package, imports in package_map.imports_by_package.items():
-        lines.append(package)
-        lines.append("-" * len(package))
-        lines.append(f"imports: {', '.join(imports) or '(none)'}")
-        lines.append(
-            f"imported by: {', '.join(imported_by.get(package, [])) or '(none)'}"
-        )
-        lines.append("")
+    lines = render_table(
+        headers=["Package", "Imports", "Imported by"],
+        rows=rows,
+    )
 
-    if lines[-1] == "":
-        lines.pop()
-
-    return "\n".join(lines)
+    return render_section("Package dependencies", lines)

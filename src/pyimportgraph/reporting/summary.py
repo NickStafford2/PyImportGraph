@@ -5,17 +5,21 @@ from pyimportgraph.analysis import (
     SymbolUsageReport,
 )
 
+from pyimportgraph.reporting._format import render_kv_table, render_section
+
 
 def render_summary(
     package_map: PackageDependencyMap,
     symbol_report: SymbolUsageReport,
 ) -> str:
-    lines = [
-        "PyImportGraph summary",
-        "=====================",
-        f"Package count: {len(package_map.imports_by_package)}",
-        f"External symbol uses: {len(symbol_report.external_uses)}",
-        "",
-    ]
+    analyzed_packages = ", ".join(sorted(package_map.imports_by_package)) or "(none)"
 
-    return "\n".join(lines)
+    lines = render_kv_table(
+        [
+            ("Analyzed packages:", analyzed_packages),
+            ("Package count:", str(len(package_map.imports_by_package))),
+            ("External symbol uses:", str(len(symbol_report.external_uses))),
+        ]
+    )
+
+    return render_section("PyImportGraph summary", lines)

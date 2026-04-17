@@ -2,18 +2,23 @@ from __future__ import annotations
 
 from pyimportgraph.analysis import SymbolUsageReport
 
+from pyimportgraph.reporting._format import render_section, render_table
+
 
 def render_external_symbols(report: SymbolUsageReport) -> str:
-    lines = [
-        "Cross-package symbol usage",
-        "==========================",
+    rows = [
+        (
+            use.symbol_name,
+            use.kind,
+            use.defining_module,
+            f"{use.imported_by_module}:{use.line}",
+        )
+        for use in report.external_uses
     ]
 
-    for use in report.external_uses:
-        lines.append(
-            f"{use.symbol_name} ({use.kind}) "
-            f"{use.defining_module} -> "
-            f"{use.imported_by_module}:{use.line}"
-        )
+    lines = render_table(
+        headers=["Symbol", "Kind", "Defined in", "Used by"],
+        rows=rows,
+    )
 
-    return "\n".join(lines)
+    return render_section("Cross-package symbol usage", lines)
