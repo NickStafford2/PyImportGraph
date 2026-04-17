@@ -18,7 +18,7 @@ def main() -> None:
         prog="pyimportgraph",
         description="Analyze Python imports and build a module dependency graph.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "project_path",
         type=Path,
         help="Path to the Python project to analyze.",
@@ -26,22 +26,22 @@ def main() -> None:
 
     subparsers = parser.add_subparsers(dest="command", required=False)
 
-    subparsers.add_parser("summary", help="Show project summary.")
+    _ = subparsers.add_parser("summary", help="Show project summary.")
 
     module_parser = subparsers.add_parser("module", help="Show details for one module.")
-    module_parser.add_argument("module_name")
+    _ = module_parser.add_argument("module_name")
 
     search_parser = subparsers.add_parser(
         "search", help="Search modules by name or path."
     )
-    search_parser.add_argument("text")
+    _ = search_parser.add_argument("text")
 
-    subparsers.add_parser("cycles", help="Show circular imports.")
-    subparsers.add_parser("reexports", help="Show reimports / reexports.")
-    subparsers.add_parser("unresolved", help="Show unresolved imports.")
+    _ = subparsers.add_parser("cycles", help="Show circular imports.")
+    _ = subparsers.add_parser("reexports", help="Show reimports / reexports.")
+    _ = subparsers.add_parser("unresolved", help="Show unresolved imports.")
 
     args = parser.parse_args()
-    graph = build_dependency_graph(args.project_path)
+    _ = graph = build_dependency_graph(args.project_path)
 
     command = args.command or "summary"
 
