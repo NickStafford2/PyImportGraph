@@ -2,15 +2,15 @@
 name = "pyimportgraph"
 version = "0.1.0"
 description = "Static analysis tool that generates a graph of module imports in a Python application and displays them clearly."
-authors = [{ name = "Nicholas Stafford", email = "ngstafford1@gmail.com" }]
-requires-python = ">=3.12"
+authors = [{ name = "Nick Stafford", email = "ngstafford1@gmail.com" }]
+requires-python = ">=3.12,<4,!=3.14.1"
 dependencies = ["networkx>=3.6.1,<4.0.0"]
 
 [project.scripts]
 pyimportgraph = "pyimportgraph.cli:main"
 
 [tool.poetry]
-packages = [{ include = "pyimportgraph" }]
+packages = [{ include = "pyimportgraph", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 ruff = ">=0.15.11,<0.16.0"
