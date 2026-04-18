@@ -78,7 +78,7 @@ export function PackageTreeNodeHeader({
       />
 
       {hasChildren && (
-        <div className='flex flex-row align-middle flex-nowrap'>
+        <>
           <ToggleSwitch
             checked={isSubtreeHighlighted}
             onChange={onSubtreeHighlightChange}
@@ -111,7 +111,7 @@ export function PackageTreeNodeHeader({
           >
             {hasChildren ? (isCollapsed ? '▸' : '▾') : '•'}
           </button>
-        </div>
+        </>
       )}
 
     </div>
