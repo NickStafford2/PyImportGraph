@@ -1,13 +1,15 @@
+import { forceCollide } from 'd3-force-3d'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph3D, {
   type ForceGraphMethods,
 } from 'react-force-graph-3d'
-import { forceCollide } from 'd3-force-3d'
-import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
+import { ForceGraphControls } from './ForceGraphControls'
+import { ForceGraphLegend } from './ForceGraphLegend'
+import { getPackageColor } from './graphColors'
 import { DEFAULT_FORCE_PRESET, FORCE_PRESETS } from './presets'
 import type { ForcePresetKey, GraphLink, GraphNode } from './types'
-import { ForceGraphControls } from './ForceGraphControls'
 
 type ForceGraphProps = {
   snapshot: ProjectSnapshot
@@ -42,6 +44,10 @@ export function ForceGraph({
   const graphData = useMemo(() => {
     return buildGraphData(snapshot, displayPrefix)
   }, [snapshot, displayPrefix])
+
+  const packageNames = useMemo(() => {
+    return Array.from(new Set(snapshot.modules.map((module) => module.package)))
+  }, [snapshot])
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -114,40 +120,44 @@ export function ForceGraph({
 
       <ForceGraphControls value={presetKey} onChange={setPresetKey} />
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-        <div
-          ref={containerRef}
-          className={
-            className ?? 'relative h-[700px] w-full overflow-hidden rounded-xl'
-          }
-        >
-          {dimensions.width > 0 && (
-            <ForceGraph3D<GraphNode, GraphLink>
-              ref={graphRef}
-              width={dimensions.width}
-              height={dimensions.height}
-              graphData={graphData}
-              nodeId="id"
-              nodeVal="val"
-              nodeAutoColorBy="group"
-              nodeLabel={(node) =>
-                [
-                  node.name,
-                  `package: ${node.group}`,
-                  `imports: ${node.importCount}`,
-                  `imported by: ${node.importedByCount}`,
-                  `external interface: ${node.externalInterfaceCount}`,
-                ].join('\n')
-              }
-              linkDirectionalArrowLength={3.5}
-              linkDirectionalArrowRelPos={1}
-              linkCurvature={0.08}
-              cooldownTicks={preset.cooldownTicks}
-              enableNodeDrag
-              showNavInfo
-            />
-          )}
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <div
+            ref={containerRef}
+            className={
+              className ?? 'relative h-[700px] w-full overflow-hidden rounded-xl'
+            }
+          >
+            {dimensions.width > 0 && (
+              <ForceGraph3D<GraphNode, GraphLink>
+                ref={graphRef}
+                width={dimensions.width}
+                height={dimensions.height}
+                graphData={graphData}
+                nodeId="id"
+                nodeVal="val"
+                nodeColor={(node) => getPackageColor(node.group)}
+                nodeLabel={(node) =>
+                  [
+                    node.name,
+                    `package: ${node.group}`,
+                    `imports: ${node.importCount}`,
+                    `imported by: ${node.importedByCount}`,
+                    `external interface: ${node.externalInterfaceCount}`,
+                  ].join('\n')
+                }
+                linkDirectionalArrowLength={3.5}
+                linkDirectionalArrowRelPos={1}
+                linkCurvature={0.08}
+                cooldownTicks={preset.cooldownTicks}
+                enableNodeDrag
+                showNavInfo
+              />
+            )}
+          </div>
         </div>
+
+        <ForceGraphLegend packageNames={packageNames} />
       </div>
     </section>
   )
