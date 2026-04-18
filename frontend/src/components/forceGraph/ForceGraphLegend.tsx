@@ -1,7 +1,9 @@
 import { getPackageColor } from './graphColors'
+import { trimModulePrefix } from '../../lib/moduleName'
 
 type ForceGraphLegendProps = {
   packageNames: string[]
+  displayPrefix: string | null
   selectedPackage: string | null
   onPackageSelect: (packageName: string) => void
 }
@@ -12,6 +14,7 @@ export function ForceGraphLegend({
   packageNames,
   selectedPackage,
   onPackageSelect,
+  displayPrefix,
 }: ForceGraphLegendProps) {
   const sortedPackages = [...packageNames].sort((left, right) =>
     left.localeCompare(right),
@@ -47,6 +50,7 @@ export function ForceGraphLegend({
             const isSelected = selectedPackage === packageName
             const isGreyed =
               selectedPackage != null && selectedPackage !== packageName
+            const displayName = trimModulePrefix(packageName, displayPrefix)
 
             return (
               <button
@@ -70,7 +74,9 @@ export function ForceGraphLegend({
                       : getPackageColor(packageName),
                   }}
                 />
-                <span className="truncate">{packageName}</span>
+                <span className="truncate" title={packageName}>
+                  {displayName}
+                </span>
               </button>
             )
           })}

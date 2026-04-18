@@ -26,6 +26,7 @@ const GREYED_NODE_COLOR = '#475569'
 const GREYED_LINK_COLOR = 'rgba(100, 116, 139, 0.35)'
 const ACTIVE_SAME_PACKAGE_LINK_COLOR = 'rgba(148, 163, 184, 0.7)'
 const ACTIVE_CROSS_PACKAGE_LINK_COLOR = 'rgba(148, 163, 184, 0.35)'
+
 export function ForceGraph({
   snapshot,
   displayPrefix,
@@ -216,6 +217,7 @@ export function ForceGraph({
 
         <ForceGraphLegend
           packageNames={packageNames}
+          displayPrefix={displayPrefix}
           selectedPackage={selectedPackage}
           onPackageSelect={handlePackageSelect}
         />
