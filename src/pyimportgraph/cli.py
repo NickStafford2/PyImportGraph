@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from pyimportgraph.analysis import ProjectModel
@@ -8,6 +9,7 @@ from pyimportgraph.reporting.full_report import render_full_report
 from pyimportgraph.reporting.module_detail import render_module_detail
 from pyimportgraph.reporting.package_detail import render_package_detail
 from pyimportgraph.reporting.summary import render_summary
+from pyimportgraph.serialization import build_project_snapshot
 
 
 def main() -> None:
@@ -69,6 +71,11 @@ def main() -> None:
         help="Show the verbose package + module report.",
     )
 
+    subparsers.add_parser(
+        "json",
+        help="Write a frontend-friendly JSON snapshot to stdout.",
+    )
+
     parser.epilog = """
 Examples:
 
@@ -77,6 +84,7 @@ Examples:
   pyimportgraph src --package myapp package myapp.services
   pyimportgraph src --package myapp report
   pyimportgraph src --package myapp full-report
+  pyimportgraph src --package myapp json > graph.json
 """
 
     args = parser.parse_args()
@@ -108,6 +116,11 @@ Examples:
 
     if command == "full-report":
         print(render_full_report(model))
+        return
+
+    if command == "json":
+        snapshot = build_project_snapshot(model)
+        print(json.dumps(snapshot, indent=2, sort_keys=True))
         return
 
     raise ValueError(f"Unsupported command: {command}")
