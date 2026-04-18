@@ -5,12 +5,24 @@ import { PackagesSection } from './components/sections/PackagesSection'
 import { SummarySection } from './components/sections/SummarySection'
 import { useSnapshot } from './hooks/useSnapshot'
 import { matchesEdge, matchesModule, matchesPackage } from './lib/filters'
+import { findCommonModulePrefix } from './lib/moduleName'
 
 function App() {
   const [query, setQuery] = useState('')
   const { snapshot, error, loading } = useSnapshot()
 
   const normalizedQuery = query.trim().toLowerCase()
+
+  const displayPrefix = useMemo(() => {
+    if (!snapshot) {
+      return null
+    }
+
+    return findCommonModulePrefix([
+      ...snapshot.packages.map((item) => item.name),
+      ...snapshot.modules.map((item) => item.name),
+    ])
+  }, [snapshot])
 
   const filteredPackages = useMemo(() => {
     if (!snapshot) {
@@ -40,43 +52,7 @@ function App() {
   return (
     <main className="min-h-screen bg-slate-950">
       <div className="mx-auto max-w-7xl px-6 py-8">
-        <header className="mb-8">
-          <p className="text-sm uppercase tracking-[0.25em] text-sky-400">
-            PyImportGraph
-          </p>
-          <h1 className="mt-2 text-3xl font-bold text-white">
-            Architecture snapshot explorer
-          </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-400">
-            This first frontend simply renders the backend JSON in a readable
-            way so you can inspect summary, packages, modules, and edges before
-            adding richer visualizations.
-          </p>
-        </header>
-
-        <div className="mb-8 rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-          <label className="block text-xs font-medium uppercase tracking-[0.2em] text-slate-400">
-            Filter
-          </label>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search packages, modules, symbols, or edges..."
-            className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-100 outline-none ring-0 placeholder:text-slate-500 focus:border-sky-500"
-          />
-        </div>
-
-        {loading ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 text-sm text-slate-300">
-            Loading snapshot...
-          </div>
-        ) : null}
-
-        {error ? (
-          <div className="rounded-2xl border border-red-800 bg-red-950/50 p-6 text-sm text-red-200">
-            Failed to load snapshot: {error}
-          </div>
-        ) : null}
+        {/* ...existing header/filter/loading/error... */}
 
         {snapshot ? (
           <div className="space-y-8">
@@ -84,12 +60,18 @@ function App() {
             <PackagesSection
               packages={filteredPackages}
               total={snapshot.packages.length}
+              displayPrefix={displayPrefix}
             />
             <ModulesSection
               modules={filteredModules}
               total={snapshot.modules.length}
+              displayPrefix={displayPrefix}
             />
-            <EdgesSection edges={filteredEdges} total={snapshot.edges.length} />
+            <EdgesSection
+              edges={filteredEdges}
+              total={snapshot.edges.length}
+              displayPrefix={displayPrefix}
+            />
           </div>
         ) : null}
       </div>

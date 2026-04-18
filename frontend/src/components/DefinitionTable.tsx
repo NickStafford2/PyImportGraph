@@ -1,13 +1,16 @@
 import type { DefinitionSnapshot } from '../types'
+import { ModuleName } from './ModuleName'
 
 type DefinitionTableProps = {
   title: string
   definitions: DefinitionSnapshot[]
+  displayPrefix: string | null
 }
 
 export function DefinitionTable({
   title,
   definitions,
+  displayPrefix,
 }: DefinitionTableProps) {
   return (
     <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
@@ -38,7 +41,7 @@ export function DefinitionTable({
                     {definition.kind}
                   </td>
                   <td className="border-y border-slate-800 bg-slate-900/70 px-3 py-2 text-slate-300">
-                    {definition.module_name}
+                    <ModuleName name='definition.module_name' prefix={displayPrefix} />
                   </td>
                   <td className="rounded-r-xl border border-slate-800 bg-slate-900/70 px-3 py-2 text-slate-300">
                     {definition.line}

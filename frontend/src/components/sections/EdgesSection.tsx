@@ -1,13 +1,19 @@
 import { CollapsibleCard } from '../CollapsibleCard'
 import { EmptyState } from '../EmptyState'
+import { ModuleName } from '../ModuleName'
 import type { EdgeSnapshot } from '../../types'
 
 type EdgesSectionProps = {
   edges: EdgeSnapshot[]
   total: number
+  displayPrefix: string | null
 }
 
-export function EdgesSection({ edges, total }: EdgesSectionProps) {
+export function EdgesSection({
+  edges,
+  total,
+  displayPrefix,
+}: EdgesSectionProps) {
   return (
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -40,12 +46,26 @@ export function EdgesSection({ edges, total }: EdgesSectionProps) {
                     {edge.type}
                   </td>
                   <td className="border-y border-slate-800 bg-slate-900/70 px-3 py-2 text-slate-300">
-                    <div>{edge.from}</div>
-                    <div className="text-xs text-slate-500">{edge.from_package}</div>
+                    <div>
+                      <ModuleName name={edge.from} prefix={displayPrefix} />
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      <ModuleName
+                        name={edge.from_package}
+                        prefix={displayPrefix}
+                      />
+                    </div>
                   </td>
                   <td className="border-y border-slate-800 bg-slate-900/70 px-3 py-2 text-slate-300">
-                    <div>{edge.to}</div>
-                    <div className="text-xs text-slate-500">{edge.to_package}</div>
+                    <div>
+                      <ModuleName name={edge.to} prefix={displayPrefix} />
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      <ModuleName
+                        name={edge.to_package}
+                        prefix={displayPrefix}
+                      />
+                    </div>
                   </td>
                   <td className="border-y border-slate-800 bg-slate-900/70 px-3 py-2 text-slate-300">
                     {edge.symbol_name ?? '(none)'}

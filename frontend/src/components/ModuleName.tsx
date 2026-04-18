@@ -1,19 +1,11 @@
-import { trimProjectPrefix } from '../lib/moduleName'
+import { trimModulePrefix } from '../lib/moduleName'
 
 type ModuleNameProps = {
   name: string
-  projectPrefix?: string
+  prefix: string | null
   className?: string
 }
 
-export function ModuleName({
-  name,
-  projectPrefix = 'pyimportgraph',
-  className,
-}: ModuleNameProps) {
-  return (
-    <span className={className}>
-      {trimProjectPrefix(name, projectPrefix)}
-    </span>
-  )
+export function ModuleName({ name, prefix, className }: ModuleNameProps) {
+  return <span className={className}>{trimModulePrefix(name, prefix)}</span>
 }

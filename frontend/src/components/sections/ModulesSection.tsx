@@ -2,6 +2,7 @@ import { CollapsibleCard } from '../CollapsibleCard'
 import { DefinitionTable } from '../DefinitionTable'
 import { EmptyState } from '../EmptyState'
 import { KeyValueList } from '../KeyValueList'
+import { ModuleName } from '../ModuleName'
 import { SimpleList } from '../SimpleList'
 import { joinOrNone } from '../../lib/format'
 import type { ModuleSnapshot } from '../../types'
@@ -9,9 +10,10 @@ import type { ModuleSnapshot } from '../../types'
 type ModulesSectionProps = {
   modules: ModuleSnapshot[]
   total: number
+  displayPrefix: string | null
 }
 
-export function ModulesSection({ modules, total }: ModulesSectionProps) {
+export function ModulesSection({ modules, total, displayPrefix }: ModulesSectionProps) {
   return (
     <section>
       <div className="mb-4 flex items-end justify-between gap-4">
@@ -28,6 +30,10 @@ export function ModulesSection({ modules, total }: ModulesSectionProps) {
             title={item.name}
             subtitle={`package=${item.package} • imports=${item.imports.length} • imported_by=${item.imported_by.length}`}
           >
+            <div className="mb-4 text-sm text-slate-300">
+              <ModuleName name={item.name} prefix={displayPrefix} />
+            </div>
+
             <div className="grid gap-6 xl:grid-cols-2">
               <KeyValueList
                 title="Metadata"
@@ -43,14 +49,25 @@ export function ModulesSection({ modules, total }: ModulesSectionProps) {
                 items={[['Packages', joinOrNone(item.importing_packages)]]}
               />
 
-              <SimpleList title="Imports" items={item.imports} />
-              <SimpleList title="Imported by" items={item.imported_by} />
+              <SimpleList
+                title="Imports"
+                items={item.imports}
+                formatAsModuleName
+                displayPrefix={displayPrefix}
+              />
+              <SimpleList
+                title="Imported by"
+                items={item.imported_by}
+                formatAsModuleName
+                displayPrefix={displayPrefix}
+              />
             </div>
 
             <div className="mt-6">
               <DefinitionTable
                 title="Observed external interface"
                 definitions={item.external_interface}
+                displayPrefix={displayPrefix}
               />
             </div>
           </CollapsibleCard>
