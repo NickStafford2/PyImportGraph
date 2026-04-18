@@ -57,6 +57,13 @@ export function PackageTreeNodeHeader({
         ].join(' ')}
         title={packageName}
       >
+
+        <ToggleSwitch
+          checked={isHighlighted}
+          onChange={onPackageHighlightChange}
+          ariaLabel="Toggle package highlight"
+          title="Toggle package highlight"
+        />
         <span
           className="h-3 w-3 shrink-0 rounded-full"
           style={{
@@ -70,12 +77,6 @@ export function PackageTreeNodeHeader({
         </span>
       </div>
 
-      <ToggleSwitch
-        checked={isHighlighted}
-        onChange={onPackageHighlightChange}
-        ariaLabel="Toggle package highlight"
-        title="Toggle package highlight"
-      />
 
       {hasChildren && (
         <>
