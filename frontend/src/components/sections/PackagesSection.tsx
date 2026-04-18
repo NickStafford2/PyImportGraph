@@ -93,62 +93,66 @@ export function PackagesSection({
                   ].join(' • ')}
                 >
 
-                  <div className='flex flex-row w-full gap-3 '>
+                  <div className='flex flex-col gap-10 flex-wrap'>
+                    <div className='flex flex-row w-full gap-10'>
 
-                    <div className='flex flex-col w-fit gap-3'>
-                      <h2 className='text-xl'>Packages</h2>
-                      <SimpleList
-                        title="Children Packages:"
-                        items={item.children}
-                        formatAsModuleName
-                        displayPrefix={displayPrefix}
-                        className='w-full'
-                      />
-
-                      <SimpleList
-                        title="Imported by Packages:"
-                        items={item.imported_by_packages}
-                        formatAsModuleName
-                        displayPrefix={displayPrefix}
-                        className='w-full'
-                      />
-                    </div>
-
-
-                    <div className='flex flex-col gap-3'>
-                      <h2 className='text-xl'>Models</h2>
-                      <div className='flex flex-row gap-3'>
+                      <div className='flex flex-col w-fit gap-3'>
+                        <h2 className='text-xl'>Packages</h2>
                         <SimpleList
-                          title="Imported by Modules:"
-                          items={item.imported_by_modules}
+                          title="Children Packages:"
+                          items={item.children}
                           formatAsModuleName
                           displayPrefix={displayPrefix}
+                          className='w-full'
                         />
 
                         <SimpleList
-                          title="Direct Modules:"
-                          items={item.direct_modules}
+                          title="Imported by Packages:"
+                          items={item.imported_by_packages}
                           formatAsModuleName
                           displayPrefix={displayPrefix}
+                          className='w-full'
                         />
+                      </div>
 
-                        <div className="xl:col-span-2">
+
+                      <div className='flex flex-col gap-3'>
+                        <h2 className='text-xl'>Models</h2>
+                        <div className='flex flex-row gap-3'>
                           <SimpleList
-                            title="Subtree Modules:"
-                            items={item.subtree_modules}
+                            title="Imported by Modules:"
+                            items={item.imported_by_modules}
                             formatAsModuleName
                             displayPrefix={displayPrefix}
                           />
+
+                          <SimpleList
+                            title="Direct Child Modules:"
+                            items={item.direct_modules}
+                            formatAsModuleName
+                            displayPrefix={displayPrefix}
+                          />
+
+                          <div className="xl:col-span-2">
+                            <SimpleList
+                              title="Subtree Child Modules:"
+                              items={item.subtree_modules}
+                              formatAsModuleName
+                              displayPrefix={displayPrefix}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <DefinitionTable
-                    title="Observed external interface"
-                    definitions={item.external_interface}
-                    displayPrefix={displayPrefix}
-                  />
+                    <div className='flex flex-col gap-3'>
+                      <h2 className='text-xl'>Observed External Interface</h2>
+                      <DefinitionTable
+                        definitions={item.external_interface}
+                        displayPrefix={displayPrefix}
+                      />
+                    </div>
+                  </div>
                 </CollapsibleCard>
               </div>
             )

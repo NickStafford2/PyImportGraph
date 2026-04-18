@@ -3,7 +3,6 @@ import type { DefinitionSnapshot } from '../types'
 import { ModuleName } from './ModuleName'
 
 type DefinitionTableProps = {
-  title: string
   definitions: DefinitionSnapshot[]
   displayPrefix: string | null
 }
@@ -12,7 +11,6 @@ type SortKey = 'symbol_name' | 'module_name' | 'kind' | 'line'
 type SortDirection = 'asc' | 'desc'
 
 export function DefinitionTable({
-  title,
   definitions,
   displayPrefix,
 }: DefinitionTableProps) {
@@ -86,8 +84,7 @@ export function DefinitionTable({
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
-      <h3 className="mb-3 text-sm font-semibold text-white">{title}</h3>
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4 w-fit">
 
       {definitions.length === 0 ? (
         <div className="text-sm text-slate-500">(none)</div>
