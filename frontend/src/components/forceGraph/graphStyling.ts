@@ -68,7 +68,7 @@ export function getLinkWidth(
     link,
     highlightedPackages,
   )
-  const baseWidth = link.samePackage ? 3.0 : 1.6
+  const baseWidth = link.samePackage ? 4.0 : 2.0
 
   return Math.max(
     0.15,
