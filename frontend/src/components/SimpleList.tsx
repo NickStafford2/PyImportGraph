@@ -14,7 +14,7 @@ export function SimpleList({ title, items }: SimpleListProps) {
           {items.map((item) => (
             <li
               key={item}
-              className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-sm text-slate-300"
+              className="px-3 text-sm text-slate-300"
             >
               {item}
             </li>
