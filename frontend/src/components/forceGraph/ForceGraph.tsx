@@ -6,7 +6,7 @@ import ForceGraph3D, {
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
 import { ForceGraphControls } from './ForceGraphControls'
-import { ForceGraphLegend } from './ForceGraphLegend'
+import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
 import {
   buildPackageInfluenceConfig,
   getEffectiveLinkDistance,
@@ -166,7 +166,7 @@ export function ForceGraph({
 
       <ForceGraphControls value={presetKey} onChange={setPresetKey} />
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
           <div
             ref={containerRef}
@@ -218,7 +218,7 @@ export function ForceGraph({
           </div>
         </div>
 
-        <ForceGraphLegend
+        <ForceGraphPackagesPanel
           packages={packages}
           displayPrefix={displayPrefix}
           selectedPackage={selectedPackage}
