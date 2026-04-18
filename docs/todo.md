@@ -8,4 +8,12 @@ on hover i don't see it. i don't know why
 sections of the frontend are not easy to understand. i want to add either collapsible descriptions or tooltips to explain what each thing is. 
 just add this as a description on the frontend at important parts. I could add these as backend json data, but idk if that is a waste of data since these may be repeated. 
 
+# frontend summary improvement
+on the frontend, the summary section should briefly list of the items instead of just displaying a number. 
+should also quicly list the packages. 
+
+
+
+# frontend navigation
+when i click on various parts of the frontend, they should sometimes move the screen to the location where i can see details about that object. I think these are called anchors? you just add a # and a href? 
 
