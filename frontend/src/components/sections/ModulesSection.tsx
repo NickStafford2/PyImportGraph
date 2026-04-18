@@ -24,7 +24,7 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
         </div>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2">
         {modules.map((item) => (
           <div
             id={toAnchorId('module', item.name)}
@@ -35,9 +35,6 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
               title={item.name}
               subtitle={`package=${item.package} • imports=${item.imports.length} • imported_by=${item.imported_by.length}`}
             >
-              <div className="mb-4 text-sm text-slate-300">
-                <ModuleName name={item.name} prefix={displayPrefix} />
-              </div>
 
               <div className="grid gap-6 xl:grid-cols-2">
                 <KeyValueList
@@ -49,9 +46,11 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
                   ]}
                 />
 
-                <KeyValueList
-                  title="Importing packages"
-                  items={[['Packages', joinOrNone(item.importing_packages)]]}
+                <SimpleList
+                  title="Imports packages"
+                  items={item.importing_packages}
+                  formatAsModuleName
+                  displayPrefix={displayPrefix}
                 />
 
                 <SimpleList
