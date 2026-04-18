@@ -25,6 +25,8 @@ export function ForceGraph({
     setPresetKey,
     highlightedPackages,
     toggleHighlightedPackage,
+    toggleHighlightedPackages,
+    selectOnlyHighlightedPackages,
     clearHighlightedPackages,
     packageInfluenceConfig,
     updatePackageInfluence,
@@ -66,6 +68,8 @@ export function ForceGraph({
           displayPrefix={displayPrefix}
           highlightedPackages={highlightedPackages}
           onTogglePackageHighlight={toggleHighlightedPackage}
+          onTogglePackageTreeHighlight={toggleHighlightedPackages}
+          onSelectOnlyPackageHighlight={selectOnlyHighlightedPackages}
           onClearPackageHighlights={clearHighlightedPackages}
           packageInfluenceConfig={packageInfluenceConfig}
           onPackageInfluenceChange={updatePackageInfluence}

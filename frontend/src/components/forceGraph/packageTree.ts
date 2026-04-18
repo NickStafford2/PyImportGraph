@@ -3,6 +3,7 @@ import type { PackageSnapshot } from '../../types'
 export type PackageTreeNode = {
   packageName: string
   children: PackageTreeNode[]
+  subtreePackageNames: string[]
 }
 
 export function buildPackageTree(
@@ -14,6 +15,7 @@ export function buildPackageTree(
     nodesByName.set(item.name, {
       packageName: item.name,
       children: [],
+      subtreePackageNames: [],
     })
   }
 
@@ -40,6 +42,11 @@ export function buildPackageTree(
   }
 
   sortTree(roots)
+
+  for (const root of roots) {
+    populateSubtreePackageNames(root)
+  }
+
   return roots
 }
 
@@ -49,4 +56,15 @@ function sortTree(nodes: PackageTreeNode[]): void {
   for (const node of nodes) {
     sortTree(node.children)
   }
+}
+
+function populateSubtreePackageNames(node: PackageTreeNode): string[] {
+  const subtree = [node.packageName]
+
+  for (const child of node.children) {
+    subtree.push(...populateSubtreePackageNames(child))
+  }
+
+  node.subtreePackageNames = subtree
+  return subtree
 }

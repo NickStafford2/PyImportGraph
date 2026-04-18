@@ -11,6 +11,8 @@ type ForceGraphPackagesPanelProps = {
   displayPrefix: string | null
   highlightedPackages: ReadonlySet<string>
   onTogglePackageHighlight: (packageName: string) => void
+  onTogglePackageTreeHighlight: (packageNames: Iterable<string>) => void
+  onSelectOnlyPackageHighlight: (packageNames: Iterable<string>) => void
   onClearPackageHighlights: () => void
   packageInfluenceConfig: PackageInfluenceConfig
   onPackageInfluenceChange: (
@@ -28,6 +30,8 @@ export function ForceGraphPackagesPanel({
   displayPrefix,
   highlightedPackages,
   onTogglePackageHighlight,
+  onTogglePackageTreeHighlight,
+  onSelectOnlyPackageHighlight,
   onClearPackageHighlights,
   packageInfluenceConfig,
   onPackageInfluenceChange,
@@ -89,6 +93,8 @@ export function ForceGraphPackagesPanel({
               displayPrefix={displayPrefix}
               highlightedPackages={highlightedPackages}
               onTogglePackageHighlight={onTogglePackageHighlight}
+              onTogglePackageTreeHighlight={onTogglePackageTreeHighlight}
+              onSelectOnlyPackageHighlight={onSelectOnlyPackageHighlight}
               packageInfluenceConfig={packageInfluenceConfig}
               onPackageInfluenceChange={onPackageInfluenceChange}
               collapsedPackages={collapsedPackages}

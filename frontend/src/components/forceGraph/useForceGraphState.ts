@@ -21,6 +21,8 @@ type UseForceGraphStateResult = {
   setPresetKey: (value: ForcePresetKey) => void
   highlightedPackages: ReadonlySet<string>
   toggleHighlightedPackage: (packageName: string) => void
+  toggleHighlightedPackages: (packageNames: Iterable<string>) => void
+  selectOnlyHighlightedPackages: (packageNames: Iterable<string>) => void
   clearHighlightedPackages: () => void
   packageInfluenceConfig: PackageInfluenceConfig
   updatePackageInfluence: (
@@ -40,6 +42,23 @@ function filterKnownPackageNames(
   return new Set(
     [...values].filter((packageName) => knownPackageNames.has(packageName)),
   )
+}
+
+function toggleValuesInSet(
+  current: ReadonlySet<string>,
+  values: Iterable<string>,
+): Set<string> {
+  const next = new Set(current)
+
+  for (const value of values) {
+    if (next.has(value)) {
+      next.delete(value)
+    } else {
+      next.add(value)
+    }
+  }
+
+  return next
 }
 
 export function useForceGraphState({
@@ -93,15 +112,19 @@ export function useForceGraphState({
   }, [knownPackageNames, packageNames])
 
   function toggleHighlightedPackage(packageName: string) {
-    setHighlightedPackages((current) => {
-      const next = new Set(current)
-      if (next.has(packageName)) {
-        next.delete(packageName)
-      } else {
-        next.add(packageName)
-      }
-      return next
-    })
+    setHighlightedPackages((current) => toggleValuesInSet(current, [packageName]))
+  }
+
+  function toggleHighlightedPackages(packageNamesToToggle: Iterable<string>) {
+    setHighlightedPackages((current) =>
+      toggleValuesInSet(current, packageNamesToToggle),
+    )
+  }
+
+  function selectOnlyHighlightedPackages(packageNamesToSelect: Iterable<string>) {
+    setHighlightedPackages(
+      filterKnownPackageNames(new Set(packageNamesToSelect), knownPackageNames),
+    )
   }
 
   function clearHighlightedPackages() {
@@ -143,6 +166,8 @@ export function useForceGraphState({
     setPresetKey,
     highlightedPackages,
     toggleHighlightedPackage,
+    toggleHighlightedPackages,
+    selectOnlyHighlightedPackages,
     clearHighlightedPackages,
     packageInfluenceConfig,
     updatePackageInfluence,
