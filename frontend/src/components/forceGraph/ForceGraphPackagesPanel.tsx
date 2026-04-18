@@ -54,11 +54,11 @@ export function ForceGraphPackagesPanel({
     <aside className="rounded-2xl border border-slate-700 bg-slate-900/70 flex max-h-[700px] flex-col overflow-hidden">
       <div className="border-b border-slate-800 px-3 py-3">
         <div className="flex items-center justify-between gap-2">
-          <div>
-            <div className="text-sm font-semibold text-white">Packages</div>
-            <div className="mt-1 text-xs text-slate-400">
+          <div className='flex flex-row justify-between w-full'>
+            <h3 className="text-md font-semibold text-white">Packages</h3>
+            <span className="mt-1 text-xs text-slate-400">
               {highlightedCount} of {totalCount} highlighted
-            </div>
+            </span>
           </div>
         </div>
 

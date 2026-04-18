@@ -11,7 +11,7 @@ export function ForceGraphControls({
   onChange,
 }: ForceGraphControlsProps) {
   return (
-    <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+    <div className="my-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       {FORCE_PRESET_OPTIONS.map((preset) => {
         const isActive = preset.key === value
 

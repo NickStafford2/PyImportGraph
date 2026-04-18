@@ -52,7 +52,7 @@ function App() {
 
   return (
     <main className="min-h-screen bg-slate-950 scroll-smooth">
-      <div className="mx-auto max-w-7xl mt-4">
+      <div className="mx-auto max-w-7xl mt-4 flex flex-col gap-10">
         {/* ...existing header/filter/loading/error... */}
 
         {snapshot ? (

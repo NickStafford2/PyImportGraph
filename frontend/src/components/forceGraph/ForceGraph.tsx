@@ -47,7 +47,7 @@ export function ForceGraph({
 
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold text-white">Module Dependency Force Graph</h2>
+      <h2 className="mb-4 text-3xl font-semibold text-white">Module Dependency Force Graph</h2>
 
       <p className="my-2 text-sm text-slate-400">
         The graph is completely interactable. Drag and Drop. Explore in 3d. Adjust edge weights to identify influence.
