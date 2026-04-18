@@ -1,8 +1,6 @@
 import { forceCollide } from 'd3-force-3d'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import ForceGraph3D, {
-  type ForceGraphMethods,
-} from 'react-force-graph-3d'
+import ForceGraph3D, { type ForceGraphMethods } from 'react-force-graph-3d'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
 import { ForceGraphControls } from './ForceGraphControls'

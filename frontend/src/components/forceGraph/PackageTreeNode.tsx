@@ -39,7 +39,7 @@ function getContainerClasses(depth: number, isSelected: boolean): string {
         : 'bg-slate-900/90'
 
   return [
-    'rounded-xl border p-3 transition',
+    'rounded-xl border p-1 transition',
     depthClass,
     isSelected
       ? 'border-sky-500 bg-sky-500/10'
@@ -95,7 +95,7 @@ export function PackageTreeNode({
           Edge influence
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1">
           {PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS.map((multiplier) => {
             const isActive =
               settings.edgeStrengthMultiplier === multiplier &&
@@ -112,7 +112,7 @@ export function PackageTreeNode({
                   })
                 }
                 className={[
-                  'rounded-lg border px-2 py-1 text-[11px] transition',
+                  'rounded-lg border px-1 py-1 text-[10px] transition',
                   isActive
                     ? 'border-emerald-500 bg-emerald-500/10 text-emerald-200'
                     : 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500',
@@ -139,7 +139,7 @@ export function PackageTreeNode({
       </div>
 
       {node.children.length > 0 && (
-        <div className="mt-3 rounded-lg border border-slate-800/90 bg-black/10 p-2">
+        <div className="mt-3 rounded-lg border border-amber-800/90 bg-black/10 p-2">
 
           {node.children.map((childNode) => (
             <PackageTreeNode
