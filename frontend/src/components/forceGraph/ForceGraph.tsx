@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph3D, {
   type ForceGraphMethods,
 } from 'react-force-graph-3d'
-import type { ProjectSnapshot } from '../../types'
+import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
 import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphLegend } from './ForceGraphLegend'
@@ -52,11 +52,13 @@ export function ForceGraph({
     useState<ForcePresetKey>(DEFAULT_FORCE_PRESET)
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
 
+  const packages: PackageSnapshot[] = snapshot.packages
+
   const packageNames = useMemo(() => {
-    return Array.from(new Set(snapshot.modules.map((module) => module.package))).sort(
-      (left, right) => left.localeCompare(right),
-    )
-  }, [snapshot])
+    return packages
+      .map((item) => item.name)
+      .sort((left, right) => left.localeCompare(right))
+  }, [packages])
 
   const [packageInfluenceConfig, setPackageInfluenceConfig] =
     useState<PackageInfluenceConfig>(() => buildPackageInfluenceConfig(packageNames))
@@ -217,7 +219,7 @@ export function ForceGraph({
         </div>
 
         <ForceGraphLegend
-          packageNames={packageNames}
+          packages={packages}
           displayPrefix={displayPrefix}
           selectedPackage={selectedPackage}
           onPackageSelect={handlePackageSelect}
