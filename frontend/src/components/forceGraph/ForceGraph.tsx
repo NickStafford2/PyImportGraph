@@ -47,10 +47,9 @@ export function ForceGraph({
 
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold text-white">Module Import Force Graph</h2>
+      <h2 className="mb-4 text-xl font-semibold text-white">Module Dependency Force Graph</h2>
 
 
-      <ForceGraphControls value={presetKey} onChange={setPresetKey} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <ForceGraphCanvas
@@ -80,6 +79,8 @@ export function ForceGraph({
           onCollapseAllPackages={collapseAllPackages}
         />
       </div>
+
+      <ForceGraphControls value={presetKey} onChange={setPresetKey} />
     </section>
   )
 }
