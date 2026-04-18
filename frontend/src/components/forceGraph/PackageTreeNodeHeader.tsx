@@ -50,26 +50,30 @@ export function PackageTreeNodeHeader({
     <div className="flex flex-wrap items-center gap-2">
 
       <div
+        role="switch"
+        aria-checked={isHighlighted}
+        aria-label={`Toggle highlight for ${packageName}`}
+        onClick={() => onPackageHighlightChange(!isHighlighted)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault()
+            onPackageHighlightChange(!isHighlighted)
+          }
+        }}
+        tabIndex={0}
         className={[
-          'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
+          'flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
           isGreyed ? 'text-slate-500' : 'text-slate-200',
           isHighlighted ? 'bg-sky-500/10' : '',
         ].join(' ')}
         title={packageName}
       >
-
-        <ToggleSwitch
-          checked={isHighlighted}
-          onChange={onPackageHighlightChange}
-          ariaLabel="Toggle package highlight"
-          title="Toggle package highlight"
-        />
         <span
-          className="h-3 w-3 shrink-0 rounded-full"
+          className="h-3 w-3 shrink-0 rounded-full transition"
           style={{
-            backgroundColor: isGreyed
-              ? GREYED_LEGEND_COLOR
-              : getPackageColor(packageName),
+            backgroundColor: isHighlighted
+              ? getPackageColor(packageName)
+              : GREYED_LEGEND_COLOR,
           }}
         />
         <span className="truncate font-medium" title={packageName}>
