@@ -1,5 +1,3 @@
-// frontend/src/components/forceGraph/PackageTreeNode.tsx
-
 import {
   DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
   getPackageInfluenceSettings,
@@ -12,7 +10,6 @@ import type { PackageTreeNode as PackageTreeNodeModel } from './packageTree'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 import { getPackageColor } from './graphColors'
-import { filterPackageNamesToExternallyImported } from './packageHighlightFilters'
 
 type PackageTreeNodeProps = {
   node: PackageTreeNodeModel
@@ -92,10 +89,7 @@ export function PackageTreeNode({
     || packagesWithExternalImporters.has(packageName)
 
   const eligibleSubtreePackageNames = showOnlyExternallyImportedPackages
-    ? filterPackageNamesToExternallyImported(
-      subtreePackageNames,
-      packagesWithExternalImporters,
-    )
+    ? subtreePackageNames.filter((name) => packagesWithExternalImporters.has(name))
     : subtreePackageNames
 
   const isHighlighted =

@@ -40,6 +40,7 @@ export type EdgeSnapshot = {
   to: string
   from_package: string
   to_package: string
+  is_reciprocal_package_dependency: boolean
   symbol_name?: string
   line?: number
 }

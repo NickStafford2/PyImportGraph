@@ -41,6 +41,9 @@ class ProjectModel:
     definitions_by_module: dict[str, dict[str, Definition]]
     symbol_imports_by_imported_module: dict[str, tuple[_FromImport, ...]]
     symbol_imports_by_importer_module: dict[str, tuple[_FromImport, ...]]
+    package_dependencies: dict[str, tuple[str, ...]]
+    reciprocal_package_dependency_pairs: tuple[tuple[str, str], ...]
+    packages_with_external_importers_list: tuple[str, ...]
 
     @classmethod
     def build(
@@ -118,6 +121,18 @@ class ProjectModel:
             symbol_imports_by_imported_module[item.imported_module].append(item)
             symbol_imports_by_importer_module[item.importer_module].append(item)
 
+        package_dependencies = _build_package_dependency_map(
+            package_tree=package_tree,
+            module_imports=module_imports,
+        )
+        reciprocal_package_dependency_pairs = _build_reciprocal_package_dependencies(
+            package_dependencies
+        )
+        packages_with_external_importers_list = _build_packages_with_external_importers(
+            package_tree=package_tree,
+            module_importers=module_importers,
+        )
+
         return cls(
             module_names=all_module_names,
             package_tree=package_tree,
@@ -154,6 +169,9 @@ class ProjectModel:
                     symbol_imports_by_importer_module.items()
                 )
             },
+            package_dependencies=package_dependencies,
+            reciprocal_package_dependency_pairs=reciprocal_package_dependency_pairs,
+            packages_with_external_importers_list=packages_with_external_importers_list,
         )
 
     def find_modules_importing_module(
@@ -246,54 +264,13 @@ class ProjectModel:
         )
 
     def package_dependency_map(self) -> dict[str, tuple[str, ...]]:
-        dependencies: dict[str, set[str]] = {
-            package_name: set() for package_name in self.package_tree.package_names()
-        }
-
-        for importer_module_name, imported_module_names in self.module_imports.items():
-            importer_package_name = self.package_tree.package_for_module(
-                importer_module_name
-            )
-
-            for imported_module_name in imported_module_names:
-                imported_package_name = self.package_tree.package_for_module(
-                    imported_module_name
-                )
-                if imported_package_name == importer_package_name:
-                    continue
-
-                dependencies[importer_package_name].add(imported_package_name)
-
-        return {
-            package_name: tuple(sorted(imported_package_names))
-            for package_name, imported_package_names in sorted(dependencies.items())
-        }
+        return self.package_dependencies
 
     def packages_with_external_importers(self) -> tuple[str, ...]:
-        return tuple(
-            sorted(
-                package_name
-                for package_name in self.package_tree.package_names()
-                if any(
-                    importing_package_name != package_name
-                    for importing_package_name in self.find_modules_importing_package(
-                        package_name
-                    ).importing_packages
-                )
-            )
-        )
+        return self.packages_with_external_importers_list
 
     def reciprocal_package_dependencies(self) -> tuple[tuple[str, str], ...]:
-        dependencies = self.package_dependency_map()
-        reciprocal_pairs: set[tuple[str, str]] = set()
-
-        for source_package_name, target_package_names in dependencies.items():
-            for target_package_name in target_package_names:
-                reverse_dependencies = dependencies.get(target_package_name, ())
-                if source_package_name in reverse_dependencies:
-                    reciprocal_pairs.add((source_package_name, target_package_name))
-
-        return tuple(sorted(reciprocal_pairs))
+        return self.reciprocal_package_dependency_pairs
 
     def _definition_is_used_outside_package(
         self,
@@ -424,3 +401,64 @@ def _discover_module_names_for_packages(
             module_names.add(module_name)
 
     return module_names
+
+
+def _build_package_dependency_map(
+    *,
+    package_tree: PackageTree,
+    module_imports: dict[str, tuple[str, ...]],
+) -> dict[str, tuple[str, ...]]:
+    dependencies: dict[str, set[str]] = {
+        package_name: set() for package_name in package_tree.package_names()
+    }
+
+    for importer_module_name, imported_module_names in module_imports.items():
+        importer_package_name = package_tree.package_for_module(importer_module_name)
+
+        for imported_module_name in imported_module_names:
+            imported_package_name = package_tree.package_for_module(
+                imported_module_name
+            )
+            if imported_package_name == importer_package_name:
+                continue
+
+            dependencies[importer_package_name].add(imported_package_name)
+
+    return {
+        package_name: tuple(sorted(imported_package_names))
+        for package_name, imported_package_names in sorted(dependencies.items())
+    }
+
+
+def _build_reciprocal_package_dependencies(
+    package_dependencies: dict[str, tuple[str, ...]],
+) -> tuple[tuple[str, str], ...]:
+    reciprocal_pairs: set[tuple[str, str]] = set()
+
+    for source_package_name, target_package_names in package_dependencies.items():
+        for target_package_name in target_package_names:
+            reverse_dependencies = package_dependencies.get(target_package_name, ())
+            if source_package_name in reverse_dependencies:
+                reciprocal_pairs.add((source_package_name, target_package_name))
+
+    return tuple(sorted(reciprocal_pairs))
+
+
+def _build_packages_with_external_importers(
+    *,
+    package_tree: PackageTree,
+    module_importers: dict[str, tuple[str, ...]],
+) -> tuple[str, ...]:
+    packages_with_external_importers: list[str] = []
+
+    for package_name in package_tree.package_names():
+        subtree_module_names = set(package_tree.subtree_module_names(package_name))
+        has_external_importer = any(
+            importer_module_name not in subtree_module_names
+            for imported_module_name in subtree_module_names
+            for importer_module_name in module_importers.get(imported_module_name, ())
+        )
+        if has_external_importer:
+            packages_with_external_importers.append(package_name)
+
+    return tuple(sorted(packages_with_external_importers))
