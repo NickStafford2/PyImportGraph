@@ -24,7 +24,6 @@ export function SummarySection({ snapshot }: SummarySectionProps) {
 
   return (
     <section className='mb-10'>
-      <h1 className="mb-4 text-6xl font-semibold text-white">Package Name Here</h1>
       <div className="flex flex-row gap-6">
         {rows.map(([label, value]) => (
           <div
