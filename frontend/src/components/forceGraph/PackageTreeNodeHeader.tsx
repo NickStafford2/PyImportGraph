@@ -18,6 +18,7 @@ type PackageTreeNodeHeaderProps = {
 
 const GREYED_LEGEND_COLOR = '#475569'
 
+// this is the "only"" button
 function getActionButtonClasses(variant: 'default' | 'muted' = 'default'): string {
   return [
     'flex h-6 shrink-0 items-center justify-center rounded-md border px-2 text-[10px] transition',

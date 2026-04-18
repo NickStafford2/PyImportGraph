@@ -9,6 +9,7 @@ import type {
 import type { PackageTreeNode as PackageTreeNodeModel } from './packageTree'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
+import { getPackageColor } from './graphColors'
 
 type PackageTreeNodeProps = {
   node: PackageTreeNodeModel
@@ -29,7 +30,7 @@ type PackageTreeNodeProps = {
   depth: number
 }
 
-function getContainerClasses(depth: number, isHighlighted: boolean): string {
+function getContainerClasses(depth: number): string {
   const depthClass =
     depth === 0
       ? 'bg-slate-950/60'
@@ -40,9 +41,7 @@ function getContainerClasses(depth: number, isHighlighted: boolean): string {
   return [
     'rounded-xl border p-2 transition',
     depthClass,
-    isHighlighted
-      ? 'border-sky-500 bg-sky-500/10'
-      : 'border-slate-800',
+    'border-slate-800', // default fallback
   ].join(' ')
 }
 
@@ -111,9 +110,20 @@ export function PackageTreeNode({
 
     onUnhighlightPackageTree(subtreePackageNames)
   }
+  const packageColor = getPackageColor(packageName)
+
 
   return (
-    <div className={getContainerClasses(depth, isHighlighted)}>
+    <div
+      className={getContainerClasses(depth)}
+      style={
+        isHighlighted
+          ? {
+            borderColor: packageColor,
+          }
+          : undefined
+      }
+    >
       <PackageTreeNodeHeader
         packageName={packageName}
         displayPrefix={displayPrefix}
