@@ -24,17 +24,16 @@ export function SummarySection({ snapshot }: SummarySectionProps) {
 
   return (
     <section>
-      <h2 className="mb-4 text-xl font-semibold text-white">Summary</h2>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <h1 className="mb-4 text-6xl font-semibold text-white">Package Name Here</h1>
+      <div className="flex flex-row gap-6">
         {rows.map(([label, value]) => (
           <div
             key={label}
-            className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5"
+            className="rounded-2xl text-wrap flex flex-row justify-start border border-slate-800 bg-slate-900/70 p-5"
           >
             <div className="text-xs uppercase tracking-[0.2em] text-slate-400">
-              {label}
+              {value} {label}
             </div>
-            <div className="mt-2 text-2xl font-semibold text-white">{value}</div>
           </div>
         ))}
       </div>
