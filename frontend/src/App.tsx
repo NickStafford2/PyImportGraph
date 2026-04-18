@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { EdgesSection } from './components/sections/EdgesSection'
 import { ModulesSection } from './components/sections/ModulesSection'
 import { PackagesSection } from './components/sections/PackagesSection'
-// import { SummarySection } from './components/sections/SummarySection'
 import { useSnapshot } from './hooks/useSnapshot'
 import { matchesEdge, matchesModule, matchesPackage } from './lib/filters'
 import { findCommonModulePrefix } from './lib/moduleName'
@@ -11,9 +10,8 @@ import { SectionHeader } from './components/SectionHeader'
 
 
 function App() {
-  const [query, setQuery] = useState('')
-  const { snapshot, error, loading } = useSnapshot()
-  const [currentSection, setCurrentSection] = useState('Summary')
+  const [query] = useState('')
+  const { snapshot } = useSnapshot()
 
   const normalizedQuery = query.trim().toLowerCase()
 
