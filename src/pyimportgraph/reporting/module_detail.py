@@ -1,7 +1,12 @@
 from __future__ import annotations
 
 from pyimportgraph.analysis import ProjectModel
-from pyimportgraph.reporting._format import render_section, render_table
+from pyimportgraph.reporting._format import (
+    add_block,
+    compact_rows_to_bullets,
+    render_bullets,
+    render_section,
+)
 
 
 def render_module_detail(model: ProjectModel, module_name: str) -> str:
@@ -17,53 +22,51 @@ def render_module_detail(model: ProjectModel, module_name: str) -> str:
     lines.append(f"Package: {package_name}")
     lines.append("")
 
-    lines.append("Imports")
-    lines.append("-------")
-    lines.extend(
-        render_table(
-            headers=["Imported module", "Imported package"],
-            rows=[
-                (
-                    imported_module_name,
-                    model.package_tree.package_for_module(imported_module_name),
-                )
-                for imported_module_name in imported_modules
-            ],
+    imported_module_rows = [
+        (
+            imported_module_name,
+            model.package_tree.package_for_module(imported_module_name),
         )
-    )
-    lines.append("")
+        for imported_module_name in imported_modules
+    ]
+    if imported_module_rows:
+        add_block(
+            lines,
+            "Imports",
+            compact_rows_to_bullets(imported_module_rows),
+        )
 
-    lines.append("Imported by")
-    lines.append("-----------")
-    lines.extend(
-        render_table(
-            headers=["Importer module", "Importer package"],
-            rows=[
-                (
-                    importer_module_name,
-                    model.package_tree.package_for_module(importer_module_name),
-                )
-                for importer_module_name in importer_result.importing_modules
-            ],
+    importer_rows = [
+        (
+            importer_module_name,
+            model.package_tree.package_for_module(importer_module_name),
         )
-    )
-    lines.append("")
+        for importer_module_name in importer_result.importing_modules
+    ]
+    if importer_rows:
+        add_block(
+            lines,
+            "Imported by",
+            compact_rows_to_bullets(importer_rows),
+        )
 
-    lines.append("Observed external interface")
-    lines.append("---------------------------")
-    lines.extend(
-        render_table(
-            headers=["Line", "Symbol", "Kind"],
-            rows=[
-                (
-                    str(definition.line),
-                    definition.symbol_name,
-                    definition.kind,
-                )
-                for definition in external_interface
-            ],
+    if external_interface:
+        add_block(
+            lines,
+            "Observed external interface",
+            render_bullets(
+                [
+                    f"{definition.symbol_name} ({definition.kind}, line {definition.line})"
+                    for definition in external_interface
+                ]
+            ),
         )
-    )
+
+    if len(lines) == 2:
+        lines.append("No imports, importers, or externally used symbols.")
+
+    while lines and lines[-1] == "":
+        lines.pop()
 
     return render_section(f"Module: {module_name}", lines)
 
