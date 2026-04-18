@@ -61,7 +61,11 @@ function App() {
             <section>
               <h2 className="mb-4 text-xl font-semibold text-white">3D Graph</h2>
               <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-                <ForceGraph snapshot={snapshot} className="h-[700px] w-full rounded-xl" />
+                <ForceGraph
+                  snapshot={snapshot}
+                  displayPrefix={displayPrefix}
+                  className="h-[700px] w-full rounded-xl"
+                />
               </div>
             </section>
             <PackagesSection
