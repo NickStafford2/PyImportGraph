@@ -22,6 +22,10 @@ type Dimensions = {
   height: number
 }
 
+const GREYED_NODE_COLOR = '#475569'
+const GREYED_LINK_COLOR = 'rgba(100, 116, 139, 0.35)'
+const ACTIVE_SAME_PACKAGE_LINK_COLOR = 'rgba(148, 163, 184, 0.7)'
+const ACTIVE_CROSS_PACKAGE_LINK_COLOR = 'rgba(148, 163, 184, 0.35)'
 export function ForceGraph({
   snapshot,
   displayPrefix,
@@ -38,6 +42,7 @@ export function ForceGraph({
   })
   const [presetKey, setPresetKey] =
     useState<ForcePresetKey>(DEFAULT_FORCE_PRESET)
+  const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
 
   const preset = FORCE_PRESETS[presetKey]
 
@@ -108,6 +113,48 @@ export function ForceGraph({
     graphRef.current.d3ReheatSimulation()
   }, [graphData, preset])
 
+  function handlePackageSelect(packageName: string) {
+    setSelectedPackage((current) =>
+      current === packageName ? null : packageName,
+    )
+  }
+
+  function getNodeColor(node: GraphNode): string {
+    if (selectedPackage == null) {
+      return getPackageColor(node.group)
+    }
+
+    if (node.group === selectedPackage) {
+      return getPackageColor(node.group)
+    }
+
+    return GREYED_NODE_COLOR
+  }
+
+  function getLinkColor(link: GraphLink): string {
+    if (selectedPackage == null) {
+      return link.samePackage
+        ? ACTIVE_SAME_PACKAGE_LINK_COLOR
+        : ACTIVE_CROSS_PACKAGE_LINK_COLOR
+    }
+
+    const sourceGroup =
+      typeof link.source === 'object' ? link.source.group : null
+    const targetGroup =
+      typeof link.target === 'object' ? link.target.group : null
+
+    const isSelectedEdge =
+      sourceGroup === selectedPackage || targetGroup === selectedPackage
+
+    if (!isSelectedEdge) {
+      return GREYED_LINK_COLOR
+    }
+
+    return link.samePackage
+      ? ACTIVE_SAME_PACKAGE_LINK_COLOR
+      : ACTIVE_CROSS_PACKAGE_LINK_COLOR
+  }
+
   return (
     <section>
       <div className="mb-4">
@@ -136,7 +183,7 @@ export function ForceGraph({
                 graphData={graphData}
                 nodeId="id"
                 nodeVal="val"
-                nodeColor={(node) => getPackageColor(node.group)}
+                nodeColor={getNodeColor}
                 nodeLabel={(node) =>
                   [
                     node.name,
@@ -146,6 +193,7 @@ export function ForceGraph({
                     `external interface: ${node.externalInterfaceCount}`,
                   ].join('\n')
                 }
+                linkColor={getLinkColor}
                 linkDirectionalArrowLength={3.5}
                 linkDirectionalArrowRelPos={1}
                 linkCurvature={0.08}
@@ -157,7 +205,11 @@ export function ForceGraph({
           </div>
         </div>
 
-        <ForceGraphLegend packageNames={packageNames} />
+        <ForceGraphLegend
+          packageNames={packageNames}
+          selectedPackage={selectedPackage}
+          onPackageSelect={handlePackageSelect}
+        />
       </div>
     </section>
   )
