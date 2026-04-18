@@ -7,7 +7,6 @@ import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
 import { FORCE_PRESETS } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
-import { buildPackagesWithExternalImporters } from './packageHighlightFilters'
 
 type ForceGraphProps = {
   snapshot: ProjectSnapshot
@@ -47,9 +46,7 @@ export function ForceGraph({
     useState(false)
 
   const packagesWithExternalImporters = useMemo(() => {
-    return buildPackagesWithExternalImporters(
-      snapshot.packages_with_external_importers,
-    )
+    return new Set(snapshot.packages_with_external_importers)
   }, [snapshot.packages_with_external_importers])
 
   const preset = FORCE_PRESETS[presetKey]
