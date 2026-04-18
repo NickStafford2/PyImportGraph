@@ -14,9 +14,11 @@ type PackageTreeNodeProps = {
   node: PackageTreeNodeModel
   displayPrefix: string | null
   highlightedPackages: ReadonlySet<string>
-  onTogglePackageHighlight: (packageName: string) => void
-  onTogglePackageTreeHighlight: (packageNames: Iterable<string>) => void
-  onSelectOnlyPackageHighlight: (packageNames: Iterable<string>) => void
+  onHighlightPackage: (packageName: string) => void
+  onUnhighlightPackage: (packageName: string) => void
+  onHighlightPackageTree: (packageNames: Iterable<string>) => void
+  onUnhighlightPackageTree: (packageNames: Iterable<string>) => void
+  onHighlightOnlyPackage: (packageNames: Iterable<string>) => void
   packageInfluenceConfig: PackageInfluenceConfig
   onPackageInfluenceChange: (
     packageName: string,
@@ -55,9 +57,11 @@ export function PackageTreeNode({
   node,
   displayPrefix,
   highlightedPackages,
-  onTogglePackageHighlight,
-  onTogglePackageTreeHighlight,
-  onSelectOnlyPackageHighlight,
+  onHighlightPackage,
+  onUnhighlightPackage,
+  onHighlightPackageTree,
+  onUnhighlightPackageTree,
+  onHighlightOnlyPackage,
   packageInfluenceConfig,
   onPackageInfluenceChange,
   collapsedPackages,
@@ -67,8 +71,10 @@ export function PackageTreeNode({
   const packageName = node.packageName
   const subtreePackageNames = node.subtreePackageNames
   const isHighlighted = highlightedPackages.has(packageName)
-  const hasHighlights = highlightedPackages.size > 0
-  const isGreyed = hasHighlights && !hasAnyHighlightedPackage(subtreePackageNames, highlightedPackages)
+  const isGreyed = !hasAnyHighlightedPackage(
+    subtreePackageNames,
+    highlightedPackages,
+  )
   const isCollapsed = collapsedPackages.has(packageName)
   const hasChildren = node.children.length > 0
 
@@ -86,13 +92,13 @@ export function PackageTreeNode({
         isHighlighted={isHighlighted}
         hasChildren={hasChildren}
         isCollapsed={isCollapsed}
-        onTogglePackageHighlight={onTogglePackageHighlight}
-        onTogglePackageTreeHighlight={() =>
-          onTogglePackageTreeHighlight(subtreePackageNames)
+        onHighlightPackage={onHighlightPackage}
+        onUnhighlightPackage={onUnhighlightPackage}
+        onHighlightPackageTree={() => onHighlightPackageTree(subtreePackageNames)}
+        onUnhighlightPackageTree={() =>
+          onUnhighlightPackageTree(subtreePackageNames)
         }
-        onSelectOnlyPackageHighlight={() =>
-          onSelectOnlyPackageHighlight([packageName])
-        }
+        onHighlightOnlyPackage={() => onHighlightOnlyPackage([packageName])}
         onToggleCollapsedPackage={onToggleCollapsedPackage}
       />
 
@@ -116,9 +122,11 @@ export function PackageTreeNode({
               node={childNode}
               displayPrefix={displayPrefix}
               highlightedPackages={highlightedPackages}
-              onTogglePackageHighlight={onTogglePackageHighlight}
-              onTogglePackageTreeHighlight={onTogglePackageTreeHighlight}
-              onSelectOnlyPackageHighlight={onSelectOnlyPackageHighlight}
+              onHighlightPackage={onHighlightPackage}
+              onUnhighlightPackage={onUnhighlightPackage}
+              onHighlightPackageTree={onHighlightPackageTree}
+              onUnhighlightPackageTree={onUnhighlightPackageTree}
+              onHighlightOnlyPackage={onHighlightOnlyPackage}
               packageInfluenceConfig={packageInfluenceConfig}
               onPackageInfluenceChange={onPackageInfluenceChange}
               collapsedPackages={collapsedPackages}

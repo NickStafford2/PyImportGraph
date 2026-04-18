@@ -10,10 +10,13 @@ type ForceGraphPackagesPanelProps = {
   packages: PackageSnapshot[]
   displayPrefix: string | null
   highlightedPackages: ReadonlySet<string>
-  onTogglePackageHighlight: (packageName: string) => void
-  onTogglePackageTreeHighlight: (packageNames: Iterable<string>) => void
-  onSelectOnlyPackageHighlight: (packageNames: Iterable<string>) => void
-  onClearPackageHighlights: () => void
+  onHighlightPackage: (packageName: string) => void
+  onUnhighlightPackage: (packageName: string) => void
+  onHighlightPackageTree: (packageNames: Iterable<string>) => void
+  onUnhighlightPackageTree: (packageNames: Iterable<string>) => void
+  onHighlightOnlyPackage: (packageNames: Iterable<string>) => void
+  onHighlightAllPackages: () => void
+  onUnhighlightAllPackages: () => void
   packageInfluenceConfig: PackageInfluenceConfig
   onPackageInfluenceChange: (
     packageName: string,
@@ -29,10 +32,13 @@ export function ForceGraphPackagesPanel({
   packages,
   displayPrefix,
   highlightedPackages,
-  onTogglePackageHighlight,
-  onTogglePackageTreeHighlight,
-  onSelectOnlyPackageHighlight,
-  onClearPackageHighlights,
+  onHighlightPackage,
+  onUnhighlightPackage,
+  onHighlightPackageTree,
+  onUnhighlightPackageTree,
+  onHighlightOnlyPackage,
+  onHighlightAllPackages,
+  onUnhighlightAllPackages,
   packageInfluenceConfig,
   onPackageInfluenceChange,
   collapsedPackages,
@@ -41,7 +47,8 @@ export function ForceGraphPackagesPanel({
   onCollapseAllPackages,
 }: ForceGraphPackagesPanelProps) {
   const packageTree = buildPackageTree(packages)
-  const highlightCount = highlightedPackages.size
+  const highlightedCount = highlightedPackages.size
+  const totalCount = packages.length
 
   return (
     <aside className="rounded-2xl border border-slate-700 bg-slate-900/70 flex max-h-[700px] flex-col overflow-hidden">
@@ -50,23 +57,28 @@ export function ForceGraphPackagesPanel({
           <div>
             <div className="text-sm font-semibold text-white">Packages</div>
             <div className="mt-1 text-xs text-slate-400">
-              {highlightCount === 0
-                ? 'No package highlights active'
-                : `${highlightCount} package${highlightCount === 1 ? '' : 's'} highlighted`}
+              {highlightedCount} of {totalCount} highlighted
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={onClearPackageHighlights}
-            disabled={highlightCount === 0}
-            className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            Clear
-          </button>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={onHighlightAllPackages}
+            disabled={highlightedCount === totalCount}
+            className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Highlight all
+          </button>
+          <button
+            type="button"
+            onClick={onUnhighlightAllPackages}
+            disabled={highlightedCount === 0}
+            className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Unhighlight all
+          </button>
           <button
             type="button"
             onClick={onExpandAllPackages}
@@ -92,9 +104,11 @@ export function ForceGraphPackagesPanel({
               node={node}
               displayPrefix={displayPrefix}
               highlightedPackages={highlightedPackages}
-              onTogglePackageHighlight={onTogglePackageHighlight}
-              onTogglePackageTreeHighlight={onTogglePackageTreeHighlight}
-              onSelectOnlyPackageHighlight={onSelectOnlyPackageHighlight}
+              onHighlightPackage={onHighlightPackage}
+              onUnhighlightPackage={onUnhighlightPackage}
+              onHighlightPackageTree={onHighlightPackageTree}
+              onUnhighlightPackageTree={onUnhighlightPackageTree}
+              onHighlightOnlyPackage={onHighlightOnlyPackage}
               packageInfluenceConfig={packageInfluenceConfig}
               onPackageInfluenceChange={onPackageInfluenceChange}
               collapsedPackages={collapsedPackages}

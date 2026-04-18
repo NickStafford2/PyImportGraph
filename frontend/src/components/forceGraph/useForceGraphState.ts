@@ -20,10 +20,13 @@ type UseForceGraphStateResult = {
   presetKey: ForcePresetKey
   setPresetKey: (value: ForcePresetKey) => void
   highlightedPackages: ReadonlySet<string>
-  toggleHighlightedPackage: (packageName: string) => void
-  toggleHighlightedPackages: (packageNames: Iterable<string>) => void
-  selectOnlyHighlightedPackages: (packageNames: Iterable<string>) => void
-  clearHighlightedPackages: () => void
+  highlightPackage: (packageName: string) => void
+  unhighlightPackage: (packageName: string) => void
+  highlightPackages: (packageNames: Iterable<string>) => void
+  unhighlightPackages: (packageNames: Iterable<string>) => void
+  highlightOnlyPackages: (packageNames: Iterable<string>) => void
+  highlightAllPackages: () => void
+  unhighlightAllPackages: () => void
   packageInfluenceConfig: PackageInfluenceConfig
   updatePackageInfluence: (
     packageName: string,
@@ -36,12 +39,19 @@ type UseForceGraphStateResult = {
 }
 
 function filterKnownPackageNames(
-  values: ReadonlySet<string>,
+  values: Iterable<string>,
   knownPackageNames: ReadonlySet<string>,
 ): Set<string> {
   return new Set(
     [...values].filter((packageName) => knownPackageNames.has(packageName)),
   )
+}
+
+function getKnownPackageNames(
+  packageNames: Iterable<string>,
+  knownPackageNames: ReadonlySet<string>,
+): string[] {
+  return [...packageNames].filter((packageName) => knownPackageNames.has(packageName))
 }
 
 export function useForceGraphState({
@@ -61,7 +71,7 @@ export function useForceGraphState({
     useState<ForcePresetKey>(DEFAULT_FORCE_PRESET)
 
   const [highlightedPackages, setHighlightedPackages] = useState<Set<string>>(
-    () => new Set(),
+    () => new Set(packageNames),
   )
 
   const [collapsedPackages, setCollapsedPackages] = useState<Set<string>>(
@@ -85,22 +95,64 @@ export function useForceGraphState({
       return nextConfig
     })
 
-    setHighlightedPackages((current) =>
-      filterKnownPackageNames(current, knownPackageNames),
-    )
+    setHighlightedPackages((current) => {
+      const next = new Set<string>()
+
+      for (const packageName of packageNames) {
+        if (current.has(packageName) || !knownPackageNames.has(packageName)) {
+          next.add(packageName)
+        }
+      }
+
+      if (current.size === 0) {
+        return new Set()
+      }
+
+      for (const packageName of packageNames) {
+        if (!current.has(packageName) && !next.has(packageName)) {
+          next.add(packageName)
+        }
+      }
+
+      return next
+    })
 
     setCollapsedPackages((current) =>
       filterKnownPackageNames(current, knownPackageNames),
     )
   }, [knownPackageNames, packageNames])
 
-  function toggleHighlightedPackage(packageName: string) {
+  function highlightPackage(packageName: string) {
+    if (!knownPackageNames.has(packageName)) {
+      return
+    }
+
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+      next.add(packageName)
+      return next
+    })
+  }
+
+  function unhighlightPackage(packageName: string) {
+    if (!knownPackageNames.has(packageName)) {
+      return
+    }
+
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+      next.delete(packageName)
+      return next
+    })
+  }
+
+  function highlightPackages(packageNamesToHighlight: Iterable<string>) {
+    const names = getKnownPackageNames(packageNamesToHighlight, knownPackageNames)
+
     setHighlightedPackages((current) => {
       const next = new Set(current)
 
-      if (next.has(packageName)) {
-        next.delete(packageName)
-      } else {
+      for (const packageName of names) {
         next.add(packageName)
       }
 
@@ -108,34 +160,31 @@ export function useForceGraphState({
     })
   }
 
-  function toggleHighlightedPackages(packageNamesToToggle: Iterable<string>) {
-    const names = [...packageNamesToToggle].filter((packageName) =>
-      knownPackageNames.has(packageName),
-    )
+  function unhighlightPackages(packageNamesToUnhighlight: Iterable<string>) {
+    const names = getKnownPackageNames(packageNamesToUnhighlight, knownPackageNames)
 
     setHighlightedPackages((current) => {
       const next = new Set(current)
-      const shouldSelectAll = names.some((packageName) => !current.has(packageName))
 
       for (const packageName of names) {
-        if (shouldSelectAll) {
-          next.add(packageName)
-        } else {
-          next.delete(packageName)
-        }
+        next.delete(packageName)
       }
 
       return next
     })
   }
 
-  function selectOnlyHighlightedPackages(packageNamesToSelect: Iterable<string>) {
+  function highlightOnlyPackages(packageNamesToHighlight: Iterable<string>) {
     setHighlightedPackages(
-      filterKnownPackageNames(new Set(packageNamesToSelect), knownPackageNames),
+      filterKnownPackageNames(packageNamesToHighlight, knownPackageNames),
     )
   }
 
-  function clearHighlightedPackages() {
+  function highlightAllPackages() {
+    setHighlightedPackages(new Set(packageNames))
+  }
+
+  function unhighlightAllPackages() {
     setHighlightedPackages(new Set())
   }
 
@@ -151,11 +200,13 @@ export function useForceGraphState({
   function toggleCollapsedPackage(packageName: string) {
     setCollapsedPackages((current) => {
       const next = new Set(current)
+
       if (next.has(packageName)) {
         next.delete(packageName)
       } else {
         next.add(packageName)
       }
+
       return next
     })
   }
@@ -173,10 +224,13 @@ export function useForceGraphState({
     presetKey,
     setPresetKey,
     highlightedPackages,
-    toggleHighlightedPackage,
-    toggleHighlightedPackages,
-    selectOnlyHighlightedPackages,
-    clearHighlightedPackages,
+    highlightPackage,
+    unhighlightPackage,
+    highlightPackages,
+    unhighlightPackages,
+    highlightOnlyPackages,
+    highlightAllPackages,
+    unhighlightAllPackages,
     packageInfluenceConfig,
     updatePackageInfluence,
     collapsedPackages,

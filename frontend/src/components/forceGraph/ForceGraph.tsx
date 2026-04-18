@@ -24,10 +24,13 @@ export function ForceGraph({
     presetKey,
     setPresetKey,
     highlightedPackages,
-    toggleHighlightedPackage,
-    toggleHighlightedPackages,
-    selectOnlyHighlightedPackages,
-    clearHighlightedPackages,
+    highlightPackage,
+    unhighlightPackage,
+    highlightPackages,
+    unhighlightPackages,
+    highlightOnlyPackages,
+    highlightAllPackages,
+    unhighlightAllPackages,
     packageInfluenceConfig,
     updatePackageInfluence,
     collapsedPackages,
@@ -67,10 +70,13 @@ export function ForceGraph({
           packages={packages}
           displayPrefix={displayPrefix}
           highlightedPackages={highlightedPackages}
-          onTogglePackageHighlight={toggleHighlightedPackage}
-          onTogglePackageTreeHighlight={toggleHighlightedPackages}
-          onSelectOnlyPackageHighlight={selectOnlyHighlightedPackages}
-          onClearPackageHighlights={clearHighlightedPackages}
+          onHighlightPackage={highlightPackage}
+          onUnhighlightPackage={unhighlightPackage}
+          onHighlightPackageTree={highlightPackages}
+          onUnhighlightPackageTree={unhighlightPackages}
+          onHighlightOnlyPackage={highlightOnlyPackages}
+          onHighlightAllPackages={highlightAllPackages}
+          onUnhighlightAllPackages={unhighlightAllPackages}
           packageInfluenceConfig={packageInfluenceConfig}
           onPackageInfluenceChange={updatePackageInfluence}
           collapsedPackages={collapsedPackages}

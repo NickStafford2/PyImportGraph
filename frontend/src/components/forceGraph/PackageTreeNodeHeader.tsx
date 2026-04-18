@@ -8,13 +8,24 @@ type PackageTreeNodeHeaderProps = {
   isHighlighted: boolean
   hasChildren: boolean
   isCollapsed: boolean
-  onTogglePackageHighlight: (packageName: string) => void
-  onTogglePackageTreeHighlight: () => void
-  onSelectOnlyPackageHighlight: () => void
+  onHighlightPackage: (packageName: string) => void
+  onUnhighlightPackage: (packageName: string) => void
+  onHighlightPackageTree: () => void
+  onUnhighlightPackageTree: () => void
+  onHighlightOnlyPackage: () => void
   onToggleCollapsedPackage: (packageName: string) => void
 }
 
 const GREYED_LEGEND_COLOR = '#475569'
+
+function getActionButtonClasses(variant: 'default' | 'muted' = 'default'): string {
+  return [
+    'flex h-6 shrink-0 items-center justify-center rounded-md border px-2 text-[10px] transition',
+    variant === 'default'
+      ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
+      : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-600',
+  ].join(' ')
+}
 
 export function PackageTreeNodeHeader({
   packageName,
@@ -23,15 +34,17 @@ export function PackageTreeNodeHeader({
   isHighlighted,
   hasChildren,
   isCollapsed,
-  onTogglePackageHighlight,
-  onTogglePackageTreeHighlight,
-  onSelectOnlyPackageHighlight,
+  onHighlightPackage,
+  onUnhighlightPackage,
+  onHighlightPackageTree,
+  onUnhighlightPackageTree,
+  onHighlightOnlyPackage,
   onToggleCollapsedPackage,
 }: PackageTreeNodeHeaderProps) {
   const displayName = trimModulePrefix(packageName, displayPrefix)
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <button
         type="button"
         onClick={() => onToggleCollapsedPackage(packageName)}
@@ -43,39 +56,70 @@ export function PackageTreeNodeHeader({
             : 'border-transparent text-slate-600',
         ].join(' ')}
         aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
+        title={isCollapsed ? 'Expand package' : 'Collapse package'}
       >
         {hasChildren ? (isCollapsed ? '▸' : '▾') : '•'}
       </button>
 
-      {hasChildren && (
-        <button
-          type="button"
-          onClick={onTogglePackageTreeHighlight}
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-950/70 text-[11px] text-slate-300 transition hover:border-slate-500"
-          aria-label="Toggle package subtree highlight"
-          title="Toggle this package and all subpackages"
-        >
-          ⊞
-        </button>
-      )}
-
       <button
         type="button"
-        onClick={onSelectOnlyPackageHighlight}
-        className="flex h-6 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-950/70 px-2 text-[10px] text-slate-300 transition hover:border-slate-500"
-        aria-label="Select only this package"
-        title="Select only this package"
+        onClick={() => onHighlightPackage(packageName)}
+        className={getActionButtonClasses()}
+        aria-label="Highlight this package"
+        title="Highlight this package"
       >
-        only
+        +
       </button>
 
       <button
         type="button"
-        onClick={() => onTogglePackageHighlight(packageName)}
+        onClick={() => onUnhighlightPackage(packageName)}
+        className={getActionButtonClasses('muted')}
+        aria-label="Unhighlight this package"
+        title="Unhighlight this package"
+      >
+        −
+      </button>
+
+      {hasChildren && (
+        <>
+          <button
+            type="button"
+            onClick={onHighlightPackageTree}
+            className={getActionButtonClasses()}
+            aria-label="Highlight this package and all subpackages"
+            title="Highlight this package and all subpackages"
+          >
+            ++
+          </button>
+
+          <button
+            type="button"
+            onClick={onUnhighlightPackageTree}
+            className={getActionButtonClasses('muted')}
+            aria-label="Unhighlight this package and all subpackages"
+            title="Unhighlight this package and all subpackages"
+          >
+            −−
+          </button>
+        </>
+      )}
+
+      <button
+        type="button"
+        onClick={onHighlightOnlyPackage}
+        className={getActionButtonClasses()}
+        aria-label="Highlight only this package"
+        title="Highlight only this package"
+      >
+        only
+      </button>
+
+      <div
         className={[
           'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
           isGreyed ? 'text-slate-500' : 'text-slate-200',
-          isHighlighted ? 'bg-sky-500/10' : 'hover:bg-slate-800/70',
+          isHighlighted ? 'bg-sky-500/10' : '',
         ].join(' ')}
         title={packageName}
       >
@@ -90,7 +134,7 @@ export function PackageTreeNodeHeader({
         <span className="truncate font-medium" title={packageName}>
           {displayName}
         </span>
-      </button>
+      </div>
     </div>
   )
 }

@@ -6,17 +6,20 @@ const GREYED_NODE_COLOR = '#475569'
 const INACTIVE_LINK_RGB = '100, 116, 139'
 const ACTIVE_LINK_RGB = '148, 163, 184'
 
+function isPackageHighlighted(
+  packageName: string,
+  highlightedPackages: ReadonlySet<string>,
+): boolean {
+  return highlightedPackages.has(packageName)
+}
+
 function getLinkHighlightMultiplier(
   link: GraphLink,
   highlightedPackages: ReadonlySet<string>,
 ): number {
-  if (highlightedPackages.size === 0) {
-    return 1
-  }
-
   const touchesHighlightedPackage =
-    highlightedPackages.has(link.sourcePackage) ||
-    highlightedPackages.has(link.targetPackage)
+    isPackageHighlighted(link.sourcePackage, highlightedPackages) ||
+    isPackageHighlighted(link.targetPackage, highlightedPackages)
 
   return touchesHighlightedPackage ? 1 : 0.2
 }
@@ -25,10 +28,7 @@ export function getNodeColor(
   node: GraphNode,
   highlightedPackages: ReadonlySet<string>,
 ): string {
-  if (
-    highlightedPackages.size === 0 ||
-    highlightedPackages.has(node.group)
-  ) {
+  if (isPackageHighlighted(node.group, highlightedPackages)) {
     return getPackageColor(node.group)
   }
 
@@ -52,8 +52,7 @@ export function getLinkColor(
     baseOpacity * influence.edgeVisibilityMultiplier * highlightMultiplier,
   )
 
-  const isDimmedByHighlight =
-    highlightedPackages.size > 0 && highlightMultiplier < 1
+  const isDimmedByHighlight = highlightMultiplier < 1
   const rgb = isDimmedByHighlight ? INACTIVE_LINK_RGB : ACTIVE_LINK_RGB
 
   return `rgba(${rgb}, ${opacity})`
