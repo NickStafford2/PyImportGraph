@@ -39,7 +39,7 @@ function getContainerClasses(depth: number, isSelected: boolean): string {
         : 'bg-slate-900/90'
 
   return [
-    'rounded-xl border p-1 transition',
+    'rounded-xl border p-2 transition',
     depthClass,
     isSelected
       ? 'border-sky-500 bg-sky-500/10'
