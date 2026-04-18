@@ -6,7 +6,6 @@ type SummarySectionProps = {
 
 export function SummarySection({ snapshot }: SummarySectionProps) {
   const rows = [
-    ['Schema version', String(snapshot.schema_version)],
     ['Packages', String(snapshot.summary.package_count)],
     ['Modules', String(snapshot.summary.module_count)],
     [
