@@ -45,7 +45,7 @@ export function ForceGraphLegend({
           Packages
         </div>
 
-        <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="flex flex-col">
           {sortedPackages.map((packageName) => {
             const isSelected = selectedPackage === packageName
             const isGreyed =
