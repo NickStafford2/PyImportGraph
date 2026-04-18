@@ -48,6 +48,7 @@ export function PackageTreeNodeHeader({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+
       <div
         className={[
           'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
@@ -69,61 +70,50 @@ export function PackageTreeNodeHeader({
         </span>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-2 py-1">
-        <span className={['text-[10px] uppercase tracking-wide', getLabelClasses(isGreyed)].join(' ')}>
-          package
-        </span>
-        <ToggleSwitch
-          checked={isHighlighted}
-          onChange={onPackageHighlightChange}
-          ariaLabel={`Highlight ${packageName}`}
-          title={isHighlighted ? 'Unhighlight this package' : 'Highlight this package'}
-        />
-      </div>
+      <ToggleSwitch
+        checked={isHighlighted}
+        onChange={onPackageHighlightChange}
+        ariaLabel="Toggle package highlight"
+        title="Toggle package highlight"
+      />
 
       {hasChildren && (
-        <div className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-2 py-1">
-          <span className={['text-[10px] uppercase tracking-wide', getLabelClasses(isGreyed)].join(' ')}>
-            subpackages
-          </span>
+        <div className='flex flex-row align-middle flex-nowrap'>
           <ToggleSwitch
             checked={isSubtreeHighlighted}
             onChange={onSubtreeHighlightChange}
-            ariaLabel={`Highlight ${packageName} and all subpackages`}
-            title={
-              isSubtreeHighlighted
-                ? 'Unhighlight this package and all subpackages'
-                : 'Highlight this package and all subpackages'
-            }
+            ariaLabel="Toggle subtree highlight"
+            title="Toggle subtree highlight"
           />
+
+          <button
+            type="button"
+            onClick={onHighlightOnlyPackage}
+            className={getActionButtonClasses()}
+            aria-label="Highlight only this package"
+            title="Highlight only this package"
+          >
+            only
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onToggleCollapsedPackage(packageName)}
+            disabled={!hasChildren}
+            className={[
+              'flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] transition',
+              hasChildren
+                ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
+                : 'border-transparent text-slate-600',
+            ].join(' ')}
+            aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
+            title={isCollapsed ? 'Expand package' : 'Collapse package'}
+          >
+            {hasChildren ? (isCollapsed ? '▸' : '▾') : '•'}
+          </button>
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onHighlightOnlyPackage}
-        className={getActionButtonClasses()}
-        aria-label="Highlight only this package"
-        title="Highlight only this package"
-      >
-        only
-      </button>
-
-      <button
-        type="button"
-        onClick={() => onToggleCollapsedPackage(packageName)}
-        disabled={!hasChildren}
-        className={[
-          'flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] transition',
-          hasChildren
-            ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
-            : 'border-transparent text-slate-600',
-        ].join(' ')}
-        aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
-        title={isCollapsed ? 'Expand package' : 'Collapse package'}
-      >
-        {hasChildren ? (isCollapsed ? '▸' : '▾') : '•'}
-      </button>
     </div>
   )
 }
