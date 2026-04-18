@@ -2,9 +2,7 @@ import { CollapsibleCard } from '../CollapsibleCard'
 import { DefinitionTable } from '../DefinitionTable'
 import { EmptyState } from '../EmptyState'
 import { KeyValueList } from '../KeyValueList'
-import { ModuleName } from '../ModuleName'
 import { SimpleList } from '../SimpleList'
-import { joinOrNone } from '../../lib/format'
 import type { ModuleSnapshot } from '../../types'
 import { toAnchorId } from '../../lib/anchor'
 
@@ -51,14 +49,18 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
                   items={item.importing_packages}
                   formatAsModuleName
                   displayPrefix={displayPrefix}
+                  anchorKind='package'
                 />
 
+                todo: what kind of imports are these?
                 <SimpleList
                   title="Imports"
                   items={item.imports}
                   formatAsModuleName
                   displayPrefix={displayPrefix}
                 />
+
+                todo: what kind of imports are these?
                 <SimpleList
                   title="Imported by"
                   items={item.imported_by}
@@ -67,9 +69,9 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
                 />
               </div>
 
+              <h1>Observed External Interface</h1>
               <div className="mt-6">
                 <DefinitionTable
-                  title="Observed external interface"
                   definitions={item.external_interface}
                   displayPrefix={displayPrefix}
                 />

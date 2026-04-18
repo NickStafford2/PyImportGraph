@@ -8,6 +8,7 @@ type ModuleNameProps = {
   name: string
   prefix: string | null
   className?: string
+  anchorKind?: 'module' | 'package'
 }
 
 type TooltipPosition = {
@@ -15,7 +16,12 @@ type TooltipPosition = {
   y: number
 }
 
-export function ModuleName({ name, prefix, className }: ModuleNameProps) {
+export function ModuleName({
+  name,
+  prefix,
+  className,
+  anchorKind = 'module',
+}: ModuleNameProps) {
   const display = trimModulePrefix(name, prefix)
 
   const [hovering, setHovering] = useState(false)
@@ -75,7 +81,7 @@ export function ModuleName({ name, prefix, className }: ModuleNameProps) {
         onMouseLeave={handleMouseLeave}
       >
         <a
-          href={`#${toAnchorId('module', name)}`}
+          href={`#${toAnchorId(anchorKind, name)}`}
           className="hover:underline"
         >
           {display}

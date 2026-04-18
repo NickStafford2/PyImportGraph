@@ -6,6 +6,7 @@ type SimpleListProps = {
   formatAsModuleName?: boolean
   displayPrefix?: string | null
   className?: string
+  anchorKind?: 'module' | 'package'
 }
 
 export function SimpleList({
@@ -13,7 +14,8 @@ export function SimpleList({
   items,
   formatAsModuleName = false,
   displayPrefix = null,
-  className = '',
+  className,
+  anchorKind = 'module',
 }: SimpleListProps) {
   return (
     <div

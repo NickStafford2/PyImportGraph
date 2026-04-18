@@ -61,6 +61,7 @@ export function PackagesSection({
                           formatAsModuleName
                           displayPrefix={displayPrefix}
                           className='w-full'
+                          anchorKind='package'
                         />
 
                         <SimpleList
@@ -69,6 +70,7 @@ export function PackagesSection({
                           formatAsModuleName
                           displayPrefix={displayPrefix}
                           className='w-full'
+                          anchorKind='package'
                         />
                       </div>
 
@@ -81,6 +83,7 @@ export function PackagesSection({
                             items={item.imported_by_modules}
                             formatAsModuleName
                             displayPrefix={displayPrefix}
+                            anchorKind='module'
                           />
 
                           <SimpleList
@@ -88,6 +91,7 @@ export function PackagesSection({
                             items={item.direct_modules}
                             formatAsModuleName
                             displayPrefix={displayPrefix}
+                            anchorKind='module'
                           />
 
                           <div className="xl:col-span-2">
@@ -96,6 +100,7 @@ export function PackagesSection({
                               items={item.subtree_modules}
                               formatAsModuleName
                               displayPrefix={displayPrefix}
+                              anchorKind='module'
                             />
                           </div>
                         </div>
