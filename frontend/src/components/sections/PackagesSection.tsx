@@ -34,9 +34,6 @@ export function PackagesSection({
             title={trimModulePrefix(item.name, displayPrefix)}
             subtitle={`children=${item.children.length} • direct_modules=${item.direct_modules.length} • subtree_modules=${item.subtree_modules.length}`}
           >
-            <div className="mb-4 text-sm text-slate-300">
-              <ModuleName name={item.name} prefix={displayPrefix} />
-            </div>
 
             <div className="grid gap-6 xl:grid-cols-2">
               <KeyValueList
