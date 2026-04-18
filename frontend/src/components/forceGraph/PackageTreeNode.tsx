@@ -139,7 +139,7 @@ export function PackageTreeNode({
       </div>
 
       {node.children.length > 0 && (
-        <div className="mt-3 rounded-lg border border-amber-800/90 bg-black/10 p-2">
+        <div className="mt-3">
 
           {node.children.map((childNode) => (
             <PackageTreeNode

@@ -29,7 +29,7 @@ export function ForceGraphPackagesPanel({
   const packageTree = buildPackageTree(packages)
 
   return (
-    <aside className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 flex max-h-[620px] flex-col gap-3 overflow-y-auto pr-1">
+    <aside className="rounded-2xl border border-slate-700 bg-slate-900/70 flex max-h-[700px] flex-col gap-3 overflow-y-auto pr-1">
       {packageTree.map((node) => (
         <PackageTreeNode
           key={node.packageName}
