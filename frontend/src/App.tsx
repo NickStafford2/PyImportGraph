@@ -6,6 +6,7 @@ import { SummarySection } from './components/sections/SummarySection'
 import { useSnapshot } from './hooks/useSnapshot'
 import { matchesEdge, matchesModule, matchesPackage } from './lib/filters'
 import { findCommonModulePrefix } from './lib/moduleName'
+import { ForceGraph } from './components/ForceGraph'
 
 function App() {
   const [query, setQuery] = useState('')
@@ -57,6 +58,12 @@ function App() {
         {snapshot ? (
           <div className="space-y-8">
             <SummarySection snapshot={snapshot} />
+            <section>
+              <h2 className="mb-4 text-xl font-semibold text-white">3D Graph</h2>
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+                <ForceGraph snapshot={snapshot} className="h-[700px] w-full rounded-xl" />
+              </div>
+            </section>
             <PackagesSection
               packages={filteredPackages}
               total={snapshot.packages.length}
