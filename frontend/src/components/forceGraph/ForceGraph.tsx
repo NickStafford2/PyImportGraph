@@ -184,15 +184,24 @@ export function ForceGraph({
                 nodeId="id"
                 nodeVal="val"
                 nodeColor={getNodeColor}
-                nodeLabel={(node) =>
-                  [
-                    node.name,
-                    `package: ${node.group}`,
-                    `imports: ${node.importCount}`,
-                    `imported by: ${node.importedByCount}`,
-                    `external interface: ${node.externalInterfaceCount}`,
-                  ].join('\n')
-                }
+                nodeLabel={(node) => `
+                  <div style="
+                    max-width: 240px;
+                    font-size: 12px;
+                    line-height: 1.4;
+                  ">
+                    <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 4px;">
+                      ${node.displayName}
+                    </div>
+
+                    <div style="color: #94a3b8;">
+                      <div><b>Package:</b> ${node.group}</div>
+                      <div><b>Imports:</b> ${node.importCount}</div>
+                      <div><b>Imported by:</b> ${node.importedByCount}</div>
+                      <div><b>External interface:</b> ${node.externalInterfaceCount}</div>
+                    </div>
+                  </div>
+                `}
                 linkColor={getLinkColor}
                 linkDirectionalArrowLength={3.5}
                 linkDirectionalArrowRelPos={1}
