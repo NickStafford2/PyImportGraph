@@ -19,13 +19,25 @@ def render_summary(model: ProjectModel) -> str:
         if model.find_external_interface_for_package(package_name)
     )
 
-    cross_package_symbol_use_count = sum(
-        len(imports)
-        for imported_module_name, imports in model.symbol_imports_by_imported_module.items()
-        for symbol_import in imports
-        if model.package_tree.package_for_module(symbol_import.importer_module)
-        != model.package_tree.package_for_module(imported_module_name)
-    )
+    cross_package_symbol_use_count = 0
+    for (
+        imported_module_name,
+        imports,
+    ) in model.symbol_imports_by_imported_module.items():
+        if imported_module_name not in model.module_names:
+            continue
+
+        imported_package_name = model.package_tree.package_for_module(
+            imported_module_name
+        )
+
+        cross_package_symbol_use_count += sum(
+            1
+            for symbol_import in imports
+            if symbol_import.importer_module in model.module_names
+            and model.package_tree.package_for_module(symbol_import.importer_module)
+            != imported_package_name
+        )
 
     lines = render_kv_table(
         [

@@ -68,6 +68,7 @@ class ProjectModel:
         )
 
         all_module_names = tuple(sorted({*graph.modules, *discovered_module_names}))
+        allowed_module_names = set(all_module_names)
         package_tree = PackageTree.from_module_names(all_module_names)
 
         module_imports = {
@@ -77,7 +78,7 @@ class ProjectModel:
                     for imported_module_name in graph.find_modules_directly_imported_by(
                         module_name
                     )
-                    if imported_module_name in package_tree._package_by_module
+                    if imported_module_name in allowed_module_names
                 )
             )
             if module_name in graph.modules
@@ -92,7 +93,7 @@ class ProjectModel:
                     for importer_module_name in graph.find_modules_that_directly_import(
                         module_name
                     )
-                    if importer_module_name in package_tree._package_by_module
+                    if importer_module_name in allowed_module_names
                 )
             )
             if module_name in graph.modules
@@ -103,7 +104,7 @@ class ProjectModel:
         definitions_by_module, symbol_imports = _build_symbol_model(
             project_root=root,
             package_tree=package_tree,
-            allowed_module_names=set(all_module_names),
+            allowed_module_names=allowed_module_names,
         )
 
         symbol_imports_by_imported_module: dict[str, list[_FromImport]] = defaultdict(
@@ -315,13 +316,16 @@ def _build_symbol_model(
             for symbol_name, parsed_definition in parsed.definitions.items()
         }
 
-        symbol_imports.extend(
-            _build_symbol_import(
-                importer_module=module_name,
-                parsed_import=parsed_import,
+        for parsed_import in parsed.from_imports:
+            if parsed_import.imported_module not in allowed_module_names:
+                continue
+
+            symbol_imports.append(
+                _build_symbol_import(
+                    importer_module=module_name,
+                    parsed_import=parsed_import,
+                )
             )
-            for parsed_import in parsed.from_imports
-        )
 
     return definitions_by_module, symbol_imports
 

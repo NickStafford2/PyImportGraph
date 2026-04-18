@@ -59,6 +59,7 @@ def build_symbol_usage_report(project_root: str | Path) -> SymbolUsageReport:
     module_name_by_path = {
         path: _module_name_from_path(root, path) for path in module_paths
     }
+    known_module_names = set(module_name_by_path.values())
     package_tree = PackageTree.from_module_names(module_name_by_path.values())
 
     definitions_by_module: dict[str, dict[str, Definition]] = {}
@@ -84,6 +85,7 @@ def build_symbol_usage_report(project_root: str | Path) -> SymbolUsageReport:
                 line=item.line,
             )
             for item in parsed.from_imports
+            if item.imported_module in known_module_names
         )
 
     external_uses: list[ExternalSymbolUse] = []
