@@ -93,37 +93,10 @@ export function PackagesSection({
                   ].join(' • ')}
                 >
                   <div className="space-y-6">
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-                      <SummaryStat
-                        label="Parent"
-                        value={
-                          item.parent == null
-                            ? '(none)'
-                            : trimModulePrefix(item.parent, displayPrefix)
-                        }
-                      />
-                      <SummaryStat
-                        label="Children"
-                        value={item.children.length}
-                      />
-                      <SummaryStat
-                        label="Direct modules"
-                        value={item.direct_modules.length}
-                      />
-                      <SummaryStat
-                        label="Subtree modules"
-                        value={item.subtree_modules.length}
-                      />
-                      <SummaryStat
-                        label="Imported by packages"
-                        value={item.imported_by_packages.length}
-                      />
-                    </div>
-
                     <div className="grid gap-6 xl:grid-cols-2">
                       <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
                         <h3 className="mb-3 text-sm font-semibold text-white">
-                          Children
+                          Children Packages
                         </h3>
                         <CommaList
                           items={item.children}
@@ -133,7 +106,7 @@ export function PackagesSection({
 
                       <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
                         <h3 className="mb-3 text-sm font-semibold text-white">
-                          Imported by packages
+                          Imported by Packages
                         </h3>
                         <CommaList
                           items={item.imported_by_packages}
