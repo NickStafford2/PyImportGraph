@@ -165,7 +165,7 @@ export function ForceGraph({
       <ForceGraphControls value={presetKey} onChange={setPresetKey} />
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/70 overflow-hidden" >
           <div
             ref={containerRef}
             className={
