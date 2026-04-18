@@ -10,7 +10,7 @@ export function SimpleList({ title, items }: SimpleListProps) {
       {items.length === 0 ? (
         <div className="text-sm text-slate-500">(none)</div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {items.map((item) => (
             <li
               key={item}
