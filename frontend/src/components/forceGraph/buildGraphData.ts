@@ -27,7 +27,7 @@ export function buildGraphData(
   })
 
   const links: GraphLink[] = snapshot.edges
-    .filter((edge) => edge.type === 'module_import')
+    .filter((edge) => edge.type === 'symbol_import')
     .map((edge) => ({
       source: edge.from,
       target: edge.to,
