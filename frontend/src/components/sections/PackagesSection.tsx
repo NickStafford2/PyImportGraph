@@ -1,7 +1,6 @@
 import { CollapsibleCard } from '../CollapsibleCard'
 import { DefinitionTable } from '../DefinitionTable'
 import { EmptyState } from '../EmptyState'
-import { ModuleName } from '../ModuleName'
 import { SimpleList } from '../SimpleList'
 import { toAnchorId } from '../../lib/anchor'
 import { trimModulePrefix } from '../../lib/moduleName'
@@ -13,48 +12,6 @@ type PackagesSectionProps = {
   displayPrefix: string | null
 }
 
-function SummaryStat({
-  label,
-  value,
-}: {
-  label: string
-  value: string | number
-}) {
-  return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/50 px-3 py-2">
-      <div className="text-[11px] uppercase tracking-[0.16em] text-slate-500">
-        {label}
-      </div>
-      <div className="mt-1 text-sm font-medium text-slate-200">{value}</div>
-    </div>
-  )
-}
-
-function CommaList({
-  items,
-  displayPrefix,
-}: {
-  items: string[]
-  displayPrefix: string | null
-}) {
-  if (items.length === 0) {
-    return <span className="text-slate-500">(none)</span>
-  }
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <span
-          key={item}
-          className="rounded-lg border border-slate-800 bg-slate-950/60 px-2 py-1 text-xs text-slate-300"
-          title={item}
-        >
-          {trimModulePrefix(item, displayPrefix)}
-        </span>
-      ))}
-    </div>
-  )
-}
 
 export function PackagesSection({
   packages,
