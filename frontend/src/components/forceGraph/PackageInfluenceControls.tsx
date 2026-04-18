@@ -70,10 +70,6 @@ export function PackageInfluenceControls({
     })
   }
 
-  const isDefault =
-    settings.edgeStrengthMultiplier === 1 &&
-    settings.edgeVisibilityMultiplier === 1
-
   return (
     <div className="mt-3 space-y-2">
       <div className="flex items-center justify-between gap-2">
@@ -85,57 +81,19 @@ export function PackageInfluenceControls({
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-3">
-        <input
-          type="range"
-          min={0}
-          max={SLIDER_OPTIONS.length - 1}
-          step={1}
-          value={sliderIndex}
-          onChange={handleSliderChange}
-          className="w-full cursor-pointer accent-emerald-400"
-          aria-label={`Edge influence for ${packageName}`}
-        />
+      <input
+        type="range"
+        min={0}
+        max={SLIDER_OPTIONS.length - 1}
+        step={1}
+        value={sliderIndex}
+        onChange={handleSliderChange}
+        className="w-full cursor-pointer accent-emerald-400"
+        aria-label={`Edge influence for ${packageName}`}
+      />
 
-        <div className="mt-2 grid grid-cols-4 text-[10px] text-slate-400">
-          {SLIDER_OPTIONS.map((multiplier, index) => {
-            const isActive = index === sliderIndex
 
-            return (
-              <button
-                key={multiplier}
-                type="button"
-                onClick={() =>
-                  onPackageInfluenceChange(packageName, {
-                    edgeStrengthMultiplier: multiplier,
-                    edgeVisibilityMultiplier: multiplier,
-                  })
-                }
-                className={[
-                  'rounded px-1 py-1 text-center transition',
-                  isActive
-                    ? 'text-emerald-300'
-                    : 'text-slate-400 hover:text-slate-200',
-                ].join(' ')}
-                aria-label={`Set edge influence to ${formatMultiplierLabel(multiplier)}`}
-              >
-                {formatMultiplierLabel(multiplier)}
-              </button>
-            )
-          })}
-        </div>
-      </div>
 
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={onReset}
-          disabled={isDefault}
-          className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Reset
-        </button>
-      </div>
     </div>
   )
 }
