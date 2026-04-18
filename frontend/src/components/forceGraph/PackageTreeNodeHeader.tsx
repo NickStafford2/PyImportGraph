@@ -1,3 +1,5 @@
+// frontend/src/components/forceGraph/PackageTreeNodeHeader.tsx
+
 import { trimModulePrefix } from '../../lib/moduleName'
 import { getPackageColor } from './graphColors'
 import { ToggleSwitch } from './ToggleSwitch'
@@ -10,6 +12,8 @@ type PackageTreeNodeHeaderProps = {
   isSubtreeHighlighted: boolean
   hasChildren: boolean
   isCollapsed: boolean
+  isHighlightDisabled: boolean
+  isSubtreeHighlightDisabled: boolean
   onPackageHighlightChange: (checked: boolean) => void
   onSubtreeHighlightChange: (checked: boolean) => void
   onHighlightOnlyPackage: () => void
@@ -17,7 +21,6 @@ type PackageTreeNodeHeaderProps = {
 }
 
 const GREYED_LEGEND_COLOR = '#475569'
-
 
 export function PackageTreeNodeHeader({
   packageName,
@@ -27,6 +30,8 @@ export function PackageTreeNodeHeader({
   isSubtreeHighlighted,
   hasChildren,
   isCollapsed,
+  isHighlightDisabled,
+  isSubtreeHighlightDisabled,
   onPackageHighlightChange,
   onSubtreeHighlightChange,
   onToggleCollapsedPackage,
@@ -35,25 +40,42 @@ export function PackageTreeNodeHeader({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-
       <div
         role="switch"
         aria-checked={isHighlighted}
+        aria-disabled={isHighlightDisabled}
         aria-label={`Toggle highlight for ${packageName}`}
-        onClick={() => onPackageHighlightChange(!isHighlighted)}
+        onClick={() => {
+          if (isHighlightDisabled) {
+            return
+          }
+
+          onPackageHighlightChange(!isHighlighted)
+        }}
         onKeyDown={(event) => {
+          if (isHighlightDisabled) {
+            return
+          }
+
           if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault()
             onPackageHighlightChange(!isHighlighted)
           }
         }}
-        tabIndex={0}
+        tabIndex={isHighlightDisabled ? -1 : 0}
         className={[
-          'flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
+          'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
+          isHighlightDisabled
+            ? 'cursor-not-allowed opacity-50'
+            : 'cursor-pointer',
           isGreyed ? 'text-slate-500' : 'text-slate-200',
           isHighlighted ? 'bg-sky-500/10' : '',
         ].join(' ')}
-        title={packageName}
+        title={
+          isHighlightDisabled
+            ? `${packageName} is not imported outside its own package`
+            : packageName
+        }
       >
         <span
           className="h-3 w-3 shrink-0 rounded-full transition"
@@ -75,6 +97,7 @@ export function PackageTreeNodeHeader({
             onChange={onSubtreeHighlightChange}
             ariaLabel="Toggle subtree highlight"
             title="Toggle subtree highlight"
+            disabled={isSubtreeHighlightDisabled}
           />
 
           <button
@@ -90,33 +113,28 @@ export function PackageTreeNodeHeader({
             aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
             title={isCollapsed ? 'Expand package' : 'Collapse package'}
           >
-            {hasChildren ? (
-              isCollapsed ? (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M6 2v8M2 6h8"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              ) : (
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M2 6h8"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )
+            {isCollapsed ? (
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M6 2v8M2 6h8"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
             ) : (
-              <span className="text-[10px]">•</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                <path
+                  d="M2 6h8"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
             )}
           </button>
         </>
       )}
-
     </div>
   )
 }

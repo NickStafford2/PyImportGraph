@@ -1,3 +1,5 @@
+// frontend/src/components/forceGraph/ForceGraph.tsx
+
 import { useMemo } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
@@ -23,7 +25,7 @@ export function ForceGraph({
   const {
     presetKey,
     setPresetKey,
-    highlightedPackages,
+    effectiveHighlightedPackages,
     highlightPackage,
     unhighlightPackage,
     highlightPackages,
@@ -37,7 +39,13 @@ export function ForceGraph({
     toggleCollapsedPackage,
     expandAllPackages,
     collapseAllPackages,
-  } = useForceGraphState({ packages })
+    packagesWithExternalImporters,
+    showOnlyExternallyImportedPackages,
+    setShowOnlyExternallyImportedPackages,
+  } = useForceGraphState({
+    packages,
+    modules: snapshot.modules,
+  })
 
   const preset = FORCE_PRESETS[presetKey]
 
@@ -47,27 +55,33 @@ export function ForceGraph({
 
   return (
     <section>
-      <h2 className="mb-4 text-3xl font-semibold text-white">Module Dependency Force Graph</h2>
+      <h2 className="mb-4 text-3xl font-semibold text-white">
+        Module Dependency Force Graph
+      </h2>
 
       <p className="my-2 text-sm text-slate-400">
-        The graph is completely interactable. Drag and Drop. Explore in 3d. Adjust edge weights to identify influence.
+        The graph is completely interactable. Drag and Drop. Explore in 3d.
+        Adjust edge weights to identify influence.
       </p>
-
-
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <ForceGraphCanvas
           graphData={graphData}
           preset={preset}
           packageInfluenceConfig={packageInfluenceConfig}
-          highlightedPackages={highlightedPackages}
+          highlightedPackages={effectiveHighlightedPackages}
           className={className}
         />
 
         <ForceGraphPackagesPanel
           packages={packages}
           displayPrefix={displayPrefix}
-          highlightedPackages={highlightedPackages}
+          highlightedPackages={effectiveHighlightedPackages}
+          packagesWithExternalImporters={packagesWithExternalImporters}
+          showOnlyExternallyImportedPackages={showOnlyExternallyImportedPackages}
+          onShowOnlyExternallyImportedPackagesChange={
+            setShowOnlyExternallyImportedPackages
+          }
           onHighlightPackage={highlightPackage}
           onUnhighlightPackage={unhighlightPackage}
           onHighlightPackageTree={highlightPackages}

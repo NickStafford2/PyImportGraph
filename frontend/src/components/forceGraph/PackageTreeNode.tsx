@@ -1,3 +1,5 @@
+// frontend/src/components/forceGraph/PackageTreeNode.tsx
+
 import {
   DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
   getPackageInfluenceSettings,
@@ -10,11 +12,14 @@ import type { PackageTreeNode as PackageTreeNodeModel } from './packageTree'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 import { getPackageColor } from './graphColors'
+import { filterPackageNamesToExternallyImported } from './packageHighlightFilters'
 
 type PackageTreeNodeProps = {
   node: PackageTreeNodeModel
   displayPrefix: string | null
   highlightedPackages: ReadonlySet<string>
+  packagesWithExternalImporters: ReadonlySet<string>
+  showOnlyExternallyImportedPackages: boolean
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
   onHighlightPackageTree: (packageNames: Iterable<string>) => void
@@ -41,7 +46,7 @@ function getContainerClasses(depth: number): string {
   return [
     'rounded-xl border px-1 py-2 transition',
     depthClass,
-    'border-slate-800', // default fallback
+    'border-slate-800',
   ].join(' ')
 }
 
@@ -56,13 +61,16 @@ function areAllPackagesHighlighted(
   packageNames: readonly string[],
   highlightedPackages: ReadonlySet<string>,
 ): boolean {
-  return packageNames.every((packageName) => highlightedPackages.has(packageName))
+  return packageNames.length > 0
+    && packageNames.every((packageName) => highlightedPackages.has(packageName))
 }
 
 export function PackageTreeNode({
   node,
   displayPrefix,
   highlightedPackages,
+  packagesWithExternalImporters,
+  showOnlyExternallyImportedPackages,
   onHighlightPackage,
   onUnhighlightPackage,
   onHighlightPackageTree,
@@ -76,17 +84,32 @@ export function PackageTreeNode({
 }: PackageTreeNodeProps) {
   const packageName = node.packageName
   const subtreePackageNames = node.subtreePackageNames
-  const isHighlighted = highlightedPackages.has(packageName)
-  const isSubtreeHighlighted = areAllPackagesHighlighted(
-    subtreePackageNames,
-    highlightedPackages,
-  )
-  const isGreyed = !hasAnyHighlightedPackage(
-    subtreePackageNames,
-    highlightedPackages,
-  )
   const isCollapsed = collapsedPackages.has(packageName)
   const hasChildren = node.children.length > 0
+
+  const packageCanBeHighlighted =
+    !showOnlyExternallyImportedPackages
+    || packagesWithExternalImporters.has(packageName)
+
+  const eligibleSubtreePackageNames = showOnlyExternallyImportedPackages
+    ? filterPackageNamesToExternallyImported(
+      subtreePackageNames,
+      packagesWithExternalImporters,
+    )
+    : subtreePackageNames
+
+  const isHighlighted =
+    packageCanBeHighlighted && highlightedPackages.has(packageName)
+
+  const isSubtreeHighlighted = areAllPackagesHighlighted(
+    eligibleSubtreePackageNames,
+    highlightedPackages,
+  )
+
+  const isGreyed = !hasAnyHighlightedPackage(
+    eligibleSubtreePackageNames,
+    highlightedPackages,
+  )
 
   const settings = getPackageInfluenceSettings(
     packageName,
@@ -94,6 +117,10 @@ export function PackageTreeNode({
   )
 
   function handlePackageHighlightChange(nextChecked: boolean) {
+    if (!packageCanBeHighlighted) {
+      return
+    }
+
     if (nextChecked) {
       onHighlightPackage(packageName)
       return
@@ -103,15 +130,19 @@ export function PackageTreeNode({
   }
 
   function handleSubtreeHighlightChange(nextChecked: boolean) {
-    if (nextChecked) {
-      onHighlightPackageTree(subtreePackageNames)
+    if (eligibleSubtreePackageNames.length === 0) {
       return
     }
 
-    onUnhighlightPackageTree(subtreePackageNames)
-  }
-  const packageColor = getPackageColor(packageName)
+    if (nextChecked) {
+      onHighlightPackageTree(eligibleSubtreePackageNames)
+      return
+    }
 
+    onUnhighlightPackageTree(eligibleSubtreePackageNames)
+  }
+
+  const packageColor = getPackageColor(packageName)
 
   return (
     <div
@@ -132,6 +163,8 @@ export function PackageTreeNode({
         isSubtreeHighlighted={isSubtreeHighlighted}
         hasChildren={hasChildren}
         isCollapsed={isCollapsed}
+        isHighlightDisabled={!packageCanBeHighlighted}
+        isSubtreeHighlightDisabled={eligibleSubtreePackageNames.length === 0}
         onPackageHighlightChange={handlePackageHighlightChange}
         onSubtreeHighlightChange={handleSubtreeHighlightChange}
         onHighlightOnlyPackage={() => onHighlightOnlyPackage([packageName])}
@@ -158,6 +191,10 @@ export function PackageTreeNode({
               node={childNode}
               displayPrefix={displayPrefix}
               highlightedPackages={highlightedPackages}
+              packagesWithExternalImporters={packagesWithExternalImporters}
+              showOnlyExternallyImportedPackages={
+                showOnlyExternallyImportedPackages
+              }
               onHighlightPackage={onHighlightPackage}
               onUnhighlightPackage={onUnhighlightPackage}
               onHighlightPackageTree={onHighlightPackageTree}
