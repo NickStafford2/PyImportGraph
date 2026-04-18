@@ -1,11 +1,22 @@
-import type { ProjectSnapshot } from '../../types'
+import type { EdgeSnapshot, ProjectSnapshot } from '../../types'
 import { trimModulePrefix } from '../../lib/moduleName'
+import {
+  buildMutualPackageDependencySet,
+  isMutualPackageDependency
+} from './buildMutualPackageDependencies'
 import type { GraphData, GraphLink, GraphNode } from './types'
+
+function getRenderedEdges(edges: readonly EdgeSnapshot[]): EdgeSnapshot[] {
+  return edges.filter((edge) => edge.type === 'symbol_import')
+}
 
 export function buildGraphData(
   snapshot: ProjectSnapshot,
   displayPrefix: string | null,
 ): GraphData {
+  const renderedEdges = getRenderedEdges(snapshot.edges)
+  const mutualPackagePairs = buildMutualPackageDependencySet(renderedEdges)
+
   const nodes: GraphNode[] = snapshot.modules.map((module) => {
     const importCount = module.imports.length
     const importedByCount = module.imported_by.length
@@ -26,17 +37,20 @@ export function buildGraphData(
     }
   })
 
-  const links: GraphLink[] = snapshot.edges
-    .filter((edge) => edge.type === 'symbol_import')
-    .map((edge) => ({
-      source: edge.from,
-      target: edge.to,
-      type: edge.type,
-      samePackage: edge.from_package === edge.to_package,
-      weight: edge.from_package === edge.to_package ? 1 : 0.5,
-      sourcePackage: edge.from_package,
-      targetPackage: edge.to_package,
-    }))
+  const links: GraphLink[] = renderedEdges.map((edge) => ({
+    source: edge.from,
+    target: edge.to,
+    type: edge.type,
+    samePackage: edge.from_package === edge.to_package,
+    weight: edge.from_package === edge.to_package ? 1 : 0.5,
+    sourcePackage: edge.from_package,
+    targetPackage: edge.to_package,
+    isMutualPackageDependency: isMutualPackageDependency(
+      mutualPackagePairs,
+      edge.from_package,
+      edge.to_package,
+    ),
+  }))
 
   return { nodes, links }
 }

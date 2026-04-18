@@ -1,3 +1,5 @@
+// frontend/src/components/forceGraph/ForceGraphCanvas.tsx
+
 import { forceCollide } from 'd3-force-3d'
 import { useEffect, useRef, useState } from 'react'
 import ForceGraph3D, { type ForceGraphMethods } from 'react-force-graph-3d'
@@ -19,6 +21,7 @@ type ForceGraphCanvasProps = {
   preset: ForcePreset
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
+  highlightMutualPackageDependenciesOnly: boolean
   className?: string
 }
 
@@ -36,6 +39,7 @@ export function ForceGraphCanvas({
   preset,
   packageInfluenceConfig,
   highlightedPackages,
+  highlightMutualPackageDependenciesOnly,
   className,
 }: ForceGraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -110,7 +114,7 @@ export function ForceGraphCanvas({
   }, [graphData, packageInfluenceConfig, preset])
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/70 overflow-hidden">
+    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
       <div
         ref={containerRef}
         className={
@@ -145,10 +149,20 @@ export function ForceGraphCanvas({
               </div>
             `}
             linkColor={(link) =>
-              getLinkColor(link, packageInfluenceConfig, highlightedPackages)
+              getLinkColor({
+                link,
+                packageInfluenceConfig,
+                highlightedPackages,
+                highlightMutualPackageDependenciesOnly,
+              })
             }
             linkWidth={(link) =>
-              getLinkWidth(link, packageInfluenceConfig, highlightedPackages)
+              getLinkWidth({
+                link,
+                packageInfluenceConfig,
+                highlightedPackages,
+                highlightMutualPackageDependenciesOnly,
+              })
             }
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}

@@ -1,13 +1,13 @@
-// frontend/src/components/forceGraph/ForceGraph.tsx
-
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
 import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
 import { FORCE_PRESETS } from './presets'
+import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
+import { buildPackagesWithExternalImporters } from './packageHighlightFilters'
 
 type ForceGraphProps = {
   snapshot: ProjectSnapshot
@@ -25,7 +25,7 @@ export function ForceGraph({
   const {
     presetKey,
     setPresetKey,
-    effectiveHighlightedPackages,
+    highlightedPackages,
     highlightPackage,
     unhighlightPackage,
     highlightPackages,
@@ -33,19 +33,22 @@ export function ForceGraph({
     highlightOnlyPackages,
     highlightAllPackages,
     unhighlightAllPackages,
+    highlightMutualPackageDependenciesOnly,
+    setHighlightMutualPackageDependenciesOnly,
     packageInfluenceConfig,
     updatePackageInfluence,
     collapsedPackages,
     toggleCollapsedPackage,
     expandAllPackages,
     collapseAllPackages,
-    packagesWithExternalImporters,
-    showOnlyExternallyImportedPackages,
-    setShowOnlyExternallyImportedPackages,
-  } = useForceGraphState({
-    packages,
-    modules: snapshot.modules,
-  })
+  } = useForceGraphState({ packages })
+
+  const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
+    useState(false)
+
+  const packagesWithExternalImporters = useMemo(() => {
+    return buildPackagesWithExternalImporters(snapshot.modules)
+  }, [snapshot.modules])
 
   const preset = FORCE_PRESETS[presetKey]
 
@@ -64,21 +67,44 @@ export function ForceGraph({
         Adjust edge weights to identify influence.
       </p>
 
+      <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3">
+        <div>
+          <div className="text-sm font-medium text-white">
+            Mutual package dependency edges
+          </div>
+          <div className="text-xs text-slate-400">
+            Highlight edges when package A imports package B and package B imports package A.
+          </div>
+        </div>
+
+        <ToggleSwitch
+          checked={highlightMutualPackageDependenciesOnly}
+          onChange={setHighlightMutualPackageDependenciesOnly}
+          ariaLabel="Highlight mutual package dependency edges"
+          title="Highlight mutual package dependency edges"
+        />
+      </div>
+
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <ForceGraphCanvas
           graphData={graphData}
           preset={preset}
           packageInfluenceConfig={packageInfluenceConfig}
-          highlightedPackages={effectiveHighlightedPackages}
+          highlightedPackages={highlightedPackages}
+          highlightMutualPackageDependenciesOnly={
+            highlightMutualPackageDependenciesOnly
+          }
           className={className}
         />
 
         <ForceGraphPackagesPanel
           packages={packages}
           displayPrefix={displayPrefix}
-          highlightedPackages={effectiveHighlightedPackages}
+          highlightedPackages={highlightedPackages}
           packagesWithExternalImporters={packagesWithExternalImporters}
-          showOnlyExternallyImportedPackages={showOnlyExternallyImportedPackages}
+          showOnlyExternallyImportedPackages={
+            showOnlyExternallyImportedPackages
+          }
           onShowOnlyExternallyImportedPackagesChange={
             setShowOnlyExternallyImportedPackages
           }

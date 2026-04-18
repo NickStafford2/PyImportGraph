@@ -5,6 +5,7 @@ import type { GraphLink, GraphNode, PackageInfluenceConfig } from './types'
 const GREYED_NODE_COLOR = '#475569'
 const INACTIVE_LINK_RGB = '100, 116, 139'
 const ACTIVE_LINK_RGB = '148, 163, 184'
+const MUTUAL_LINK_RGB = '244, 114, 182'
 
 function isPackageHighlighted(
   packageName: string,
@@ -35,16 +36,37 @@ export function getNodeColor(
   return GREYED_NODE_COLOR
 }
 
-export function getLinkColor(
-  link: GraphLink,
-  packageInfluenceConfig: PackageInfluenceConfig,
-  highlightedPackages: ReadonlySet<string>,
-): string {
+type GetLinkColorArgs = {
+  link: GraphLink
+  packageInfluenceConfig: PackageInfluenceConfig
+  highlightedPackages: ReadonlySet<string>
+  highlightMutualPackageDependenciesOnly: boolean
+}
+
+export function getLinkColor({
+  link,
+  packageInfluenceConfig,
+  highlightedPackages,
+  highlightMutualPackageDependenciesOnly,
+}: GetLinkColorArgs): string {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
   const highlightMultiplier = getLinkHighlightMultiplier(
     link,
     highlightedPackages,
   )
+
+  if (highlightMutualPackageDependenciesOnly) {
+    if (!link.isMutualPackageDependency) {
+      return `rgba(${INACTIVE_LINK_RGB}, 0.06)`
+    }
+
+    const opacity = Math.max(
+      0.3,
+      0.8 * influence.edgeVisibilityMultiplier * highlightMultiplier,
+    )
+
+    return `rgba(${MUTUAL_LINK_RGB}, ${opacity})`
+  }
 
   const baseOpacity = link.samePackage ? 0.7 : 0.35
   const opacity = Math.max(
@@ -58,17 +80,36 @@ export function getLinkColor(
   return `rgba(${rgb}, ${opacity})`
 }
 
-export function getLinkWidth(
-  link: GraphLink,
-  packageInfluenceConfig: PackageInfluenceConfig,
-  highlightedPackages: ReadonlySet<string>,
-): number {
+type GetLinkWidthArgs = {
+  link: GraphLink
+  packageInfluenceConfig: PackageInfluenceConfig
+  highlightedPackages: ReadonlySet<string>
+  highlightMutualPackageDependenciesOnly: boolean
+}
+
+export function getLinkWidth({
+  link,
+  packageInfluenceConfig,
+  highlightedPackages,
+  highlightMutualPackageDependenciesOnly,
+}: GetLinkWidthArgs): number {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
   const highlightMultiplier = getLinkHighlightMultiplier(
     link,
     highlightedPackages,
   )
   const baseWidth = link.samePackage ? 4.0 : 2.0
+
+  if (highlightMutualPackageDependenciesOnly) {
+    if (!link.isMutualPackageDependency) {
+      return 0.15
+    }
+
+    return Math.max(
+      2.5,
+      (baseWidth + 2.5) * influence.edgeVisibilityMultiplier * highlightMultiplier,
+    )
+  }
 
   return Math.max(
     0.15,

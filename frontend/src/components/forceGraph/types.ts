@@ -1,3 +1,5 @@
+// frontend/src/components/forceGraph/types.ts
+
 export type GraphNode = {
   id: string
   name: string
@@ -17,6 +19,7 @@ export type GraphLink = {
   weight: number
   sourcePackage: string
   targetPackage: string
+  isMutualPackageDependency: boolean
 }
 
 export type GraphData = {

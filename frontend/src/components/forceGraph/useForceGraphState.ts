@@ -1,15 +1,11 @@
 // frontend/src/components/forceGraph/useForceGraphState.ts
 
 import { useEffect, useMemo, useState } from 'react'
-import type { ModuleSnapshot, PackageSnapshot } from '../../types'
+import type { PackageSnapshot } from '../../types'
 import {
   buildPackageInfluenceConfig,
   updatePackageInfluenceConfig,
 } from './graphInfluence'
-import {
-  buildPackagesWithExternalImporters,
-  filterHighlightedPackagesToExternallyImported,
-} from './packageHighlightFilters'
 import { DEFAULT_FORCE_PRESET } from './presets'
 import type {
   ForcePresetKey,
@@ -19,7 +15,6 @@ import type {
 
 type UseForceGraphStateArgs = {
   packages: PackageSnapshot[]
-  modules: ModuleSnapshot[]
 }
 
 type UseForceGraphStateResult = {
@@ -27,10 +22,6 @@ type UseForceGraphStateResult = {
   presetKey: ForcePresetKey
   setPresetKey: (value: ForcePresetKey) => void
   highlightedPackages: ReadonlySet<string>
-  effectiveHighlightedPackages: ReadonlySet<string>
-  packagesWithExternalImporters: ReadonlySet<string>
-  showOnlyExternallyImportedPackages: boolean
-  setShowOnlyExternallyImportedPackages: (value: boolean) => void
   highlightPackage: (packageName: string) => void
   unhighlightPackage: (packageName: string) => void
   highlightPackages: (packageNames: Iterable<string>) => void
@@ -38,6 +29,8 @@ type UseForceGraphStateResult = {
   highlightOnlyPackages: (packageNames: Iterable<string>) => void
   highlightAllPackages: () => void
   unhighlightAllPackages: () => void
+  highlightMutualPackageDependenciesOnly: boolean
+  setHighlightMutualPackageDependenciesOnly: (value: boolean) => void
   packageInfluenceConfig: PackageInfluenceConfig
   updatePackageInfluence: (
     packageName: string,
@@ -67,7 +60,6 @@ function getKnownPackageNames(
 
 export function useForceGraphState({
   packages,
-  modules,
 }: UseForceGraphStateArgs): UseForceGraphStateResult {
   const packageNames = useMemo(() => {
     return packages
@@ -79,10 +71,6 @@ export function useForceGraphState({
     return new Set(packageNames)
   }, [packageNames])
 
-  const packagesWithExternalImporters = useMemo(() => {
-    return buildPackagesWithExternalImporters(modules)
-  }, [modules])
-
   const [presetKey, setPresetKey] =
     useState<ForcePresetKey>(DEFAULT_FORCE_PRESET)
 
@@ -90,7 +78,7 @@ export function useForceGraphState({
     () => new Set(packageNames),
   )
 
-  const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
+  const [highlightMutualPackageDependenciesOnly, setHighlightMutualPackageDependenciesOnly] =
     useState(false)
 
   const [collapsedPackages, setCollapsedPackages] = useState<Set<string>>(
@@ -99,21 +87,6 @@ export function useForceGraphState({
 
   const [packageInfluenceConfig, setPackageInfluenceConfig] =
     useState<PackageInfluenceConfig>(() => buildPackageInfluenceConfig(packageNames))
-
-  const effectiveHighlightedPackages = useMemo(() => {
-    if (!showOnlyExternallyImportedPackages) {
-      return highlightedPackages
-    }
-
-    return filterHighlightedPackagesToExternallyImported(
-      highlightedPackages,
-      packagesWithExternalImporters,
-    )
-  }, [
-    highlightedPackages,
-    packagesWithExternalImporters,
-    showOnlyExternallyImportedPackages,
-  ])
 
   useEffect(() => {
     setPackageInfluenceConfig((currentConfig) => {
@@ -258,10 +231,6 @@ export function useForceGraphState({
     presetKey,
     setPresetKey,
     highlightedPackages,
-    effectiveHighlightedPackages,
-    packagesWithExternalImporters,
-    showOnlyExternallyImportedPackages,
-    setShowOnlyExternallyImportedPackages,
     highlightPackage,
     unhighlightPackage,
     highlightPackages,
@@ -269,6 +238,8 @@ export function useForceGraphState({
     highlightOnlyPackages,
     highlightAllPackages,
     unhighlightAllPackages,
+    highlightMutualPackageDependenciesOnly,
+    setHighlightMutualPackageDependenciesOnly,
     packageInfluenceConfig,
     updatePackageInfluence,
     collapsedPackages,
