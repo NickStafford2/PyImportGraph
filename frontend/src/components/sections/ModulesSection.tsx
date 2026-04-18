@@ -25,11 +25,11 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
       <div className="space-y-2">
         {modules.map((item) => (
           <div
+            key={item.name}
             id={toAnchorId('module', item.name)}
             className="scroll-mt-6"
           >
             <CollapsibleCard
-              key={item.name}
               title={item.name}
               subtitle={`package=${item.package} • imports=${item.imports.length} • imported_by=${item.imported_by.length}`}
             >
@@ -69,7 +69,7 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
                 />
               </div>
 
-              <h1>Observed External Interface</h1>
+              <h1>Observed Exter</h1>
               <div className="mt-6">
                 <DefinitionTable
                   definitions={item.external_interface}
