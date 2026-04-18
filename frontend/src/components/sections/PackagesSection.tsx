@@ -92,53 +92,37 @@ export function PackagesSection({
                     `imported_by_packages=${item.imported_by_packages.length}`,
                   ].join(' • ')}
                 >
-                  <div className="space-y-6">
-                    <div className="grid gap-6 xl:grid-cols-2">
-                      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
-                        <h3 className="mb-3 text-sm font-semibold text-white">
-                          Children Packages
-                        </h3>
-                        <CommaList
+                  <div className="grid gap-6 xl:grid-cols-2">
+
+                    <div className='flex flex-row w-full'>
+
+                      <div className='flex flex-col w-full'>
+                        <SimpleList
+                          title="Children Packages:"
                           items={item.children}
+                          formatAsModuleName
                           displayPrefix={displayPrefix}
+                          className='w-full'
                         />
-                      </div>
 
-                      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
-                        <h3 className="mb-3 text-sm font-semibold text-white">
-                          Imported by Packages
-                        </h3>
-                        <CommaList
+                        <SimpleList
+                          title="Imported by Packages:"
                           items={item.imported_by_packages}
+                          formatAsModuleName
                           displayPrefix={displayPrefix}
+                          className='w-full'
                         />
-                      </div>
-
-                      <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
-                        <h3 className="mb-3 text-sm font-semibold text-white">
-                          Imported by modules
-                        </h3>
-                        {item.imported_by_modules.length === 0 ? (
-                          <div className="text-sm text-slate-500">(none)</div>
-                        ) : (
-                          <div className="columns-1 gap-3 sm:columns-2">
-                            {item.imported_by_modules.map((name) => (
-                              <div
-                                key={name}
-                                className="mb-2 break-inside-avoid rounded-lg px-3 py-1 text-sm text-slate-300"
-                              >
-                                <ModuleName
-                                  name={name}
-                                  prefix={displayPrefix}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
                       </div>
 
                       <SimpleList
-                        title="Direct modules"
+                        title="Imported by Modules:"
+                        items={item.imported_by_modules}
+                        formatAsModuleName
+                        displayPrefix={displayPrefix}
+                      />
+
+                      <SimpleList
+                        title="Direct Modules:"
                         items={item.direct_modules}
                         formatAsModuleName
                         displayPrefix={displayPrefix}
@@ -146,20 +130,20 @@ export function PackagesSection({
 
                       <div className="xl:col-span-2">
                         <SimpleList
-                          title="Subtree modules"
+                          title="Subtree Modules:"
                           items={item.subtree_modules}
                           formatAsModuleName
                           displayPrefix={displayPrefix}
                         />
                       </div>
                     </div>
-
-                    <DefinitionTable
-                      title="Observed external interface"
-                      definitions={item.external_interface}
-                      displayPrefix={displayPrefix}
-                    />
                   </div>
+
+                  <DefinitionTable
+                    title="Observed external interface"
+                    definitions={item.external_interface}
+                    displayPrefix={displayPrefix}
+                  />
                 </CollapsibleCard>
               </div>
             )

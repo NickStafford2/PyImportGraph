@@ -5,6 +5,7 @@ type SimpleListProps = {
   items: string[]
   formatAsModuleName?: boolean
   displayPrefix?: string | null
+  className?: string
 }
 
 export function SimpleList({
@@ -12,15 +13,21 @@ export function SimpleList({
   items,
   formatAsModuleName = false,
   displayPrefix = null,
+  className = '',
 }: SimpleListProps) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-950/50 p-4">
+    <div
+      className={[
+        'rounded-2xl border border-slate-800 bg-slate-950/50 p-4',
+        className,
+      ].join(' ')}
+    >
       <h3 className="mb-3 text-sm font-semibold text-white">{title}</h3>
 
       {items.length === 0 ? (
         <div className="text-sm text-slate-500">(none)</div>
       ) : (
-        <div className="columns-1 gap-2 sm:columns-2 2xl:columns-3">
+        <div>
           {items.map((item) => (
             <div
               key={item}
