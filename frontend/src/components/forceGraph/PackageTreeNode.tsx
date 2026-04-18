@@ -13,17 +13,19 @@ import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 type PackageTreeNodeProps = {
   node: PackageTreeNodeModel
   displayPrefix: string | null
-  selectedPackage: string | null
-  onPackageSelect: (packageName: string) => void
+  highlightedPackages: ReadonlySet<string>
+  onTogglePackageHighlight: (packageName: string) => void
   packageInfluenceConfig: PackageInfluenceConfig
   onPackageInfluenceChange: (
     packageName: string,
     nextSettings: PackageInfluenceSettings,
   ) => void
+  collapsedPackages: ReadonlySet<string>
+  onToggleCollapsedPackage: (packageName: string) => void
   depth: number
 }
 
-function getContainerClasses(depth: number, isSelected: boolean): string {
+function getContainerClasses(depth: number, isHighlighted: boolean): string {
   const depthClass =
     depth === 0
       ? 'bg-slate-950/60'
@@ -34,7 +36,7 @@ function getContainerClasses(depth: number, isSelected: boolean): string {
   return [
     'rounded-xl border p-2 transition',
     depthClass,
-    isSelected
+    isHighlighted
       ? 'border-sky-500 bg-sky-500/10'
       : 'border-slate-800',
   ].join(' ')
@@ -43,16 +45,20 @@ function getContainerClasses(depth: number, isSelected: boolean): string {
 export function PackageTreeNode({
   node,
   displayPrefix,
-  selectedPackage,
-  onPackageSelect,
+  highlightedPackages,
+  onTogglePackageHighlight,
   packageInfluenceConfig,
   onPackageInfluenceChange,
+  collapsedPackages,
+  onToggleCollapsedPackage,
   depth,
 }: PackageTreeNodeProps) {
   const packageName = node.packageName
-  const isSelected = selectedPackage === packageName
-  const isGreyed =
-    selectedPackage != null && selectedPackage !== packageName
+  const isHighlighted = highlightedPackages.has(packageName)
+  const hasHighlights = highlightedPackages.size > 0
+  const isGreyed = hasHighlights && !isHighlighted
+  const isCollapsed = collapsedPackages.has(packageName)
+  const hasChildren = node.children.length > 0
 
   const settings = getPackageInfluenceSettings(
     packageName,
@@ -60,12 +66,16 @@ export function PackageTreeNode({
   )
 
   return (
-    <div className={getContainerClasses(depth, isSelected)}>
+    <div className={getContainerClasses(depth, isHighlighted)}>
       <PackageTreeNodeHeader
         packageName={packageName}
         displayPrefix={displayPrefix}
         isGreyed={isGreyed}
-        onPackageSelect={onPackageSelect}
+        isHighlighted={isHighlighted}
+        hasChildren={hasChildren}
+        isCollapsed={isCollapsed}
+        onTogglePackageHighlight={onTogglePackageHighlight}
+        onToggleCollapsedPackage={onToggleCollapsedPackage}
       />
 
       <PackageInfluenceControls
@@ -80,17 +90,19 @@ export function PackageTreeNode({
         }
       />
 
-      {node.children.length > 0 && (
-        <div className="mt-3">
+      {hasChildren && !isCollapsed && (
+        <div className="mt-3 space-y-3">
           {node.children.map((childNode) => (
             <PackageTreeNode
               key={childNode.packageName}
               node={childNode}
               displayPrefix={displayPrefix}
-              selectedPackage={selectedPackage}
-              onPackageSelect={onPackageSelect}
+              highlightedPackages={highlightedPackages}
+              onTogglePackageHighlight={onTogglePackageHighlight}
               packageInfluenceConfig={packageInfluenceConfig}
               onPackageInfluenceChange={onPackageInfluenceChange}
+              collapsedPackages={collapsedPackages}
+              onToggleCollapsedPackage={onToggleCollapsedPackage}
               depth={depth + 1}
             />
           ))}

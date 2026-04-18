@@ -8,23 +8,27 @@ const ACTIVE_LINK_RGB = '148, 163, 184'
 
 function getLinkHighlightMultiplier(
   link: GraphLink,
-  selectedPackage: string | null,
+  highlightedPackages: ReadonlySet<string>,
 ): number {
-  if (selectedPackage == null) {
+  if (highlightedPackages.size === 0) {
     return 1
   }
 
-  const touchesSelectedPackage =
-    link.sourcePackage === selectedPackage || link.targetPackage === selectedPackage
+  const touchesHighlightedPackage =
+    highlightedPackages.has(link.sourcePackage) ||
+    highlightedPackages.has(link.targetPackage)
 
-  return touchesSelectedPackage ? 1 : 0.2
+  return touchesHighlightedPackage ? 1 : 0.2
 }
 
 export function getNodeColor(
   node: GraphNode,
-  selectedPackage: string | null,
+  highlightedPackages: ReadonlySet<string>,
 ): string {
-  if (selectedPackage == null || node.group === selectedPackage) {
+  if (
+    highlightedPackages.size === 0 ||
+    highlightedPackages.has(node.group)
+  ) {
     return getPackageColor(node.group)
   }
 
@@ -34,10 +38,13 @@ export function getNodeColor(
 export function getLinkColor(
   link: GraphLink,
   packageInfluenceConfig: PackageInfluenceConfig,
-  selectedPackage: string | null,
+  highlightedPackages: ReadonlySet<string>,
 ): string {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
-  const highlightMultiplier = getLinkHighlightMultiplier(link, selectedPackage)
+  const highlightMultiplier = getLinkHighlightMultiplier(
+    link,
+    highlightedPackages,
+  )
 
   const baseOpacity = link.samePackage ? 0.7 : 0.35
   const opacity = Math.max(
@@ -45,8 +52,9 @@ export function getLinkColor(
     baseOpacity * influence.edgeVisibilityMultiplier * highlightMultiplier,
   )
 
-  const isDimmedBySelection = selectedPackage != null && highlightMultiplier < 1
-  const rgb = isDimmedBySelection ? INACTIVE_LINK_RGB : ACTIVE_LINK_RGB
+  const isDimmedByHighlight =
+    highlightedPackages.size > 0 && highlightMultiplier < 1
+  const rgb = isDimmedByHighlight ? INACTIVE_LINK_RGB : ACTIVE_LINK_RGB
 
   return `rgba(${rgb}, ${opacity})`
 }
@@ -54,10 +62,13 @@ export function getLinkColor(
 export function getLinkWidth(
   link: GraphLink,
   packageInfluenceConfig: PackageInfluenceConfig,
-  selectedPackage: string | null,
+  highlightedPackages: ReadonlySet<string>,
 ): number {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
-  const highlightMultiplier = getLinkHighlightMultiplier(link, selectedPackage)
+  const highlightMultiplier = getLinkHighlightMultiplier(
+    link,
+    highlightedPackages,
+  )
   const baseWidth = link.samePackage ? 1.5 : 0.8
 
   return Math.max(
