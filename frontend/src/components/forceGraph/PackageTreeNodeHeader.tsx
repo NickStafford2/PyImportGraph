@@ -82,6 +82,16 @@ export function PackageTreeNodeHeader({
         </span>
       </div>
 
+      <button
+        type="button"
+        onClick={onHighlightOnlyPackage}
+        className={getActionButtonClasses()}
+        aria-label="Highlight only this package"
+        title="Highlight only this package"
+      >
+        only
+      </button>
+
 
       {hasChildren && (
         <>
@@ -91,16 +101,6 @@ export function PackageTreeNodeHeader({
             ariaLabel="Toggle subtree highlight"
             title="Toggle subtree highlight"
           />
-
-          <button
-            type="button"
-            onClick={onHighlightOnlyPackage}
-            className={getActionButtonClasses()}
-            aria-label="Highlight only this package"
-            title="Highlight only this package"
-          >
-            only
-          </button>
 
           <button
             type="button"
