@@ -52,11 +52,11 @@ function App() {
 
   return (
     <main className="min-h-screen bg-slate-950 scroll-smooth">
-      <div className="mx-auto max-w-6xl bg-amber-600">
+      <div className="mx-auto max-w-6xl">
         {/* ...existing header/filter/loading/error... */}
 
         {snapshot ? (
-          <div className="space-y-8">
+          <>
             <SummarySection snapshot={snapshot} />
             <section>
               <h2 className="mb-4 text-xl font-semibold text-white">3D Graph</h2>
@@ -83,7 +83,7 @@ function App() {
               total={snapshot.edges.length}
               displayPrefix={displayPrefix}
             />
-          </div>
+          </>
         ) : null}
       </div>
     </main>
