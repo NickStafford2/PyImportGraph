@@ -71,14 +71,9 @@ export function PackageInfluenceControls({
   }
 
   return (
-    <div className="mt-3 space-y-2">
-      <div className="flex items-center justify-between gap-2">
-        <div className="text-[11px] uppercase tracking-wide text-slate-500">
-          Edge influence
-        </div>
-        <div className="text-[11px] text-slate-400">
-          {formatMultiplierLabel(currentMultiplier)}
-        </div>
+    <div className="flex flex-row flex-nowrap items-center justify-between gap-2">
+      <div className="text-[11px] uppercase text-nowrap tracking-wide text-slate-500">
+        Edge influence
       </div>
 
       <input
@@ -91,9 +86,9 @@ export function PackageInfluenceControls({
         className="w-full cursor-pointer accent-emerald-400"
         aria-label={`Edge influence for ${packageName}`}
       />
-
-
-
+      <div className="text-[11px] text-slate-400">
+        {formatMultiplierLabel(currentMultiplier)}
+      </div>
     </div>
   )
 }
