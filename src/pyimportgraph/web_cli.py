@@ -11,30 +11,30 @@ def main() -> None:
         prog="web",
         description="Run the PyImportGraph Flask backend.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "project_path",
         type=Path,
         help="Path to the Python project root or src directory.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--package",
         dest="package_names",
         action="append",
         required=True,
         help="Top-level package to analyze. Repeat for multiple packages.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--host",
         default="127.0.0.1",
         help="Host interface to bind the Flask server to.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--port",
         type=int,
         default=5000,
         help="Port to bind the Flask server to.",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--debug",
         action="store_true",
         help="Run the Flask development server in debug mode.",
