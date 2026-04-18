@@ -18,7 +18,6 @@ export type PackageSnapshot = {
   name: string
   parent: string | null
   children: string[]
-  subtree_packages: string[]
   direct_modules: string[]
   subtree_modules: string[]
   imported_by_modules: string[]
@@ -87,7 +86,6 @@ export type PackagePanelNodeSnapshot = {
 
 export type PackagePanelSnapshot = {
   roots: PackagePanelNodeSnapshot[]
-  all_package_names: string[]
   externally_imported_package_names: string[]
 }
 

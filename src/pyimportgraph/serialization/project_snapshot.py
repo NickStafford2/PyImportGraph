@@ -4,7 +4,7 @@ from typing import Any
 
 from pyimportgraph.analysis import ProjectModel
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 
 def build_project_snapshot(model: ProjectModel) -> dict[str, Any]:
@@ -110,10 +110,6 @@ def _build_package_snapshot(
         "name": package_name,
         "parent": node.parent_name,
         "children": list(node.child_names),
-        "subtree_packages": _subtree_package_names_for_package(
-            model=model,
-            package_name=package_name,
-        ),
         "direct_modules": list(node.direct_module_names),
         "subtree_modules": list(node.subtree_module_names),
         "imported_by_modules": list(importer_result.importing_modules),
@@ -124,44 +120,46 @@ def _build_package_snapshot(
         ),
         "is_externally_imported": package_name in packages_with_external_importers,
         "has_mutual_package_dependencies": bool(
-            reciprocal_packages_by_package.get(package_name, ())
+            reciprocal_packages_by_package.get(package_name)
         ),
         "external_interface": [
-            {
-                "module_name": definition.module_name,
-                "package_name": definition.package_name,
-                "symbol_name": definition.symbol_name,
-                "kind": definition.kind,
-                "line": definition.line,
-            }
-            for definition in external_interface
+            _build_definition_snapshot(definition) for definition in external_interface
         ],
     }
 
 
-def _build_module_snapshot(
-    model: ProjectModel,
-    module_name: str,
-) -> dict[str, Any]:
-    importer_result = model.find_modules_importing_module(module_name)
-    external_interface = model.find_external_interface_for_module(module_name)
+def _build_module_snapshot(model: ProjectModel, module_name: str) -> dict[str, Any]:
+    package_name = model.package_tree.package_for_module(module_name)
+    importing_modules = model.module_importers.get(module_name, ())
+    importing_packages = tuple(
+        sorted(
+            {
+                model.package_tree.package_for_module(importer_module_name)
+                for importer_module_name in importing_modules
+            }
+        )
+    )
 
     return {
         "name": module_name,
-        "package": model.package_tree.package_for_module(module_name),
+        "package": package_name,
         "imports": list(model.module_imports.get(module_name, ())),
-        "imported_by": list(importer_result.importing_modules),
-        "importing_packages": list(importer_result.importing_packages),
+        "imported_by": list(importing_modules),
+        "importing_packages": list(importing_packages),
         "external_interface": [
-            {
-                "module_name": definition.module_name,
-                "package_name": definition.package_name,
-                "symbol_name": definition.symbol_name,
-                "kind": definition.kind,
-                "line": definition.line,
-            }
-            for definition in external_interface
+            _build_definition_snapshot(definition)
+            for definition in model.find_external_interface_for_module(module_name)
         ],
+    }
+
+
+def _build_definition_snapshot(definition: Any) -> dict[str, Any]:
+    return {
+        "module_name": definition.module_name,
+        "package_name": definition.package_name,
+        "symbol_name": definition.symbol_name,
+        "kind": definition.kind,
+        "line": definition.line,
     }
 
 
@@ -174,10 +172,10 @@ def _build_edge_snapshots(
     for importer_module_name, imported_module_names in sorted(
         model.module_imports.items()
     ):
-        for imported_module_name in imported_module_names:
-            from_package = model.package_tree.package_for_module(importer_module_name)
-            to_package = model.package_tree.package_for_module(imported_module_name)
+        from_package = model.package_tree.package_for_module(importer_module_name)
 
+        for imported_module_name in imported_module_names:
+            to_package = model.package_tree.package_for_module(imported_module_name)
             edges.append(
                 {
                     "type": "module_import",
@@ -199,13 +197,13 @@ def _build_edge_snapshots(
         if imported_module_name not in model.module_names:
             continue
 
+        to_package = model.package_tree.package_for_module(imported_module_name)
+
         for item in imports:
             if item.importer_module not in model.module_names:
                 continue
 
             from_package = model.package_tree.package_for_module(item.importer_module)
-            to_package = model.package_tree.package_for_module(imported_module_name)
-
             edges.append(
                 {
                     "type": "symbol_import",
@@ -213,13 +211,13 @@ def _build_edge_snapshots(
                     "to": imported_module_name,
                     "from_package": from_package,
                     "to_package": to_package,
-                    "symbol_name": item.imported_name,
-                    "line": item.line,
                     "is_reciprocal_package_dependency": _make_directed_package_key(
                         from_package,
                         to_package,
                     )
                     in reciprocal_keys,
+                    "symbol_name": item.imported_name,
+                    "line": item.line,
                 }
             )
 
@@ -231,7 +229,6 @@ def _build_force_graph_snapshot(
     reciprocal_keys: set[str],
 ) -> dict[str, Any]:
     nodes = []
-
     for module_name in model.module_names:
         package_name = model.package_tree.package_for_module(module_name)
         import_count = len(model.module_imports.get(module_name, ()))
@@ -314,7 +311,6 @@ def _build_package_panel_snapshot(
             )
             for package_name in root_package_names
         ],
-        "all_package_names": list(model.package_tree.package_names()),
         "externally_imported_package_names": sorted(packages_with_external_importers),
     }
 
@@ -326,10 +322,6 @@ def _build_package_panel_node(
     packages_with_external_importers: set[str],
 ) -> dict[str, Any]:
     node = model.package_tree.node_for_package(package_name)
-    subtree_package_names = _subtree_package_names_for_package(
-        model=model,
-        package_name=package_name,
-    )
 
     return {
         "package_name": package_name,
@@ -339,31 +331,16 @@ def _build_package_panel_node(
                 package_name=child_package_name,
                 packages_with_external_importers=packages_with_external_importers,
             )
-            for child_package_name in sorted(node.child_names)
+            for child_package_name in node.child_names
         ],
-        "subtree_package_names": subtree_package_names,
+        "subtree_package_names": list(node.subtree_package_names),
         "externally_imported_subtree_package_names": [
-            child_package_name
-            for child_package_name in subtree_package_names
-            if child_package_name in packages_with_external_importers
+            subtree_package_name
+            for subtree_package_name in node.subtree_package_names
+            if subtree_package_name in packages_with_external_importers
         ],
         "is_externally_imported": package_name in packages_with_external_importers,
     }
-
-
-def _subtree_package_names_for_package(
-    *,
-    model: ProjectModel,
-    package_name: str,
-) -> list[str]:
-    subtree_module_names = set(model.package_tree.subtree_module_names(package_name))
-    return sorted(
-        package_name_candidate
-        for package_name_candidate in model.package_tree.package_names()
-        if set(
-            model.package_tree.subtree_module_names(package_name_candidate)
-        ).issubset(subtree_module_names)
-    )
 
 
 def _build_reciprocal_packages_by_package(
