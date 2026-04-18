@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
@@ -48,6 +48,20 @@ export function ForceGraph({
   const packagesWithExternalImporters = useMemo(() => {
     return new Set(snapshot.packages_with_external_importers)
   }, [snapshot.packages_with_external_importers])
+
+  useEffect(() => {
+    if (showOnlyExternallyImportedPackages) {
+      highlightOnlyPackages(packagesWithExternalImporters)
+      return
+    }
+
+    highlightAllPackages()
+  }, [
+    showOnlyExternallyImportedPackages,
+    packagesWithExternalImporters,
+    highlightOnlyPackages,
+    highlightAllPackages,
+  ])
 
   const preset = FORCE_PRESETS[presetKey]
 

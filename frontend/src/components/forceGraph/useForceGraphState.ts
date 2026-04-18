@@ -1,6 +1,4 @@
-// frontend/src/components/forceGraph/useForceGraphState.ts
-
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { PackageSnapshot } from '../../types'
 import {
   buildPackageInfluenceConfig,
@@ -129,7 +127,7 @@ export function useForceGraphState({
     )
   }, [knownPackageNames, packageNames])
 
-  function highlightPackage(packageName: string) {
+  const highlightPackage = useCallback((packageName: string) => {
     if (!knownPackageNames.has(packageName)) {
       return
     }
@@ -139,9 +137,9 @@ export function useForceGraphState({
       next.add(packageName)
       return next
     })
-  }
+  }, [knownPackageNames])
 
-  function unhighlightPackage(packageName: string) {
+  const unhighlightPackage = useCallback((packageName: string) => {
     if (!knownPackageNames.has(packageName)) {
       return
     }
@@ -151,9 +149,11 @@ export function useForceGraphState({
       next.delete(packageName)
       return next
     })
-  }
+  }, [knownPackageNames])
 
-  function highlightPackages(packageNamesToHighlight: Iterable<string>) {
+  const highlightPackages = useCallback((
+    packageNamesToHighlight: Iterable<string>,
+  ) => {
     const names = getKnownPackageNames(packageNamesToHighlight, knownPackageNames)
 
     setHighlightedPackages((current) => {
@@ -165,9 +165,11 @@ export function useForceGraphState({
 
       return next
     })
-  }
+  }, [knownPackageNames])
 
-  function unhighlightPackages(packageNamesToUnhighlight: Iterable<string>) {
+  const unhighlightPackages = useCallback((
+    packageNamesToUnhighlight: Iterable<string>,
+  ) => {
     const names = getKnownPackageNames(packageNamesToUnhighlight, knownPackageNames)
 
     setHighlightedPackages((current) => {
@@ -179,32 +181,34 @@ export function useForceGraphState({
 
       return next
     })
-  }
+  }, [knownPackageNames])
 
-  function highlightOnlyPackages(packageNamesToHighlight: Iterable<string>) {
+  const highlightOnlyPackages = useCallback((
+    packageNamesToHighlight: Iterable<string>,
+  ) => {
     setHighlightedPackages(
       filterKnownPackageNames(packageNamesToHighlight, knownPackageNames),
     )
-  }
+  }, [knownPackageNames])
 
-  function highlightAllPackages() {
+  const highlightAllPackages = useCallback(() => {
     setHighlightedPackages(new Set(packageNames))
-  }
+  }, [packageNames])
 
-  function unhighlightAllPackages() {
+  const unhighlightAllPackages = useCallback(() => {
     setHighlightedPackages(new Set())
-  }
+  }, [])
 
-  function updatePackageInfluence(
+  const updatePackageInfluence = useCallback((
     packageName: string,
     nextSettings: PackageInfluenceSettings,
-  ) {
+  ) => {
     setPackageInfluenceConfig((currentConfig) =>
       updatePackageInfluenceConfig(currentConfig, packageName, nextSettings),
     )
-  }
+  }, [])
 
-  function toggleCollapsedPackage(packageName: string) {
+  const toggleCollapsedPackage = useCallback((packageName: string) => {
     setCollapsedPackages((current) => {
       const next = new Set(current)
 
@@ -216,15 +220,15 @@ export function useForceGraphState({
 
       return next
     })
-  }
+  }, [])
 
-  function expandAllPackages() {
+  const expandAllPackages = useCallback(() => {
     setCollapsedPackages(new Set())
-  }
+  }, [])
 
-  function collapseAllPackages() {
+  const collapseAllPackages = useCallback(() => {
     setCollapsedPackages(new Set(packageNames))
-  }
+  }, [packageNames])
 
   return {
     packageNames,
