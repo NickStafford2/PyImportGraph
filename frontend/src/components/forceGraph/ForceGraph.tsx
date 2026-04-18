@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
-import { buildGraphData } from './buildGraphData'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
 import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
@@ -46,8 +45,8 @@ export function ForceGraph({
     useState(false)
 
   const packagesWithExternalImporters = useMemo(() => {
-    return new Set(snapshot.packages_with_external_importers)
-  }, [snapshot.packages_with_external_importers])
+    return new Set(snapshot.package_panel.externally_imported_package_names)
+  }, [snapshot.package_panel.externally_imported_package_names])
 
   useEffect(() => {
     if (showOnlyExternallyImportedPackages) {
@@ -64,10 +63,7 @@ export function ForceGraph({
   ])
 
   const preset = FORCE_PRESETS[presetKey]
-
-  const graphData = useMemo(() => {
-    return buildGraphData(snapshot, displayPrefix)
-  }, [snapshot, displayPrefix])
+  const graphData = snapshot.force_graph
 
   return (
     <section>
@@ -111,10 +107,10 @@ export function ForceGraph({
         />
 
         <ForceGraphPackagesPanel
+          roots={snapshot.package_panel.roots}
           packages={packages}
           displayPrefix={displayPrefix}
           highlightedPackages={highlightedPackages}
-          packagesWithExternalImporters={packagesWithExternalImporters}
           showOnlyExternallyImportedPackages={
             showOnlyExternallyImportedPackages
           }

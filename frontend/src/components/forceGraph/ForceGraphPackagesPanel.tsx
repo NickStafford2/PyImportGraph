@@ -1,19 +1,16 @@
-// frontend/src/components/forceGraph/ForceGraphPackagesPanel.tsx
-
-import type { PackageSnapshot } from '../../types'
+import type { PackagePanelNodeSnapshot, PackageSnapshot } from '../../types'
 import { ToggleSwitch } from './ToggleSwitch'
 import type {
   PackageInfluenceConfig,
   PackageInfluenceSettings,
 } from './types'
-import { buildPackageTree } from './packageTree'
 import { PackageTreeNode } from './PackageTreeNode'
 
 type ForceGraphPackagesPanelProps = {
+  roots: PackagePanelNodeSnapshot[]
   packages: PackageSnapshot[]
   displayPrefix: string | null
   highlightedPackages: ReadonlySet<string>
-  packagesWithExternalImporters: ReadonlySet<string>
   showOnlyExternallyImportedPackages: boolean
   onShowOnlyExternallyImportedPackagesChange: (value: boolean) => void
   onHighlightPackage: (packageName: string) => void
@@ -35,10 +32,10 @@ type ForceGraphPackagesPanelProps = {
 }
 
 export function ForceGraphPackagesPanel({
+  roots,
   packages,
   displayPrefix,
   highlightedPackages,
-  packagesWithExternalImporters,
   showOnlyExternallyImportedPackages,
   onShowOnlyExternallyImportedPackagesChange,
   onHighlightPackage,
@@ -55,10 +52,11 @@ export function ForceGraphPackagesPanel({
   onExpandAllPackages,
   onCollapseAllPackages,
 }: ForceGraphPackagesPanelProps) {
-  const packageTree = buildPackageTree(packages)
   const highlightedCount = highlightedPackages.size
   const totalCount = packages.length
-  const externallyImportedCount = packagesWithExternalImporters.size
+  const externallyImportedCount = packages.filter(
+    (item) => item.is_externally_imported,
+  ).length
 
   return (
     <aside className="flex max-h-[700px] flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-900/70">
@@ -127,13 +125,12 @@ export function ForceGraphPackagesPanel({
 
       <div className="flex-1 overflow-y-auto p-3 pr-2">
         <div className="space-y-3">
-          {packageTree.map((node) => (
+          {roots.map((node) => (
             <PackageTreeNode
-              key={node.packageName}
+              key={node.package_name}
               node={node}
               displayPrefix={displayPrefix}
               highlightedPackages={highlightedPackages}
-              packagesWithExternalImporters={packagesWithExternalImporters}
               showOnlyExternallyImportedPackages={showOnlyExternallyImportedPackages}
               onHighlightPackage={onHighlightPackage}
               onUnhighlightPackage={onUnhighlightPackage}

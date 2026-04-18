@@ -18,10 +18,15 @@ export type PackageSnapshot = {
   name: string
   parent: string | null
   children: string[]
+  subtree_packages: string[]
   direct_modules: string[]
   subtree_modules: string[]
   imported_by_modules: string[]
   imported_by_packages: string[]
+  depends_on_packages: string[]
+  mutual_dependency_packages: string[]
+  is_externally_imported: boolean
+  has_mutual_package_dependencies: boolean
   external_interface: DefinitionSnapshot[]
 }
 
@@ -45,17 +50,45 @@ export type EdgeSnapshot = {
   line?: number
 }
 
-export type ReciprocalPackageDependencySnapshot = {
-  from_package: string
-  to_package: string
+export type ForceGraphNodeSnapshot = {
+  id: string
+  name: string
+  displayName: string
+  group: string
+  val: number
+  importCount: number
+  importedByCount: number
+  externalInterfaceCount: number
 }
 
-export type PackageDependencySummarySnapshot = {
-  package: string
-  depends_on: string[]
-  dependency_count: number
-  is_imported_outside_package: boolean
-  has_reciprocal_dependencies: boolean
+export type ForceGraphLinkSnapshot = {
+  source: string
+  target: string
+  type: 'symbol_import'
+  samePackage: boolean
+  weight: number
+  sourcePackage: string
+  targetPackage: string
+  isMutualPackageDependency: boolean
+}
+
+export type ForceGraphSnapshot = {
+  nodes: ForceGraphNodeSnapshot[]
+  links: ForceGraphLinkSnapshot[]
+}
+
+export type PackagePanelNodeSnapshot = {
+  package_name: string
+  children: PackagePanelNodeSnapshot[]
+  subtree_package_names: string[]
+  externally_imported_subtree_package_names: string[]
+  is_externally_imported: boolean
+}
+
+export type PackagePanelSnapshot = {
+  roots: PackagePanelNodeSnapshot[]
+  all_package_names: string[]
+  externally_imported_package_names: string[]
 }
 
 export type ProjectSnapshot = {
@@ -64,7 +97,6 @@ export type ProjectSnapshot = {
   packages: PackageSnapshot[]
   modules: ModuleSnapshot[]
   edges: EdgeSnapshot[]
-  reciprocal_package_dependencies: ReciprocalPackageDependencySnapshot[]
-  packages_with_external_importers: string[]
-  package_dependency_summary: PackageDependencySummarySnapshot[]
+  force_graph: ForceGraphSnapshot
+  package_panel: PackagePanelSnapshot
 }

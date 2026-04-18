@@ -1,3 +1,4 @@
+import type { PackagePanelNodeSnapshot } from '../../types'
 import {
   DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
   getPackageInfluenceSettings,
@@ -6,16 +7,14 @@ import type {
   PackageInfluenceConfig,
   PackageInfluenceSettings,
 } from './types'
-import type { PackageTreeNode as PackageTreeNodeModel } from './packageTree'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 import { getPackageColor } from './graphColors'
 
 type PackageTreeNodeProps = {
-  node: PackageTreeNodeModel
+  node: PackagePanelNodeSnapshot
   displayPrefix: string | null
   highlightedPackages: ReadonlySet<string>
-  packagesWithExternalImporters: ReadonlySet<string>
   showOnlyExternallyImportedPackages: boolean
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
@@ -66,7 +65,6 @@ export function PackageTreeNode({
   node,
   displayPrefix,
   highlightedPackages,
-  packagesWithExternalImporters,
   showOnlyExternallyImportedPackages,
   onHighlightPackage,
   onUnhighlightPackage,
@@ -79,18 +77,16 @@ export function PackageTreeNode({
   onToggleCollapsedPackage,
   depth,
 }: PackageTreeNodeProps) {
-  const packageName = node.packageName
-  const subtreePackageNames = node.subtreePackageNames
+  const packageName = node.package_name
   const isCollapsed = collapsedPackages.has(packageName)
   const hasChildren = node.children.length > 0
 
-  const packageCanBeHighlighted =
-    !showOnlyExternallyImportedPackages
-    || packagesWithExternalImporters.has(packageName)
-
   const eligibleSubtreePackageNames = showOnlyExternallyImportedPackages
-    ? subtreePackageNames.filter((name) => packagesWithExternalImporters.has(name))
-    : subtreePackageNames
+    ? node.externally_imported_subtree_package_names
+    : node.subtree_package_names
+
+  const packageCanBeHighlighted =
+    !showOnlyExternallyImportedPackages || node.is_externally_imported
 
   const isHighlighted =
     packageCanBeHighlighted && highlightedPackages.has(packageName)
@@ -181,11 +177,10 @@ export function PackageTreeNode({
         <div className="mt-3 space-y-3">
           {node.children.map((childNode) => (
             <PackageTreeNode
-              key={childNode.packageName}
+              key={childNode.package_name}
               node={childNode}
               displayPrefix={displayPrefix}
               highlightedPackages={highlightedPackages}
-              packagesWithExternalImporters={packagesWithExternalImporters}
               showOnlyExternallyImportedPackages={
                 showOnlyExternallyImportedPackages
               }
