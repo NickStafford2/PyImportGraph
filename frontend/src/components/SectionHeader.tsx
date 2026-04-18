@@ -8,7 +8,9 @@ const SECTIONS = [
 ] as const
 
 export function SectionHeader() {
-  const [currentSection, setCurrentSection] = useState('Force Graph')
+  type SectionLabel = (typeof SECTIONS)[number]['label']
+
+  const [currentSection, setCurrentSection] = useState<SectionLabel>('Force Graph')
 
   useEffect(() => {
     let ticking = false
@@ -16,7 +18,7 @@ export function SectionHeader() {
     function updateCurrentSection() {
       const headerOffset = 90
 
-      let nextLabel = SECTIONS[0].label
+      let nextLabel: SectionLabel = SECTIONS[0].label
       let bestTop = Number.NEGATIVE_INFINITY
 
       for (const section of SECTIONS) {
