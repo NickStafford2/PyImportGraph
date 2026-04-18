@@ -54,6 +54,11 @@ class ProjectModel:
     ) -> "ProjectModel":
         root = Path(project_root).resolve()
 
+        discovered_module_names = _discover_module_names_for_packages(
+            project_root=root,
+            package_names=package_names,
+        )
+
         graph = _build_import_graph(
             package_names=package_names,
             project_root=root,
@@ -62,25 +67,43 @@ class ProjectModel:
             cache_dir=cache_dir,
         )
 
-        module_names = tuple(sorted(graph.modules))
-        package_tree = PackageTree.from_module_names(module_names)
+        all_module_names = tuple(sorted({*graph.modules, *discovered_module_names}))
+        package_tree = PackageTree.from_module_names(all_module_names)
 
         module_imports = {
             module_name: tuple(
-                sorted(graph.find_modules_directly_imported_by(module_name))
+                sorted(
+                    imported_module_name
+                    for imported_module_name in graph.find_modules_directly_imported_by(
+                        module_name
+                    )
+                    if imported_module_name in package_tree._package_by_module
+                )
             )
-            for module_name in module_names
+            if module_name in graph.modules
+            else ()
+            for module_name in all_module_names
         }
+
         module_importers = {
             module_name: tuple(
-                sorted(graph.find_modules_that_directly_import(module_name))
+                sorted(
+                    importer_module_name
+                    for importer_module_name in graph.find_modules_that_directly_import(
+                        module_name
+                    )
+                    if importer_module_name in package_tree._package_by_module
+                )
             )
-            for module_name in module_names
+            if module_name in graph.modules
+            else ()
+            for module_name in all_module_names
         }
 
         definitions_by_module, symbol_imports = _build_symbol_model(
             project_root=root,
             package_tree=package_tree,
+            allowed_module_names=set(all_module_names),
         )
 
         symbol_imports_by_imported_module: dict[str, list[_FromImport]] = defaultdict(
@@ -95,7 +118,7 @@ class ProjectModel:
             symbol_imports_by_importer_module[item.importer_module].append(item)
 
         return cls(
-            module_names=module_names,
+            module_names=all_module_names,
             package_tree=package_tree,
             module_imports=module_imports,
             module_importers=module_importers,
@@ -267,6 +290,7 @@ def _build_symbol_model(
     *,
     project_root: Path,
     package_tree: PackageTree,
+    allowed_module_names: set[str],
 ) -> tuple[dict[str, dict[str, Definition]], list[_FromImport]]:
     module_paths = _discover_python_files(project_root)
     module_name_by_path = {
@@ -277,6 +301,9 @@ def _build_symbol_model(
     symbol_imports: list[_FromImport] = []
 
     for path, module_name in module_name_by_path.items():
+        if module_name not in allowed_module_names:
+            continue
+
         parsed = _parse_module(path)
 
         definitions_by_module[module_name] = {
@@ -325,3 +352,21 @@ def _build_symbol_import(
         imported_name=parsed_import.imported_name,
         line=parsed_import.line,
     )
+
+
+def _discover_module_names_for_packages(
+    *,
+    project_root: Path,
+    package_names: list[str],
+) -> set[str]:
+    module_names: set[str] = set()
+
+    for path in _discover_python_files(project_root):
+        module_name = _module_name_from_path(project_root, path)
+        if any(
+            module_name == package_name or module_name.startswith(f"{package_name}.")
+            for package_name in package_names
+        ):
+            module_names.add(module_name)
+
+    return module_names
