@@ -1,5 +1,5 @@
-import { FORCE_PRESET_OPTIONS } from '../lib/forceGraph/presets'
-import type { ForcePresetKey } from '../lib/forceGraph/types'
+import { FORCE_PRESET_OPTIONS } from './presets'
+import type { ForcePresetKey } from './types'
 
 type ForceGraphControlsProps = {
   value: ForcePresetKey

@@ -1,5 +1,5 @@
 import type { ProjectSnapshot } from '../../types'
-import { trimModulePrefix } from '../moduleName'
+import { trimModulePrefix } from '../../lib/moduleName'
 import type { GraphData, GraphLink, GraphNode } from './types'
 
 export function buildGraphData(

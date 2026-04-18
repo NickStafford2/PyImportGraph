@@ -3,17 +3,17 @@ import ForceGraph3D, {
 } from 'react-force-graph-3d'
 import { forceCollide } from 'd3-force-3d'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { ProjectSnapshot } from '../types'
-import { buildGraphData } from '../lib/forceGraph/buildGraphData'
+import type { ProjectSnapshot } from '../../types'
+import { buildGraphData } from './buildGraphData'
 import {
   DEFAULT_FORCE_PRESET,
   FORCE_PRESETS,
-} from '../lib/forceGraph/presets'
+} from './presets'
 import type {
   ForcePresetKey,
   GraphLink,
   GraphNode,
-} from '../lib/forceGraph/types'
+} from './types'
 import { ForceGraphControls } from './ForceGraphControls'
 
 type ForceGraphProps = {
@@ -47,34 +47,39 @@ export function ForceGraph({
   const preset = FORCE_PRESETS[presetKey]
 
   useEffect(() => {
-    function updateSize() {
-      if (!containerRef.current) {
-        return
-      }
-
-      const width = containerRef.current.clientWidth
-      const height = containerRef.current.clientHeight
-
-      setDimensions({
-        width,
-        height: height > 0 ? height : 700,
-      })
+    if (!graphRef.current) {
+      return
     }
 
-    updateSize()
+    const linkForce = graphRef.current.d3Force('link')
+    if (linkForce != null) {
+      linkForce.distance((link: GraphLink) =>
+        link.samePackage
+          ? preset.linkDistance.samePackage
+          : preset.linkDistance.crossPackage,
+      )
 
-    const observer = new ResizeObserver(() => {
-      updateSize()
-    })
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current)
+      linkForce.strength((link: GraphLink) =>
+        link.samePackage
+          ? preset.linkStrength.samePackage
+          : preset.linkStrength.crossPackage,
+      )
     }
 
-    return () => {
-      observer.disconnect()
+    const chargeForce = graphRef.current.d3Force('charge')
+    if (chargeForce != null) {
+      chargeForce.strength(preset.chargeStrength)
     }
-  }, [])
+
+    graphRef.current.d3Force(
+      'collision',
+      forceCollide<GraphNode>((node: GraphNode) =>
+        Math.max(6, node.val * preset.collisionRadiusMultiplier),
+      ).strength(preset.collisionStrength),
+    )
+
+    graphRef.current.d3ReheatSimulation()
+  }, [graphData, preset])
 
   const graphData = useMemo(() => {
     return buildGraphData(snapshot, displayPrefix)
@@ -112,7 +117,7 @@ export function ForceGraph({
       ).strength(preset.collisionStrength),
     )
 
-    graphRef.current.d3VelocityDecay(preset.velocityDecay)
+    // graphRef.current.d3VelocityDecay(preset.velocityDecay)
     graphRef.current.d3ReheatSimulation()
   }, [graphData, preset])
 

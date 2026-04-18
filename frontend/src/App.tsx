@@ -6,7 +6,7 @@ import { SummarySection } from './components/sections/SummarySection'
 import { useSnapshot } from './hooks/useSnapshot'
 import { matchesEdge, matchesModule, matchesPackage } from './lib/filters'
 import { findCommonModulePrefix } from './lib/moduleName'
-import { ForceGraph } from './components/ForceGraph'
+import { ForceGraph } from './components/forceGraph/ForceGraph'
 
 function App() {
   const [query, setQuery] = useState('')
