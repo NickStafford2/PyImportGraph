@@ -245,6 +245,56 @@ class ProjectModel:
             ),
         )
 
+    def package_dependency_map(self) -> dict[str, tuple[str, ...]]:
+        dependencies: dict[str, set[str]] = {
+            package_name: set() for package_name in self.package_tree.package_names()
+        }
+
+        for importer_module_name, imported_module_names in self.module_imports.items():
+            importer_package_name = self.package_tree.package_for_module(
+                importer_module_name
+            )
+
+            for imported_module_name in imported_module_names:
+                imported_package_name = self.package_tree.package_for_module(
+                    imported_module_name
+                )
+                if imported_package_name == importer_package_name:
+                    continue
+
+                dependencies[importer_package_name].add(imported_package_name)
+
+        return {
+            package_name: tuple(sorted(imported_package_names))
+            for package_name, imported_package_names in sorted(dependencies.items())
+        }
+
+    def packages_with_external_importers(self) -> tuple[str, ...]:
+        return tuple(
+            sorted(
+                package_name
+                for package_name in self.package_tree.package_names()
+                if any(
+                    importing_package_name != package_name
+                    for importing_package_name in self.find_modules_importing_package(
+                        package_name
+                    ).importing_packages
+                )
+            )
+        )
+
+    def reciprocal_package_dependencies(self) -> tuple[tuple[str, str], ...]:
+        dependencies = self.package_dependency_map()
+        reciprocal_pairs: set[tuple[str, str]] = set()
+
+        for source_package_name, target_package_names in dependencies.items():
+            for target_package_name in target_package_names:
+                reverse_dependencies = dependencies.get(target_package_name, ())
+                if source_package_name in reverse_dependencies:
+                    reciprocal_pairs.add((source_package_name, target_package_name))
+
+        return tuple(sorted(reciprocal_pairs))
+
     def _definition_is_used_outside_package(
         self,
         *,

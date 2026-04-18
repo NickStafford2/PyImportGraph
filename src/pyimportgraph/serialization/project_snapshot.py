@@ -3,12 +3,15 @@ from __future__ import annotations
 from typing import Any
 
 from pyimportgraph.analysis import ProjectModel
+from pyimportgraph.serialization.frontend_snapshot import (
+    build_frontend_analysis_snapshot,
+)
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 def build_project_snapshot(model: ProjectModel) -> dict[str, Any]:
-    return {
+    snapshot = {
         "schema_version": SCHEMA_VERSION,
         "summary": _build_summary_snapshot(model),
         "packages": [
@@ -21,6 +24,9 @@ def build_project_snapshot(model: ProjectModel) -> dict[str, Any]:
         ],
         "edges": _build_edge_snapshots(model),
     }
+
+    snapshot.update(build_frontend_analysis_snapshot(model))
+    return snapshot
 
 
 def _build_summary_snapshot(model: ProjectModel) -> dict[str, Any]:

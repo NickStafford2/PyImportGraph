@@ -1,21 +1,7 @@
-import type { ModuleSnapshot } from '../../types'
-
 export function buildPackagesWithExternalImporters(
-  modules: readonly ModuleSnapshot[],
+  packageNames: readonly string[],
 ): Set<string> {
-  const packageNames = new Set<string>()
-
-  for (const module of modules) {
-    const isImportedOutsideOwnPackage = module.importing_packages.some(
-      (importingPackageName) => importingPackageName !== module.package,
-    )
-
-    if (isImportedOutsideOwnPackage) {
-      packageNames.add(module.package)
-    }
-  }
-
-  return packageNames
+  return new Set(packageNames)
 }
 
 export function filterHighlightedPackagesToExternallyImported(

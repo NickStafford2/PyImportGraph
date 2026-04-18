@@ -47,8 +47,10 @@ export function ForceGraph({
     useState(false)
 
   const packagesWithExternalImporters = useMemo(() => {
-    return buildPackagesWithExternalImporters(snapshot.modules)
-  }, [snapshot.modules])
+    return buildPackagesWithExternalImporters(
+      snapshot.packages_with_external_importers,
+    )
+  }, [snapshot.packages_with_external_importers])
 
   const preset = FORCE_PRESETS[presetKey]
 

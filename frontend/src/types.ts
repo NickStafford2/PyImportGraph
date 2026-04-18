@@ -44,10 +44,26 @@ export type EdgeSnapshot = {
   line?: number
 }
 
+export type ReciprocalPackageDependencySnapshot = {
+  from_package: string
+  to_package: string
+}
+
+export type PackageDependencySummarySnapshot = {
+  package: string
+  depends_on: string[]
+  dependency_count: number
+  is_imported_outside_package: boolean
+  has_reciprocal_dependencies: boolean
+}
+
 export type ProjectSnapshot = {
   schema_version: number
   summary: SummarySnapshot
   packages: PackageSnapshot[]
   modules: ModuleSnapshot[]
   edges: EdgeSnapshot[]
+  reciprocal_package_dependencies: ReciprocalPackageDependencySnapshot[]
+  packages_with_external_importers: string[]
+  package_dependency_summary: PackageDependencySummarySnapshot[]
 }
