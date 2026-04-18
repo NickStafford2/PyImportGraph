@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from pyimportgraph.analysis import ProjectModel
-from pyimportgraph.reporting._format import render_section, render_table
+from pyimportgraph.reporting._format import (
+    add_block,
+    compact_rows_to_bullets,
+    render_bullets,
+    render_comma_list,
+    render_section,
+)
 
 
 def render_package_detail(model: ProjectModel, package_name: str) -> str:
@@ -13,84 +19,66 @@ def render_package_detail(model: ProjectModel, package_name: str) -> str:
 
     lines: list[str] = []
 
-    lines.append(f"Parent package: {node.parent_name or '(none)'}")
+    lines.append(f"Parent: {node.parent_name or '(none)'}")
+    lines.append(f"Children: {render_comma_list(list(node.child_names))}")
     lines.append("")
 
-    lines.append("Child packages")
-    lines.append("--------------")
-    lines.extend(
-        render_table(
-            headers=["Package"],
-            rows=[(child_name,) for child_name in node.child_names],
+    if node.direct_module_names == node.subtree_module_names:
+        add_block(
+            lines,
+            "Modules",
+            render_bullets(list(node.direct_module_names)),
         )
-    )
-    lines.append("")
+    else:
+        add_block(
+            lines,
+            "Direct modules",
+            render_bullets(list(node.direct_module_names)),
+        )
+        add_block(
+            lines,
+            "Modules in subtree",
+            render_bullets(list(node.subtree_module_names)),
+        )
 
-    lines.append("Direct modules")
-    lines.append("--------------")
-    lines.extend(
-        render_table(
-            headers=["Module"],
-            rows=[(module_name,) for module_name in node.direct_module_names],
+    importer_module_rows = [
+        (
+            importer_module_name,
+            model.package_tree.package_for_module(importer_module_name),
         )
-    )
-    lines.append("")
+        for importer_module_name in importer_result.importing_modules
+    ]
+    if importer_module_rows:
+        add_block(
+            lines,
+            "Imported by modules outside subtree",
+            compact_rows_to_bullets(importer_module_rows),
+        )
 
-    lines.append("Modules in subtree")
-    lines.append("------------------")
-    lines.extend(
-        render_table(
-            headers=["Module"],
-            rows=[(module_name,) for module_name in node.subtree_module_names],
+    if importer_result.importing_packages:
+        add_block(
+            lines,
+            "Imported by packages outside subtree",
+            render_bullets(list(importer_result.importing_packages)),
         )
-    )
-    lines.append("")
 
-    lines.append("Imported by modules outside subtree")
-    lines.append("----------------------------------")
-    lines.extend(
-        render_table(
-            headers=["Importer module", "Importer package"],
-            rows=[
-                (
-                    importer_module_name,
-                    model.package_tree.package_for_module(importer_module_name),
-                )
-                for importer_module_name in importer_result.importing_modules
-            ],
+    if external_interface:
+        add_block(
+            lines,
+            "Observed external interface",
+            render_bullets(
+                [
+                    (
+                        f"{definition.symbol_name} "
+                        f"({definition.kind}, {definition.module_name}:{definition.line})"
+                    )
+                    for definition in external_interface
+                ]
+            ),
         )
-    )
-    lines.append("")
 
-    lines.append("Imported by packages outside subtree")
-    lines.append("-----------------------------------")
-    lines.extend(
-        render_table(
-            headers=["Importer package"],
-            rows=[
-                (importer_package_name,)
-                for importer_package_name in importer_result.importing_packages
-            ],
-        )
-    )
-    lines.append("")
-
-    lines.append("Observed external interface")
-    lines.append("---------------------------")
-    lines.extend(
-        render_table(
-            headers=["Module", "Line", "Symbol", "Kind"],
-            rows=[
-                (
-                    definition.module_name,
-                    str(definition.line),
-                    definition.symbol_name,
-                    definition.kind,
-                )
-                for definition in external_interface
-            ],
-        )
-    )
+    while lines and lines[-1] == "":
+        lines.pop()
 
     return render_section(f"Package: {package_name}", lines)
 

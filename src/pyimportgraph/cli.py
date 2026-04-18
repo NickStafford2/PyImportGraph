@@ -61,7 +61,12 @@ def main() -> None:
 
     subparsers.add_parser(
         "report",
-        help="Show a full report for all packages and externally used module interfaces.",
+        help="Show a compact package-focused report.",
+    )
+
+    subparsers.add_parser(
+        "full-report",
+        help="Show the verbose package + module report.",
     )
 
     parser.epilog = """
@@ -71,6 +76,7 @@ Examples:
   pyimportgraph src --package myapp module myapp.services.user_service
   pyimportgraph src --package myapp package myapp.services
   pyimportgraph src --package myapp report
+  pyimportgraph src --package myapp full-report
 """
 
     args = parser.parse_args()
@@ -94,6 +100,13 @@ Examples:
         return
 
     if command == "report":
+        parts = [render_summary(model)]
+        for package_name in model.package_tree.package_names():
+            parts.append(render_package_detail(model, package_name))
+        print("\n\n".join(parts))
+        return
+
+    if command == "full-report":
         print(render_full_report(model))
         return
 

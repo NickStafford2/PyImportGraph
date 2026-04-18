@@ -41,11 +41,16 @@ def render_summary(model: ProjectModel) -> str:
 
     lines = render_kv_table(
         [
-            ("Analyzed packages:", ", ".join(package_names) or "(none)"),
-            ("Package count:", str(len(package_names))),
-            ("Module count:", str(len(model.module_names))),
-            ("Modules with external interface:", str(externally_used_module_count)),
-            ("Packages with external interface:", str(externally_used_package_count)),
+            ("Packages:", str(len(package_names))),
+            ("Modules:", str(len(model.module_names))),
+            (
+                "Packages with external interface:",
+                str(externally_used_package_count),
+            ),
+            (
+                "Modules with external interface:",
+                str(externally_used_module_count),
+            ),
             ("Cross-package symbol uses:", str(cross_package_symbol_use_count)),
         ]
     )

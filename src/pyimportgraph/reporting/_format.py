@@ -36,3 +36,34 @@ def render_list(items: list[str]) -> list[str]:
     if not items:
         return ["(none)"]
     return items
+
+
+def render_comma_list(items: list[str]) -> str:
+    return ", ".join(items) if items else "(none)"
+
+
+def render_bullets(items: list[str], *, indent: int = 0) -> list[str]:
+    prefix = " " * indent
+    if not items:
+        return [f"{prefix}(none)"]
+    return [f"{prefix}- {item}" for item in items]
+
+
+def add_block(lines: list[str], title: str, block_lines: list[str]) -> None:
+    if not block_lines:
+        return
+
+    lines.append(title)
+    lines.append("-" * len(title))
+    lines.extend(block_lines)
+    lines.append("")
+
+
+def compact_rows_to_bullets(rows: list[tuple[str, ...]]) -> list[str]:
+    bullet_lines: list[str] = []
+    for row in rows:
+        values = [value for value in row if value and value != "(none)"]
+        if not values:
+            continue
+        bullet_lines.append(" | ".join(values))
+    return render_bullets(bullet_lines)
