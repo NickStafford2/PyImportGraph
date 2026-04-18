@@ -52,22 +52,17 @@ function App() {
 
   return (
     <main className="min-h-screen bg-slate-950 scroll-smooth">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl mt-4">
         {/* ...existing header/filter/loading/error... */}
 
         {snapshot ? (
           <>
             <SummarySection snapshot={snapshot} />
-            <section>
-              <h2 className="mb-4 text-xl font-semibold text-white">3D Graph</h2>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
-                <ForceGraph
-                  snapshot={snapshot}
-                  displayPrefix={displayPrefix}
-                  className="h-[700px] w-full rounded-xl"
-                />
-              </div>
-            </section>
+            <ForceGraph
+              snapshot={snapshot}
+              displayPrefix={displayPrefix}
+              className="h-[700px] w-full rounded-xl"
+            />
             <PackagesSection
               packages={filteredPackages}
               total={snapshot.packages.length}

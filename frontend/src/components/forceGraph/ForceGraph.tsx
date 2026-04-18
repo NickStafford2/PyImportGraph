@@ -47,13 +47,8 @@ export function ForceGraph({
 
   return (
     <section>
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold text-white">3D graph</h2>
-        <p className="mt-2 text-sm text-slate-400">
-          Compare layout presets, highlight packages, and downweight noisy utility
-          packages without removing them from the graph.
-        </p>
-      </div>
+      <h2 className="mb-4 text-xl font-semibold text-white">Module Import Force Graph</h2>
+
 
       <ForceGraphControls value={presetKey} onChange={setPresetKey} />
 
