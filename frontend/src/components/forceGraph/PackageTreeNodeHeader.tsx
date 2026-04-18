@@ -1,17 +1,17 @@
 import { trimModulePrefix } from '../../lib/moduleName'
 import { getPackageColor } from './graphColors'
+import { ToggleSwitch } from './ToggleSwitch'
 
 type PackageTreeNodeHeaderProps = {
   packageName: string
   displayPrefix: string | null
   isGreyed: boolean
   isHighlighted: boolean
+  isSubtreeHighlighted: boolean
   hasChildren: boolean
   isCollapsed: boolean
-  onHighlightPackage: (packageName: string) => void
-  onUnhighlightPackage: (packageName: string) => void
-  onHighlightPackageTree: () => void
-  onUnhighlightPackageTree: () => void
+  onPackageHighlightChange: (checked: boolean) => void
+  onSubtreeHighlightChange: (checked: boolean) => void
   onHighlightOnlyPackage: () => void
   onToggleCollapsedPackage: (packageName: string) => void
 }
@@ -27,17 +27,20 @@ function getActionButtonClasses(variant: 'default' | 'muted' = 'default'): strin
   ].join(' ')
 }
 
+function getLabelClasses(isGreyed: boolean): string {
+  return isGreyed ? 'text-slate-500' : 'text-slate-300'
+}
+
 export function PackageTreeNodeHeader({
   packageName,
   displayPrefix,
   isGreyed,
   isHighlighted,
+  isSubtreeHighlighted,
   hasChildren,
   isCollapsed,
-  onHighlightPackage,
-  onUnhighlightPackage,
-  onHighlightPackageTree,
-  onUnhighlightPackageTree,
+  onPackageHighlightChange,
+  onSubtreeHighlightChange,
   onHighlightOnlyPackage,
   onToggleCollapsedPackage,
 }: PackageTreeNodeHeaderProps) {
@@ -45,7 +48,6 @@ export function PackageTreeNodeHeader({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-
       <div
         className={[
           'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
@@ -67,77 +69,61 @@ export function PackageTreeNodeHeader({
         </span>
       </div>
 
-      <div className='flex flex-row flex-nowrap'>
-        <button
-          type="button"
-          onClick={() => onHighlightPackage(packageName)}
-          className={getActionButtonClasses()}
-          aria-label="Highlight this package"
-          title="Highlight this package"
-        >
-          +
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onUnhighlightPackage(packageName)}
-          className={getActionButtonClasses('muted')}
-          aria-label="Unhighlight this package"
-          title="Unhighlight this package"
-        >
-          −
-        </button>
+      <div className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-2 py-1">
+        <span className={['text-[10px] uppercase tracking-wide', getLabelClasses(isGreyed)].join(' ')}>
+          package
+        </span>
+        <ToggleSwitch
+          checked={isHighlighted}
+          onChange={onPackageHighlightChange}
+          ariaLabel={`Highlight ${packageName}`}
+          title={isHighlighted ? 'Unhighlight this package' : 'Highlight this package'}
+        />
       </div>
+
       {hasChildren && (
-        <div className='flex flex-row flex-nowrap'>
-          <button
-            type="button"
-            onClick={onHighlightPackageTree}
-            className={getActionButtonClasses()}
-            aria-label="Highlight this package and all subpackages"
-            title="Highlight this package and all subpackages"
-          >
-            ++
-          </button>
-
-          <button
-            type="button"
-            onClick={onUnhighlightPackageTree}
-            className={getActionButtonClasses('muted')}
-            aria-label="Unhighlight this package and all subpackages"
-            title="Unhighlight this package and all subpackages"
-          >
-            −−
-          </button>
-
-          <button
-            type="button"
-            onClick={onHighlightOnlyPackage}
-            className={getActionButtonClasses()}
-            aria-label="Highlight only this package"
-            title="Highlight only this package"
-          >
-            only
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleCollapsedPackage(packageName)}
-            disabled={!hasChildren}
-            className={[
-              'flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] transition',
-              hasChildren
-                ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
-                : 'border-transparent text-slate-600',
-            ].join(' ')}
-            aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
-            title={isCollapsed ? 'Expand package' : 'Collapse package'}
-          >
-            {hasChildren ? (isCollapsed ? '▸' : '▾') : '•'}
-          </button>
+        <div className="flex items-center gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-2 py-1">
+          <span className={['text-[10px] uppercase tracking-wide', getLabelClasses(isGreyed)].join(' ')}>
+            subpackages
+          </span>
+          <ToggleSwitch
+            checked={isSubtreeHighlighted}
+            onChange={onSubtreeHighlightChange}
+            ariaLabel={`Highlight ${packageName} and all subpackages`}
+            title={
+              isSubtreeHighlighted
+                ? 'Unhighlight this package and all subpackages'
+                : 'Highlight this package and all subpackages'
+            }
+          />
         </div>
       )}
 
+      <button
+        type="button"
+        onClick={onHighlightOnlyPackage}
+        className={getActionButtonClasses()}
+        aria-label="Highlight only this package"
+        title="Highlight only this package"
+      >
+        only
+      </button>
 
+      <button
+        type="button"
+        onClick={() => onToggleCollapsedPackage(packageName)}
+        disabled={!hasChildren}
+        className={[
+          'flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] transition',
+          hasChildren
+            ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
+            : 'border-transparent text-slate-600',
+        ].join(' ')}
+        aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
+        title={isCollapsed ? 'Expand package' : 'Collapse package'}
+      >
+        {hasChildren ? (isCollapsed ? '▸' : '▾') : '•'}
+      </button>
     </div>
   )
 }

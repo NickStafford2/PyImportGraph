@@ -53,6 +53,13 @@ function hasAnyHighlightedPackage(
   return packageNames.some((packageName) => highlightedPackages.has(packageName))
 }
 
+function areAllPackagesHighlighted(
+  packageNames: readonly string[],
+  highlightedPackages: ReadonlySet<string>,
+): boolean {
+  return packageNames.every((packageName) => highlightedPackages.has(packageName))
+}
+
 export function PackageTreeNode({
   node,
   displayPrefix,
@@ -71,6 +78,10 @@ export function PackageTreeNode({
   const packageName = node.packageName
   const subtreePackageNames = node.subtreePackageNames
   const isHighlighted = highlightedPackages.has(packageName)
+  const isSubtreeHighlighted = areAllPackagesHighlighted(
+    subtreePackageNames,
+    highlightedPackages,
+  )
   const isGreyed = !hasAnyHighlightedPackage(
     subtreePackageNames,
     highlightedPackages,
@@ -83,6 +94,24 @@ export function PackageTreeNode({
     packageInfluenceConfig,
   )
 
+  function handlePackageHighlightChange(nextChecked: boolean) {
+    if (nextChecked) {
+      onHighlightPackage(packageName)
+      return
+    }
+
+    onUnhighlightPackage(packageName)
+  }
+
+  function handleSubtreeHighlightChange(nextChecked: boolean) {
+    if (nextChecked) {
+      onHighlightPackageTree(subtreePackageNames)
+      return
+    }
+
+    onUnhighlightPackageTree(subtreePackageNames)
+  }
+
   return (
     <div className={getContainerClasses(depth, isHighlighted)}>
       <PackageTreeNodeHeader
@@ -90,14 +119,11 @@ export function PackageTreeNode({
         displayPrefix={displayPrefix}
         isGreyed={isGreyed}
         isHighlighted={isHighlighted}
+        isSubtreeHighlighted={isSubtreeHighlighted}
         hasChildren={hasChildren}
         isCollapsed={isCollapsed}
-        onHighlightPackage={onHighlightPackage}
-        onUnhighlightPackage={onUnhighlightPackage}
-        onHighlightPackageTree={() => onHighlightPackageTree(subtreePackageNames)}
-        onUnhighlightPackageTree={() =>
-          onUnhighlightPackageTree(subtreePackageNames)
-        }
+        onPackageHighlightChange={handlePackageHighlightChange}
+        onSubtreeHighlightChange={handleSubtreeHighlightChange}
         onHighlightOnlyPackage={() => onHighlightOnlyPackage([packageName])}
         onToggleCollapsedPackage={onToggleCollapsedPackage}
       />
