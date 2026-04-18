@@ -77,6 +77,6 @@ export const FORCE_PRESETS: Record<ForcePresetKey, ForcePreset> = {
   },
 }
 
-export const DEFAULT_FORCE_PRESET: ForcePresetKey = 'balanced'
+export const DEFAULT_FORCE_PRESET: ForcePresetKey = 'packageClusters'
 
 export const FORCE_PRESET_OPTIONS = Object.values(FORCE_PRESETS)
