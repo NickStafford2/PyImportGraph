@@ -51,7 +51,7 @@ function App() {
   }, [snapshot, normalizedQuery])
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <main className="min-h-screen bg-slate-950 scroll-smooth">
       <div className="mx-auto max-w-7xl px-6 py-8">
         {/* ...existing header/filter/loading/error... */}
 

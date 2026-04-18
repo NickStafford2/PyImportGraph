@@ -6,6 +6,7 @@ import { ModuleName } from '../ModuleName'
 import { SimpleList } from '../SimpleList'
 import { joinOrNone } from '../../lib/format'
 import type { ModuleSnapshot } from '../../types'
+import { toAnchorId } from '../../lib/anchor'
 
 type ModulesSectionProps = {
   modules: ModuleSnapshot[]
@@ -25,52 +26,57 @@ export function ModulesSection({ modules, total, displayPrefix }: ModulesSection
 
       <div className="space-y-4">
         {modules.map((item) => (
-          <CollapsibleCard
-            key={item.name}
-            title={item.name}
-            subtitle={`package=${item.package} • imports=${item.imports.length} • imported_by=${item.imported_by.length}`}
+          <div
+            id={toAnchorId('module', item.name)}
+            className="scroll-mt-6"
           >
-            <div className="mb-4 text-sm text-slate-300">
-              <ModuleName name={item.name} prefix={displayPrefix} />
-            </div>
+            <CollapsibleCard
+              key={item.name}
+              title={item.name}
+              subtitle={`package=${item.package} • imports=${item.imports.length} • imported_by=${item.imported_by.length}`}
+            >
+              <div className="mb-4 text-sm text-slate-300">
+                <ModuleName name={item.name} prefix={displayPrefix} />
+              </div>
 
-            <div className="grid gap-6 xl:grid-cols-2">
-              <KeyValueList
-                title="Metadata"
-                items={[
-                  ['Package', item.package],
-                  ['Imports', String(item.imports.length)],
-                  ['Imported by', String(item.imported_by.length)],
-                ]}
-              />
+              <div className="grid gap-6 xl:grid-cols-2">
+                <KeyValueList
+                  title="Metadata"
+                  items={[
+                    ['Package', item.package],
+                    ['Imports', String(item.imports.length)],
+                    ['Imported by', String(item.imported_by.length)],
+                  ]}
+                />
 
-              <KeyValueList
-                title="Importing packages"
-                items={[['Packages', joinOrNone(item.importing_packages)]]}
-              />
+                <KeyValueList
+                  title="Importing packages"
+                  items={[['Packages', joinOrNone(item.importing_packages)]]}
+                />
 
-              <SimpleList
-                title="Imports"
-                items={item.imports}
-                formatAsModuleName
-                displayPrefix={displayPrefix}
-              />
-              <SimpleList
-                title="Imported by"
-                items={item.imported_by}
-                formatAsModuleName
-                displayPrefix={displayPrefix}
-              />
-            </div>
+                <SimpleList
+                  title="Imports"
+                  items={item.imports}
+                  formatAsModuleName
+                  displayPrefix={displayPrefix}
+                />
+                <SimpleList
+                  title="Imported by"
+                  items={item.imported_by}
+                  formatAsModuleName
+                  displayPrefix={displayPrefix}
+                />
+              </div>
 
-            <div className="mt-6">
-              <DefinitionTable
-                title="Observed external interface"
-                definitions={item.external_interface}
-                displayPrefix={displayPrefix}
-              />
-            </div>
-          </CollapsibleCard>
+              <div className="mt-6">
+                <DefinitionTable
+                  title="Observed external interface"
+                  definitions={item.external_interface}
+                  displayPrefix={displayPrefix}
+                />
+              </div>
+            </CollapsibleCard>
+          </div>
         ))}
 
         {modules.length === 0 ? (

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { trimModulePrefix } from '../lib/moduleName'
+import { toAnchorId } from '../lib/anchor'
 
 // todo. find out why the tooltip does not work. I have no idea. 
 
@@ -73,7 +74,12 @@ export function ModuleName({ name, prefix, className }: ModuleNameProps) {
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {display}
+        <a
+          href={`#${toAnchorId('module', name)}`}
+          className="hover:underline"
+        >
+          {display}
+        </a>
       </span>
 
       {visible && display !== name && position != null ? (
