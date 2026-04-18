@@ -18,19 +18,6 @@ type PackageTreeNodeHeaderProps = {
 
 const GREYED_LEGEND_COLOR = '#475569'
 
-// this is the "only"" button
-function getActionButtonClasses(variant: 'default' | 'muted' = 'default'): string {
-  return [
-    'flex h-6 shrink-0 items-center justify-center rounded-md border px-2 text-[10px] transition',
-    variant === 'default'
-      ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
-      : 'border-slate-800 bg-slate-950/40 text-slate-400 hover:border-slate-600',
-  ].join(' ')
-}
-
-function getLabelClasses(isGreyed: boolean): string {
-  return isGreyed ? 'text-slate-500' : 'text-slate-300'
-}
 
 export function PackageTreeNodeHeader({
   packageName,
@@ -42,7 +29,6 @@ export function PackageTreeNodeHeader({
   isCollapsed,
   onPackageHighlightChange,
   onSubtreeHighlightChange,
-  onHighlightOnlyPackage,
   onToggleCollapsedPackage,
 }: PackageTreeNodeHeaderProps) {
   const displayName = trimModulePrefix(packageName, displayPrefix)
@@ -81,17 +67,6 @@ export function PackageTreeNodeHeader({
           {displayName}
         </span>
       </div>
-
-      {/* <button */}
-      {/*   type="button" */}
-      {/*   onClick={onHighlightOnlyPackage} */}
-      {/*   className={getActionButtonClasses()} */}
-      {/*   aria-label="Highlight only this package" */}
-      {/*   title="Highlight only this package" */}
-      {/* > */}
-      {/*   only */}
-      {/* </button> */}
-
 
       {hasChildren && (
         <>
