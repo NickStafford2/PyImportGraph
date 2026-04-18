@@ -10,7 +10,6 @@ from pyimportgraph.reporting.module_detail import render_module_detail
 from pyimportgraph.reporting.package_detail import render_package_detail
 from pyimportgraph.reporting.summary import render_summary
 from pyimportgraph.serialization import build_project_snapshot
-from pyimportgraph.web.app import create_app
 
 
 def main() -> None:
@@ -77,27 +76,6 @@ def main() -> None:
         help="Write a frontend-friendly JSON snapshot to stdout.",
     )
 
-    serve_parser = subparsers.add_parser(
-        "serve",
-        help="Run the Flask backend for the frontend.",
-    )
-    serve_parser.add_argument(
-        "--host",
-        default="127.0.0.1",
-        help="Host interface to bind the Flask server to.",
-    )
-    serve_parser.add_argument(
-        "--port",
-        type=int,
-        default=5000,
-        help="Port to bind the Flask server to.",
-    )
-    serve_parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Run the Flask development server in debug mode.",
-    )
-
     parser.epilog = """
 Examples:
 
@@ -107,24 +85,14 @@ Examples:
   pyimportgraph src --package myapp report
   pyimportgraph src --package myapp full-report
   pyimportgraph src --package myapp json > graph.json
-  pyimportgraph src --package myapp serve --port 5000
 """
 
     args = parser.parse_args()
     command = args.command or "summary"
-    project_root = args.project_path.resolve()
-
-    if command == "serve":
-        app = create_app(
-            project_root=project_root,
-            package_names=args.package_names,
-        )
-        app.run(host=args.host, port=args.port, debug=args.debug)
-        return
 
     model = ProjectModel.build(
         package_names=args.package_names,
-        project_root=project_root,
+        project_root=args.project_path.resolve(),
     )
 
     if command == "summary":
