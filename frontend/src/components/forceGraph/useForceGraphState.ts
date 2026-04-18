@@ -44,23 +44,6 @@ function filterKnownPackageNames(
   )
 }
 
-function toggleValuesInSet(
-  current: ReadonlySet<string>,
-  values: Iterable<string>,
-): Set<string> {
-  const next = new Set(current)
-
-  for (const value of values) {
-    if (next.has(value)) {
-      next.delete(value)
-    } else {
-      next.add(value)
-    }
-  }
-
-  return next
-}
-
 export function useForceGraphState({
   packages,
 }: UseForceGraphStateArgs): UseForceGraphStateResult {
@@ -112,13 +95,38 @@ export function useForceGraphState({
   }, [knownPackageNames, packageNames])
 
   function toggleHighlightedPackage(packageName: string) {
-    setHighlightedPackages((current) => toggleValuesInSet(current, [packageName]))
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+
+      if (next.has(packageName)) {
+        next.delete(packageName)
+      } else {
+        next.add(packageName)
+      }
+
+      return next
+    })
   }
 
   function toggleHighlightedPackages(packageNamesToToggle: Iterable<string>) {
-    setHighlightedPackages((current) =>
-      toggleValuesInSet(current, packageNamesToToggle),
+    const names = [...packageNamesToToggle].filter((packageName) =>
+      knownPackageNames.has(packageName),
     )
+
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+      const shouldSelectAll = names.some((packageName) => !current.has(packageName))
+
+      for (const packageName of names) {
+        if (shouldSelectAll) {
+          next.add(packageName)
+        } else {
+          next.delete(packageName)
+        }
+      }
+
+      return next
+    })
   }
 
   function selectOnlyHighlightedPackages(packageNamesToSelect: Iterable<string>) {
