@@ -22,14 +22,17 @@ def render_table(headers: list[str], rows: list[tuple[str, ...]]) -> list[str]:
         for index, cell in enumerate(row):
             widths[index] = max(widths[index], len(cell))
 
-    def render_row(row: tuple[str, ...]) -> str:
+    def _render_row(row: tuple[str, ...]) -> str:
         return "  ".join(f"{cell:<{widths[index]}}" for index, cell in enumerate(row))
 
-    header_line = render_row(tuple(headers))
-    divider_line = "  ".join("-" * width for width in widths)
-
     return [
-        header_line,
-        divider_line,
-        *(render_row(row) for row in rows),
+        _render_row(tuple(headers)),
+        _render_row(tuple("-" * width for width in widths)),
+        *(_render_row(row) for row in rows),
     ]
+
+
+def render_list(items: list[str]) -> list[str]:
+    if not items:
+        return ["(none)"]
+    return items
