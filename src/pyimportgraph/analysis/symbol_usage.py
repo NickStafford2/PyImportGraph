@@ -5,7 +5,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
-from pyimportgraph.model.module_naming import package_name
+from pyimportgraph.model.package_tree import PackageTree
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,7 +39,7 @@ class SymbolUsageReport:
             grouped[item.defining_package].append(item)
 
         return {
-            package: sorted(
+            package_name: sorted(
                 items,
                 key=lambda item: (
                     item.symbol_name,
@@ -48,7 +48,7 @@ class SymbolUsageReport:
                     item.line,
                 ),
             )
-            for package, items in sorted(grouped.items())
+            for package_name, items in sorted(grouped.items())
         }
 
 
@@ -59,41 +59,61 @@ def build_symbol_usage_report(project_root: str | Path) -> SymbolUsageReport:
     module_name_by_path = {
         path: _module_name_from_path(root, path) for path in module_paths
     }
+    package_tree = PackageTree.from_module_names(module_name_by_path.values())
 
     definitions_by_module: dict[str, dict[str, Definition]] = {}
     imports: list[_FromImport] = []
 
     for path, module_name in module_name_by_path.items():
-        parsed = _parse_module(path, module_name)
-        definitions_by_module[module_name] = parsed.definitions
-        imports.extend(parsed.from_imports)
+        parsed = _parse_module(path)
+        definitions_by_module[module_name] = {
+            symbol_name: Definition(
+                module_name=module_name,
+                package_name=package_tree.package_for_module(module_name),
+                symbol_name=definition.symbol_name,
+                kind=definition.kind,
+                line=definition.line,
+            )
+            for symbol_name, definition in parsed.definitions.items()
+        }
+        imports.extend(
+            _FromImport(
+                importer_module=module_name,
+                imported_module=item.imported_module,
+                imported_name=item.imported_name,
+                line=item.line,
+            )
+            for item in parsed.from_imports
+        )
 
     external_uses: list[ExternalSymbolUse] = []
 
     for item in imports:
-        imported_module = item.imported_module
-        imported_name = item.imported_name
+        imported_module_name = item.imported_module
+        imported_symbol_name = item.imported_name
 
-        if imported_module not in definitions_by_module:
+        if imported_module_name not in definitions_by_module:
             continue
 
-        definition = definitions_by_module[imported_module].get(imported_name)
+        definition = definitions_by_module[imported_module_name].get(
+            imported_symbol_name
+        )
         if definition is None:
             continue
 
-        importer_package = package_name(item.importer_module)
-        defining_package = definition.package_name
+        importer_package_name = package_tree.package_for_module(item.importer_module)
+        defining_package_name = definition.package_name
 
-        if importer_package == defining_package:
+        if importer_package_name == defining_package_name:
             continue
 
         external_uses.append(
             ExternalSymbolUse(
-                defining_package=defining_package,
+                defining_package=defining_package_name,
                 defining_module=definition.module_name,
                 symbol_name=definition.symbol_name,
                 kind=definition.kind,
-                imported_by_package=importer_package,
+                imported_by_package=importer_package_name,
                 imported_by_module=item.importer_module,
                 line=item.line,
             )
@@ -132,8 +152,22 @@ def build_symbol_usage_report(project_root: str | Path) -> SymbolUsageReport:
 
 @dataclass(slots=True)
 class _ParsedModule:
-    definitions: dict[str, Definition]
-    from_imports: list["_FromImport"]
+    definitions: dict[str, "_ParsedDefinition"]
+    from_imports: list["_ParsedFromImport"]
+
+
+@dataclass(frozen=True, slots=True)
+class _ParsedDefinition:
+    symbol_name: str
+    kind: str
+    line: int
+
+
+@dataclass(frozen=True, slots=True)
+class _ParsedFromImport:
+    imported_module: str
+    imported_name: str
+    line: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -144,9 +178,9 @@ class _FromImport:
     line: int
 
 
-def _parse_module(path: Path, module_name: str) -> _ParsedModule:
+def _parse_module(path: Path) -> _ParsedModule:
     tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    visitor = _ModuleVisitor(module_name)
+    visitor = _ModuleVisitor()
     visitor.visit(tree)
     return _ParsedModule(
         definitions=visitor.definitions,
@@ -155,12 +189,10 @@ def _parse_module(path: Path, module_name: str) -> _ParsedModule:
 
 
 class _ModuleVisitor(ast.NodeVisitor):
-    def __init__(self, module_name: str) -> None:
-        self.module_name = module_name
-        self.package_name = package_name(module_name)
+    def __init__(self) -> None:
         self.scope_depth = 0
-        self.definitions: dict[str, Definition] = {}
-        self.from_imports: list[_FromImport] = []
+        self.definitions: dict[str, _ParsedDefinition] = {}
+        self.from_imports: list[_ParsedFromImport] = []
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
         if self.scope_depth == 0:
@@ -214,8 +246,7 @@ class _ModuleVisitor(ast.NodeVisitor):
                 continue
 
             self.from_imports.append(
-                _FromImport(
-                    importer_module=self.module_name,
+                _ParsedFromImport(
                     imported_module=node.module,
                     imported_name=alias.name,
                     line=node.lineno,
@@ -225,9 +256,7 @@ class _ModuleVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def _record_definition(self, name: str, kind: str, line: int) -> None:
-        self.definitions[name] = Definition(
-            module_name=self.module_name,
-            package_name=self.package_name,
+        self.definitions[name] = _ParsedDefinition(
             symbol_name=name,
             kind=kind,
             line=line,
