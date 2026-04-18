@@ -15,6 +15,8 @@ export type GraphLink = {
   type: string
   samePackage: boolean
   weight: number
+  sourcePackage: string
+  targetPackage: string
 }
 
 export type GraphData = {
@@ -46,3 +48,10 @@ export type ForcePreset = {
     crossPackage: number
   }
 }
+
+export type PackageInfluenceSettings = {
+  edgeStrengthMultiplier: number
+  edgeVisibilityMultiplier: number
+}
+
+export type PackageInfluenceConfig = Record<string, PackageInfluenceSettings>

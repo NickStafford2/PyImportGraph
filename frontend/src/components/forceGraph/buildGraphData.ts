@@ -34,6 +34,8 @@ export function buildGraphData(
       type: edge.type,
       samePackage: edge.from_package === edge.to_package,
       weight: edge.from_package === edge.to_package ? 1 : 0.5,
+      sourcePackage: edge.from_package,
+      targetPackage: edge.to_package,
     }))
 
   return { nodes, links }

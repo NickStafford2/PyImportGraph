@@ -7,9 +7,21 @@ import type { ProjectSnapshot } from '../../types'
 import { buildGraphData } from './buildGraphData'
 import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphLegend } from './ForceGraphLegend'
-import { getPackageColor } from './graphColors'
+import {
+  buildPackageInfluenceConfig,
+  getEffectiveLinkDistance,
+  getEffectiveLinkStrength,
+  updatePackageInfluenceConfig,
+} from './graphInfluence'
+import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import { DEFAULT_FORCE_PRESET, FORCE_PRESETS } from './presets'
-import type { ForcePresetKey, GraphLink, GraphNode } from './types'
+import type {
+  ForcePresetKey,
+  GraphLink,
+  GraphNode,
+  PackageInfluenceConfig,
+  PackageInfluenceSettings,
+} from './types'
 
 type ForceGraphProps = {
   snapshot: ProjectSnapshot
@@ -21,11 +33,6 @@ type Dimensions = {
   width: number
   height: number
 }
-
-const GREYED_NODE_COLOR = '#475569'
-const GREYED_LINK_COLOR = 'rgba(100, 116, 139, 0.35)'
-const ACTIVE_SAME_PACKAGE_LINK_COLOR = 'rgba(148, 163, 184, 0.7)'
-const ACTIVE_CROSS_PACKAGE_LINK_COLOR = 'rgba(148, 163, 184, 0.35)'
 
 export function ForceGraph({
   snapshot,
@@ -45,15 +52,35 @@ export function ForceGraph({
     useState<ForcePresetKey>(DEFAULT_FORCE_PRESET)
   const [selectedPackage, setSelectedPackage] = useState<string | null>(null)
 
+  const packageNames = useMemo(() => {
+    return Array.from(new Set(snapshot.modules.map((module) => module.package))).sort(
+      (left, right) => left.localeCompare(right),
+    )
+  }, [snapshot])
+
+  const [packageInfluenceConfig, setPackageInfluenceConfig] =
+    useState<PackageInfluenceConfig>(() => buildPackageInfluenceConfig(packageNames))
+
+  useEffect(() => {
+    setPackageInfluenceConfig((currentConfig) => {
+      const nextConfig = buildPackageInfluenceConfig(packageNames)
+
+      for (const packageName of packageNames) {
+        const existingSettings = currentConfig[packageName]
+        if (existingSettings != null) {
+          nextConfig[packageName] = existingSettings
+        }
+      }
+
+      return nextConfig
+    })
+  }, [packageNames])
+
   const preset = FORCE_PRESETS[presetKey]
 
   const graphData = useMemo(() => {
     return buildGraphData(snapshot, displayPrefix)
   }, [snapshot, displayPrefix])
-
-  const packageNames = useMemo(() => {
-    return Array.from(new Set(snapshot.modules.map((module) => module.package)))
-  }, [snapshot])
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -87,15 +114,11 @@ export function ForceGraph({
     const linkForce = graphRef.current.d3Force('link')
     if (linkForce != null) {
       linkForce.distance((link: GraphLink) =>
-        link.samePackage
-          ? preset.linkDistance.samePackage
-          : preset.linkDistance.crossPackage,
+        getEffectiveLinkDistance(link, preset, packageInfluenceConfig),
       )
 
       linkForce.strength((link: GraphLink) =>
-        link.samePackage
-          ? preset.linkStrength.samePackage
-          : preset.linkStrength.crossPackage,
+        getEffectiveLinkStrength(link, preset, packageInfluenceConfig),
       )
     }
 
@@ -112,7 +135,7 @@ export function ForceGraph({
     )
 
     graphRef.current.d3ReheatSimulation()
-  }, [graphData, preset])
+  }, [graphData, preset, packageInfluenceConfig])
 
   function handlePackageSelect(packageName: string) {
     setSelectedPackage((current) =>
@@ -120,40 +143,13 @@ export function ForceGraph({
     )
   }
 
-  function getNodeColor(node: GraphNode): string {
-    if (selectedPackage == null) {
-      return getPackageColor(node.group)
-    }
-
-    if (node.group === selectedPackage) {
-      return getPackageColor(node.group)
-    }
-
-    return GREYED_NODE_COLOR
-  }
-
-  function getLinkColor(link: GraphLink): string {
-    if (selectedPackage == null) {
-      return link.samePackage
-        ? ACTIVE_SAME_PACKAGE_LINK_COLOR
-        : ACTIVE_CROSS_PACKAGE_LINK_COLOR
-    }
-
-    const sourceGroup =
-      typeof link.source === 'object' ? link.source.group : null
-    const targetGroup =
-      typeof link.target === 'object' ? link.target.group : null
-
-    const isSelectedEdge =
-      sourceGroup === selectedPackage || targetGroup === selectedPackage
-
-    if (!isSelectedEdge) {
-      return GREYED_LINK_COLOR
-    }
-
-    return link.samePackage
-      ? ACTIVE_SAME_PACKAGE_LINK_COLOR
-      : ACTIVE_CROSS_PACKAGE_LINK_COLOR
+  function handlePackageInfluenceChange(
+    packageName: string,
+    nextSettings: PackageInfluenceSettings,
+  ) {
+    setPackageInfluenceConfig((currentConfig) =>
+      updatePackageInfluenceConfig(currentConfig, packageName, nextSettings),
+    )
   }
 
   return (
@@ -161,8 +157,8 @@ export function ForceGraph({
       <div className="mb-4">
         <h2 className="text-xl font-semibold text-white">3D graph</h2>
         <p className="mt-2 text-sm text-slate-400">
-          Compare different layout presets to reveal package clusters,
-          dependency chains, or a more spread-out architectural overview.
+          Compare layout presets, highlight packages, and downweight noisy utility
+          packages without removing them from the graph.
         </p>
       </div>
 
@@ -184,7 +180,7 @@ export function ForceGraph({
                 graphData={graphData}
                 nodeId="id"
                 nodeVal="val"
-                nodeColor={getNodeColor}
+                nodeColor={(node) => getNodeColor(node, selectedPackage)}
                 nodeLabel={(node) => `
                   <div style="
                     max-width: 240px;
@@ -203,7 +199,12 @@ export function ForceGraph({
                     </div>
                   </div>
                 `}
-                linkColor={getLinkColor}
+                linkColor={(link) =>
+                  getLinkColor(link, packageInfluenceConfig, selectedPackage)
+                }
+                linkWidth={(link) =>
+                  getLinkWidth(link, packageInfluenceConfig, selectedPackage)
+                }
                 linkDirectionalArrowLength={3.5}
                 linkDirectionalArrowRelPos={1}
                 linkCurvature={0.08}
@@ -220,6 +221,8 @@ export function ForceGraph({
           displayPrefix={displayPrefix}
           selectedPackage={selectedPackage}
           onPackageSelect={handlePackageSelect}
+          packageInfluenceConfig={packageInfluenceConfig}
+          onPackageInfluenceChange={handlePackageInfluenceChange}
         />
       </div>
     </section>
