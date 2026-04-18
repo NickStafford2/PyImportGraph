@@ -1,4 +1,5 @@
 # The shape
+This is a very long term plan if I ever get to it. Definitely after json uploads. 
 
 1. frontend
 

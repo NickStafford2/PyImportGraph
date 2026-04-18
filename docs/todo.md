@@ -12,8 +12,6 @@ just add this as a description on the frontend at important parts. I could add t
 on the frontend, the summary section should briefly list of the items instead of just displaying a number. 
 should also quicly list the packages. 
 
-
-
 # frontend navigation
 when i click on various parts of the frontend, they should sometimes move the screen to the location where i can see details about that object. I think these are called anchors? you just add a # and a href? 
 
