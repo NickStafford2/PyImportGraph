@@ -4,10 +4,11 @@
 
 PyImportGraph analyzes a Python project to expose:
 
-1. **Package dependency structure**
-2. **Cross-package symbol usage**
+1. **Module dependency structure**
+2. **Package-level relationships (derived from modules)**
+3. **Cross-package and cross-module symbol usage**
 
-It is designed to help understand and evaluate architectural boundaries.
+The goal is to make architectural boundaries **accurate, queryable, and explicit**.
 
 ---
 
@@ -15,10 +16,75 @@ It is designed to help understand and evaluate architectural boundaries.
 
 The system should answer:
 
-* Which packages import from which other packages?
-* Which modules depend on external packages vs internal ones?
-* Which symbols (functions, classes, names) defined in a package are used outside it?
-* Where are boundaries violated or overly coupled?
+* Which **modules** import which other modules?
+* Which **packages (including nested subpackages)** depend on which other packages?
+* Given a **module**, which modules and packages import it?
+* Given a **package**, which modules and packages import anything inside it?
+* Which symbols (functions, classes, names) defined in a module or package are **used externally**?
+* What is the **observed external interface** of a module or package?
+
+---
+
+## Key Definitions
+
+### Module
+
+A Python module identified by its full import path (e.g. `a.b.c`).
+
+### Package
+
+A Python package or subpackage derived from module paths:
+
+* `a`
+* `a.b`
+* `a.b.c`
+
+**All nested subpackages are first-class packages.**
+
+There is **no artificial truncation** (e.g. depth=2). Package relationships are derived from real module structure.
+
+---
+
+### Package Subtree
+
+For a package `a.b`, its subtree includes:
+
+* all modules in `a.b`
+* all modules in `a.b.*`
+
+Used for queries like:
+
+* “who imports this package?”
+
+---
+
+### External (Important)
+
+“External” means:
+
+> outside the package subtree being analyzed
+
+Example:
+
+* `a.b.c` importing `a.b.d` → **internal**
+* `a.x` importing `a.b.c` → **external**
+
+---
+
+### Observed External Interface
+
+For a module or package:
+
+> the set of symbols defined in it that are imported by external modules
+
+This is **not**:
+
+* `__all__`
+* intended API
+
+It is:
+
+* what other code actually depends on
 
 ---
 
@@ -27,17 +93,22 @@ The system should answer:
 PyImportGraph:
 
 * scans Python files under a project root
-* discovers modules and packages from the filesystem
-* parses imports using Python AST
-* builds a dependency graph between modules
-* groups dependencies at the package level
-* tracks symbol-level imports across modules
-* identifies:
+* builds a **module import graph** (source of truth)
+* derives a **package hierarchy** from module names
+* tracks symbol definitions:
 
-  * cross-package imports
-  * reexports (indirect symbol usage)
-  * circular dependencies
-  * unresolved imports
+  * functions
+  * classes
+  * assignments
+* tracks symbol imports:
+
+  * `from x import y`
+* builds relationships:
+
+  * module → module imports
+  * module → module importers (reverse)
+  * package → package dependencies (derived)
+  * symbol → external usage
 
 ---
 
@@ -50,82 +121,123 @@ PyImportGraph does not:
 * fully resolve dynamic imports (`importlib`, etc.)
 * fully expand `from x import *`
 * analyze external dependencies as source
-* build a complete call graph
+* build a full call graph
 
 ---
 
-## Analysis boundary
+## Data Model
 
-* Only files inside the provided project root are analyzed
-* External imports are treated as black boxes
-* The goal is **architecture visibility**, not full semantic correctness
+The system should model:
 
----
+### Modules
 
-## Data model priorities
+* full name
+* file path
+* direct imports
+* direct importers
 
-The system should:
+### Packages
 
-* represent each module once
-* represent each import occurrence once
-* track symbol-level usage without duplication
-* support:
+* full package name (no truncation)
+* parent package
+* child packages
+* modules in package
+* modules in subtree
 
-  * module-level queries
-  * package-level aggregation
-  * reverse lookups (who uses this?)
+### Definitions
 
----
+* module
+* package
+* symbol name
+* kind
+* line
 
-## Symbol tracking scope
+### Symbol Imports
 
-Track only **top-level definitions**:
-
-* functions
-* classes
-* assignments
-* imported aliases
-
-Track usage via:
-
-* `import x`
-* `from x import y`
-* aliasing (`as`)
-
-Goal:
-→ determine when a symbol defined in package A is used by package B
+* importer module
+* imported module
+* symbol name
+* line
 
 ---
 
-## Package boundary analysis
+## Required Query Capabilities
 
-The system should enable:
+### 1. Module → Importers
 
-* mapping package → package dependencies
-* identifying:
+Given a module:
 
-  * tightly coupled packages
-  * boundary violations
-  * “leaky” packages (high outward symbol usage)
+* return all modules that import it
+* return their packages
 
 ---
 
-## Design priorities
+### 2. Package → Importers
 
-* simplicity over completeness
-* predictable static behavior
-* minimal, queryable data model
-* clear separation between:
+Given a package:
 
-  * structure (imports)
-  * usage (symbols)
+* consider all modules in its subtree
+* return all modules that import any of them
+* return their packages
+* exclude modules inside the same subtree
+
+---
+
+### 3. Module → External Interface
+
+Given a module:
+
+* list all symbols defined in that module
+* include only those imported by external modules
+* exclude imports from modules in the same package subtree
+
+---
+
+### 4. Package → External Interface
+
+Given a package:
+
+* list all symbols defined in its subtree
+* include only those imported by external modules
+* exclude imports from modules inside the package subtree
+
+---
+
+## Package Dependency Analysis
+
+Package dependencies are **derived**, not primary.
+
+To compute:
+
+* for each package A:
+
+  * collect modules in subtree(A)
+  * find all modules they import
+  * map those to packages
+  * exclude same-package subtree
+
+This produces:
+
+* accurate package → package relationships
+* without flattening or truncation
+
+---
+
+## Design Principles
+
+* **Modules are the source of truth**
+* **Packages are derived from module hierarchy**
+* **No artificial grouping (e.g. depth-based truncation)**
+* **Nested subpackages are first-class**
+* **All queries must support reverse lookups**
+* **“Public interface” is observational, not declared**
 
 ---
 
 ## Non-goals
 
-* full Python import semantics
+* perfect Python import resolution
 * runtime behavior modeling
-* perfect resolution of all edge cases
-* editor or IDE integration
-* visualization (handled externally)
+* full semantic correctness
+* editor/IDE integration
+

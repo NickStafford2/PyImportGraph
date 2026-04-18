@@ -5,7 +5,10 @@ PyImportGraph analyzes a Python project to understand **package boundaries** and
 It answers questions like:
 - Which packages depend on which other packages?
 - Which modules import from outside their package?
-- Which functions/classes defined in a package are used elsewhere?
+- Which functions/classes defined in a module or package are used by code outside that package?
+
+This represents the **observed external interface** (what other parts of the system actually depend on),
+not the declared API (e.g. `__all__`).
 
 The goal is to make architectural boundaries visible and easy to inspect.
 
@@ -17,6 +20,17 @@ PyImportGraph focuses on **internal project structure only**:
 - tracks symbol-level imports across package boundaries
 
 It does **not** attempt full Python semantic analysis.
+
+### Package definition
+
+A “package” refers to a real Python package or subpackage derived from module paths.
+
+Nested subpackages are treated as first-class packages:
+- `a`
+- `a.b`
+- `a.b.c`
+
+The tool does not collapse or group packages by fixed depth.
 
 ## Features
 
@@ -75,3 +89,9 @@ poetry run pyimportgraph . summary
 * JSON output for visualization
 * frontend graph explorer
 
+
+## Architecture 
+The system models:
+- module-level dependencies (source of truth)
+- package structure derived from modules
+- symbol usage across modules
