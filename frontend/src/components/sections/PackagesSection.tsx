@@ -104,6 +104,7 @@ export function PackagesSection({
 
                     <div className='flex flex-col gap-3'>
                       <h2 className='text-xl'>Observed External Interface</h2>
+                      <p>Todo: add to this table list of modules it is used in.</p>
                       <DefinitionTable
                         definitions={item.external_interface}
                         displayPrefix={displayPrefix}
