@@ -8,6 +8,7 @@ import {
   getEffectiveLinkStrength,
 } from './graphInfluence'
 import { getNodeValue } from './graphDisplay'
+import type { LinkRelationshipToggles } from './graphRelationships'
 import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import type {
   ForcePreset,
@@ -23,6 +24,7 @@ type ForceGraphCanvasProps = {
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
+  grayscaledEdgeRelationships: LinkRelationshipToggles
   className?: string
 }
 
@@ -41,6 +43,7 @@ export function ForceGraphCanvas({
   packageInfluenceConfig,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
+  grayscaledEdgeRelationships,
   className,
 }: ForceGraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -155,6 +158,7 @@ export function ForceGraphCanvas({
                 packageInfluenceConfig,
                 highlightedPackages,
                 highlightMutualPackageDependenciesOnly,
+                grayscaledEdgeRelationships,
               })
             }
             linkWidth={(link) =>

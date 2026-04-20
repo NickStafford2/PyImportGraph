@@ -1,10 +1,14 @@
 import { getPackageColor } from './graphColors'
 import { getLinkPackageInfluence } from './graphInfluence'
-import { getLinkPackageRelationship } from './graphRelationships'
+import {
+  getLinkPackageRelationship,
+  type LinkRelationshipToggles,
+} from './graphRelationships'
 import type { GraphLink, GraphNode, PackageInfluenceConfig } from './types'
 
 const GREYED_NODE_COLOR = '#475569'
 const INACTIVE_LINK_RGB = '100, 116, 139'
+const GRAYSCALED_LINK_RGB = '203, 213, 225'
 const SAME_PACKAGE_LINK_RGB = '148, 163, 184'
 const SUBPACKAGE_LINK_RGB = '96, 165, 250'
 const CROSS_PACKAGE_LINK_RGB = '245, 158, 11'
@@ -86,6 +90,7 @@ type GetLinkColorArgs = {
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
+  grayscaledEdgeRelationships: LinkRelationshipToggles
 }
 
 export function getLinkColor({
@@ -93,12 +98,15 @@ export function getLinkColor({
   packageInfluenceConfig,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
+  grayscaledEdgeRelationships,
 }: GetLinkColorArgs): string {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
   const highlightMultiplier = getLinkHighlightMultiplier(
     link,
     highlightedPackages,
   )
+  const relationship = getLinkPackageRelationship(link)
+  const isGrayscaled = grayscaledEdgeRelationships[relationship]
 
   if (highlightMutualPackageDependenciesOnly) {
     if (!link.is_mutual_package_dependency) {
@@ -110,7 +118,9 @@ export function getLinkColor({
       0.8 * influence.edgeVisibilityMultiplier * highlightMultiplier,
     )
 
-    return `rgba(${MUTUAL_LINK_RGB}, ${opacity})`
+    const rgb = isGrayscaled ? GRAYSCALED_LINK_RGB : MUTUAL_LINK_RGB
+
+    return `rgba(${rgb}, ${opacity})`
   }
 
   const baseOpacity = getBaseLinkOpacity(link)
@@ -120,7 +130,11 @@ export function getLinkColor({
   )
 
   const isDimmedByHighlight = highlightMultiplier < 1
-  const rgb = isDimmedByHighlight ? INACTIVE_LINK_RGB : getBaseLinkColor(link)
+  const rgb = isDimmedByHighlight
+    ? INACTIVE_LINK_RGB
+    : isGrayscaled
+      ? GRAYSCALED_LINK_RGB
+      : getBaseLinkColor(link)
 
   return `rgba(${rgb}, ${opacity})`
 }

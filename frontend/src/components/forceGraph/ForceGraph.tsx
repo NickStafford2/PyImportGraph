@@ -8,6 +8,7 @@ import {
   getLinkPackageRelationship,
   LINK_PACKAGE_RELATIONSHIPS,
   type LinkPackageRelationship,
+  type LinkRelationshipToggles,
 } from './graphRelationships'
 import { FORCE_PRESETS } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
@@ -19,12 +20,16 @@ type ForceGraphProps = {
   className?: string
 }
 
-type VisibleEdgeRelationships = Record<LinkPackageRelationship, boolean>
-
-const DEFAULT_VISIBLE_EDGE_RELATIONSHIPS: VisibleEdgeRelationships = {
+const DEFAULT_VISIBLE_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   same_package: true,
   subpackage: true,
   cross_package: true,
+}
+
+const DEFAULT_GRAYSCALED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
+  same_package: false,
+  subpackage: false,
+  cross_package: false,
 }
 
 const EDGE_RELATIONSHIP_COPY: Record<
@@ -76,7 +81,9 @@ export function ForceGraph({
   const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
     useState(false)
   const [visibleEdgeRelationships, setVisibleEdgeRelationships] =
-    useState<VisibleEdgeRelationships>(DEFAULT_VISIBLE_EDGE_RELATIONSHIPS)
+    useState<LinkRelationshipToggles>(DEFAULT_VISIBLE_EDGE_RELATIONSHIPS)
+  const [grayscaledEdgeRelationships, setGrayscaledEdgeRelationships] =
+    useState<LinkRelationshipToggles>(DEFAULT_GRAYSCALED_EDGE_RELATIONSHIPS)
 
   const packagesWithExternalImporters = useMemo(() => {
     return new Set(snapshot.package_panel.externally_imported_package_names)
@@ -120,6 +127,16 @@ export function ForceGraph({
     }))
   }
 
+  function setEdgeRelationshipGrayscale(
+    relationship: LinkPackageRelationship,
+    isGrayscaled: boolean,
+  ): void {
+    setGrayscaledEdgeRelationships((current) => ({
+      ...current,
+      [relationship]: isGrayscaled,
+    }))
+  }
+
   return (
     <section>
       <h2 className="mb-4 text-3xl font-semibold text-white">
@@ -151,9 +168,9 @@ export function ForceGraph({
 
       <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3">
         <div className="mb-3">
-          <div className="text-sm font-medium text-white">Visible edge types</div>
+          <div className="text-sm font-medium text-white">Edge type display</div>
           <div className="text-xs text-slate-400">
-            Show or hide same-package, subpackage, and cross-package edges.
+            Show, hide, or grayscale same-package, subpackage, and cross-package edges.
           </div>
         </div>
 
@@ -164,9 +181,9 @@ export function ForceGraph({
             return (
               <div
                 key={relationship}
-                className="flex items-start justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2"
+                className="rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2"
               >
-                <div>
+                <div className="mb-3">
                   <div className="text-sm font-medium text-white">
                     {copy.label}
                   </div>
@@ -175,14 +192,27 @@ export function ForceGraph({
                   </div>
                 </div>
 
-                <ToggleSwitch
-                  checked={visibleEdgeRelationships[relationship]}
-                  onChange={(checked) =>
-                    setEdgeRelationshipVisibility(relationship, checked)
-                  }
-                  ariaLabel={`Toggle ${copy.label.toLowerCase()} edges`}
-                  title={`Toggle ${copy.label.toLowerCase()} edges`}
-                />
+                <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2">
+                  <div className="text-xs text-slate-400">Visible</div>
+                  <ToggleSwitch
+                    checked={visibleEdgeRelationships[relationship]}
+                    onChange={(checked) =>
+                      setEdgeRelationshipVisibility(relationship, checked)
+                    }
+                    ariaLabel={`Toggle ${copy.label.toLowerCase()} edge visibility`}
+                    title={`Toggle ${copy.label.toLowerCase()} edge visibility`}
+                  />
+
+                  <div className="text-xs text-slate-400">Grayscale</div>
+                  <ToggleSwitch
+                    checked={grayscaledEdgeRelationships[relationship]}
+                    onChange={(checked) =>
+                      setEdgeRelationshipGrayscale(relationship, checked)
+                    }
+                    ariaLabel={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
+                    title={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
+                  />
+                </div>
               </div>
             )
           })}
@@ -198,6 +228,7 @@ export function ForceGraph({
           highlightMutualPackageDependenciesOnly={
             highlightMutualPackageDependenciesOnly
           }
+          grayscaledEdgeRelationships={grayscaledEdgeRelationships}
           className={className}
         />
 

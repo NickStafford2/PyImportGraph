@@ -5,6 +5,8 @@ export type LinkPackageRelationship =
   | 'subpackage'
   | 'cross_package'
 
+export type LinkRelationshipToggles = Record<LinkPackageRelationship, boolean>
+
 export const LINK_PACKAGE_RELATIONSHIPS: LinkPackageRelationship[] = [
   'same_package',
   'subpackage',
