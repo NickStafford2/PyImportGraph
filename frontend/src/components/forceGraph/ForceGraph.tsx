@@ -4,6 +4,11 @@ import { ForceGraphCanvas } from './ForceGraphCanvas'
 import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
 import { buildGraphData } from './graphDisplay'
+import {
+  getLinkPackageRelationship,
+  LINK_PACKAGE_RELATIONSHIPS,
+  type LinkPackageRelationship,
+} from './graphRelationships'
 import { FORCE_PRESETS } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
@@ -12,6 +17,32 @@ type ForceGraphProps = {
   snapshot: ProjectSnapshot
   displayPrefix: string | null
   className?: string
+}
+
+type VisibleEdgeRelationships = Record<LinkPackageRelationship, boolean>
+
+const DEFAULT_VISIBLE_EDGE_RELATIONSHIPS: VisibleEdgeRelationships = {
+  same_package: true,
+  subpackage: true,
+  cross_package: true,
+}
+
+const EDGE_RELATIONSHIP_COPY: Record<
+  LinkPackageRelationship,
+  { label: string; description: string }
+> = {
+  same_package: {
+    label: 'Same package',
+    description: 'Imports between modules in the exact same package.',
+  },
+  subpackage: {
+    label: 'Subpackage',
+    description: 'Imports between a package and one of its descendants.',
+  },
+  cross_package: {
+    label: 'Cross package',
+    description: 'Imports between separate package branches.',
+  },
 }
 
 export function ForceGraph({
@@ -44,6 +75,8 @@ export function ForceGraph({
 
   const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
     useState(false)
+  const [visibleEdgeRelationships, setVisibleEdgeRelationships] =
+    useState<VisibleEdgeRelationships>(DEFAULT_VISIBLE_EDGE_RELATIONSHIPS)
 
   const packagesWithExternalImporters = useMemo(() => {
     return new Set(snapshot.package_panel.externally_imported_package_names)
@@ -64,10 +97,28 @@ export function ForceGraph({
   ])
 
   const preset = FORCE_PRESETS[presetKey]
-  const graphData = useMemo(
+  const fullGraphData = useMemo(
     () => buildGraphData(snapshot.force_graph),
     [snapshot.force_graph],
   )
+  const graphData = useMemo(() => {
+    return {
+      ...fullGraphData,
+      links: fullGraphData.links.filter(
+        (link) => visibleEdgeRelationships[getLinkPackageRelationship(link)],
+      ),
+    }
+  }, [fullGraphData, visibleEdgeRelationships])
+
+  function setEdgeRelationshipVisibility(
+    relationship: LinkPackageRelationship,
+    isVisible: boolean,
+  ): void {
+    setVisibleEdgeRelationships((current) => ({
+      ...current,
+      [relationship]: isVisible,
+    }))
+  }
 
   return (
     <section>
@@ -96,6 +147,46 @@ export function ForceGraph({
           ariaLabel="Highlight mutual package dependency edges"
           title="Highlight mutual package dependency edges"
         />
+      </div>
+
+      <div className="mb-4 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3">
+        <div className="mb-3">
+          <div className="text-sm font-medium text-white">Visible edge types</div>
+          <div className="text-xs text-slate-400">
+            Show or hide same-package, subpackage, and cross-package edges.
+          </div>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-3">
+          {LINK_PACKAGE_RELATIONSHIPS.map((relationship) => {
+            const copy = EDGE_RELATIONSHIP_COPY[relationship]
+
+            return (
+              <div
+                key={relationship}
+                className="flex items-start justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/60 px-3 py-2"
+              >
+                <div>
+                  <div className="text-sm font-medium text-white">
+                    {copy.label}
+                  </div>
+                  <div className="text-xs text-slate-400">
+                    {copy.description}
+                  </div>
+                </div>
+
+                <ToggleSwitch
+                  checked={visibleEdgeRelationships[relationship]}
+                  onChange={(checked) =>
+                    setEdgeRelationshipVisibility(relationship, checked)
+                  }
+                  ariaLabel={`Toggle ${copy.label.toLowerCase()} edges`}
+                  title={`Toggle ${copy.label.toLowerCase()} edges`}
+                />
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">

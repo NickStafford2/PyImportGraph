@@ -5,6 +5,12 @@ export type LinkPackageRelationship =
   | 'subpackage'
   | 'cross_package'
 
+export const LINK_PACKAGE_RELATIONSHIPS: LinkPackageRelationship[] = [
+  'same_package',
+  'subpackage',
+  'cross_package',
+]
+
 function isAncestorPackage(ancestor: string, descendant: string): boolean {
   return descendant.startsWith(`${ancestor}.`)
 }
