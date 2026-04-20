@@ -1,8 +1,9 @@
 // frontend/src/components/forceGraph/ForceGraphCanvas.tsx
 
 import { forceCollide } from 'd3-force-3d'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph3D, { type ForceGraphMethods } from 'react-force-graph-3d'
+import * as THREE from 'three'
 import {
   getEffectiveLinkDistance,
   getEffectiveLinkStrength,
@@ -37,6 +38,17 @@ type ForceGraphMethodsWithVelocityDecay = ForceGraphMethods<GraphNode, GraphLink
   d3VelocityDecay?: (value: number) => ForceGraphMethods<GraphNode, GraphLink>
 }
 
+const INIT_NODE_HALO_COLOR = '#22d3ee'
+const DEFAULT_NODE_REL_SIZE = 4
+
+function isInitModuleNode(node: GraphNode): boolean {
+  return node.module_name === node.package_name
+}
+
+function getNodeSphereRadius(node: GraphNode): number {
+  return Math.cbrt(Math.max(0, getNodeValue(node) || 1)) * DEFAULT_NODE_REL_SIZE
+}
+
 export function ForceGraphCanvas({
   graphData,
   preset,
@@ -55,6 +67,18 @@ export function ForceGraphCanvas({
     width: 0,
     height: 700,
   })
+  const initNodeHalo = useMemo(() => {
+    return {
+      geometry: new THREE.TorusGeometry(1, 0.16, 12, 48),
+      material: new THREE.MeshBasicMaterial({
+        color: INIT_NODE_HALO_COLOR,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      }),
+    }
+  }, [])
 
   useEffect(() => {
     if (!containerRef.current) {
@@ -79,6 +103,13 @@ export function ForceGraphCanvas({
       resizeObserver.disconnect()
     }
   }, [])
+
+  useEffect(() => {
+    return () => {
+      initNodeHalo.geometry.dispose()
+      initNodeHalo.material.dispose()
+    }
+  }, [initNodeHalo])
 
   useEffect(() => {
     const graph = graphRef.current
@@ -134,6 +165,23 @@ export function ForceGraphCanvas({
             nodeId="module_name"
             nodeVal={getNodeValue}
             nodeColor={(node) => getNodeColor(node, highlightedPackages)}
+            nodeThreeObject={(node: GraphNode) => {
+              if (!isInitModuleNode(node)) {
+                return undefined
+              }
+
+              const halo = new THREE.Mesh(
+                initNodeHalo.geometry,
+                initNodeHalo.material,
+              )
+              const nodeSphereRadius = getNodeSphereRadius(node)
+              halo.rotation.x = Math.PI / 2
+              halo.scale.setScalar(nodeSphereRadius)
+
+              const group = new THREE.Group()
+              group.add(halo)
+              return group
+            }}
             nodeLabel={(node) => `
               <div style="
                 max-width: 240px;
