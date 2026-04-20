@@ -6,6 +6,10 @@ export type LinkPackageRelationship =
   | 'cross_package'
 
 export type LinkRelationshipToggles = Record<LinkPackageRelationship, boolean>
+export type LinkRelationshipVisibilityMultipliers = Record<
+  LinkPackageRelationship,
+  number
+>
 
 export const LINK_PACKAGE_RELATIONSHIPS: LinkPackageRelationship[] = [
   'same_package',

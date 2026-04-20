@@ -9,7 +9,9 @@ import {
   LINK_PACKAGE_RELATIONSHIPS,
   type LinkPackageRelationship,
   type LinkRelationshipToggles,
+  type LinkRelationshipVisibilityMultipliers,
 } from './graphRelationships'
+import { MultiplierSlider } from './MultiplierSlider'
 import { FORCE_PRESETS } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
@@ -31,6 +33,22 @@ const DEFAULT_GRAYSCALED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   subpackage: false,
   cross_package: false,
 }
+
+const EDGE_RELATIONSHIP_VISIBILITY_OPTIONS = [
+  0.25,
+  0.5,
+  1,
+  1.5,
+  2,
+  3,
+] as const
+
+const DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS: LinkRelationshipVisibilityMultipliers =
+  {
+    same_package: 1,
+    subpackage: 1,
+    cross_package: 1,
+  }
 
 const EDGE_RELATIONSHIP_COPY: Record<
   LinkPackageRelationship,
@@ -84,6 +102,10 @@ export function ForceGraph({
     useState<LinkRelationshipToggles>(DEFAULT_VISIBLE_EDGE_RELATIONSHIPS)
   const [grayscaledEdgeRelationships, setGrayscaledEdgeRelationships] =
     useState<LinkRelationshipToggles>(DEFAULT_GRAYSCALED_EDGE_RELATIONSHIPS)
+  const [edgeRelationshipVisibilityMultipliers, setEdgeRelationshipVisibilityMultipliers] =
+    useState<LinkRelationshipVisibilityMultipliers>(
+      DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS,
+    )
 
   const packagesWithExternalImporters = useMemo(() => {
     return new Set(snapshot.package_panel.externally_imported_package_names)
@@ -134,6 +156,16 @@ export function ForceGraph({
     setGrayscaledEdgeRelationships((current) => ({
       ...current,
       [relationship]: isGrayscaled,
+    }))
+  }
+
+  function setEdgeRelationshipVisibilityMultiplier(
+    relationship: LinkPackageRelationship,
+    multiplier: number,
+  ): void {
+    setEdgeRelationshipVisibilityMultipliers((current) => ({
+      ...current,
+      [relationship]: multiplier,
     }))
   }
 
@@ -213,6 +245,21 @@ export function ForceGraph({
                     title={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
                   />
                 </div>
+
+                <div className="mt-3">
+                  <MultiplierSlider
+                    label="Visibility"
+                    value={edgeRelationshipVisibilityMultipliers[relationship]}
+                    options={EDGE_RELATIONSHIP_VISIBILITY_OPTIONS}
+                    onChange={(multiplier) =>
+                      setEdgeRelationshipVisibilityMultiplier(
+                        relationship,
+                        multiplier,
+                      )
+                    }
+                    ariaLabel={`${copy.label} edge visibility`}
+                  />
+                </div>
               </div>
             )
           })}
@@ -229,6 +276,9 @@ export function ForceGraph({
             highlightMutualPackageDependenciesOnly
           }
           grayscaledEdgeRelationships={grayscaledEdgeRelationships}
+          edgeRelationshipVisibilityMultipliers={
+            edgeRelationshipVisibilityMultipliers
+          }
           className={className}
         />
 

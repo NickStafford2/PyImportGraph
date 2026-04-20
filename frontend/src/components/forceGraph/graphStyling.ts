@@ -3,6 +3,7 @@ import { getLinkPackageInfluence } from './graphInfluence'
 import {
   getLinkPackageRelationship,
   type LinkRelationshipToggles,
+  type LinkRelationshipVisibilityMultipliers,
 } from './graphRelationships'
 import type { GraphLink, GraphNode, PackageInfluenceConfig } from './types'
 
@@ -91,6 +92,7 @@ type GetLinkColorArgs = {
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
   grayscaledEdgeRelationships: LinkRelationshipToggles
+  edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
 }
 
 export function getLinkColor({
@@ -99,6 +101,7 @@ export function getLinkColor({
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
   grayscaledEdgeRelationships,
+  edgeRelationshipVisibilityMultipliers,
 }: GetLinkColorArgs): string {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
   const highlightMultiplier = getLinkHighlightMultiplier(
@@ -107,6 +110,8 @@ export function getLinkColor({
   )
   const relationship = getLinkPackageRelationship(link)
   const isGrayscaled = grayscaledEdgeRelationships[relationship]
+  const relationshipVisibilityMultiplier =
+    edgeRelationshipVisibilityMultipliers[relationship]
 
   if (highlightMutualPackageDependenciesOnly) {
     if (!link.is_mutual_package_dependency) {
@@ -115,7 +120,10 @@ export function getLinkColor({
 
     const opacity = Math.max(
       0.3,
-      0.8 * influence.edgeVisibilityMultiplier * highlightMultiplier,
+      0.8 *
+        influence.edgeVisibilityMultiplier *
+        relationshipVisibilityMultiplier *
+        highlightMultiplier,
     )
 
     const rgb = isGrayscaled ? GRAYSCALED_LINK_RGB : MUTUAL_LINK_RGB
@@ -126,7 +134,10 @@ export function getLinkColor({
   const baseOpacity = getBaseLinkOpacity(link)
   const opacity = Math.max(
     0.06,
-    baseOpacity * influence.edgeVisibilityMultiplier * highlightMultiplier,
+    baseOpacity *
+      influence.edgeVisibilityMultiplier *
+      relationshipVisibilityMultiplier *
+      highlightMultiplier,
   )
 
   const isDimmedByHighlight = highlightMultiplier < 1
@@ -144,6 +155,7 @@ type GetLinkWidthArgs = {
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
+  edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
 }
 
 export function getLinkWidth({
@@ -151,6 +163,7 @@ export function getLinkWidth({
   packageInfluenceConfig,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
+  edgeRelationshipVisibilityMultipliers,
 }: GetLinkWidthArgs): number {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
   const highlightMultiplier = getLinkHighlightMultiplier(
@@ -158,6 +171,8 @@ export function getLinkWidth({
     highlightedPackages,
   )
   const baseWidth = getBaseLinkWidth(link)
+  const relationshipVisibilityMultiplier =
+    edgeRelationshipVisibilityMultipliers[getLinkPackageRelationship(link)]
 
   if (highlightMutualPackageDependenciesOnly) {
     if (!link.is_mutual_package_dependency) {
@@ -166,12 +181,18 @@ export function getLinkWidth({
 
     return Math.max(
       2.5,
-      (baseWidth + 2.5) * influence.edgeVisibilityMultiplier * highlightMultiplier,
+      (baseWidth + 2.5) *
+        influence.edgeVisibilityMultiplier *
+        relationshipVisibilityMultiplier *
+        highlightMultiplier,
     )
   }
 
   return Math.max(
     0.15,
-    baseWidth * influence.edgeVisibilityMultiplier * highlightMultiplier,
+    baseWidth *
+      influence.edgeVisibilityMultiplier *
+      relationshipVisibilityMultiplier *
+      highlightMultiplier,
   )
 }

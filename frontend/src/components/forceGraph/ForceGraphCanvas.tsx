@@ -10,6 +10,7 @@ import {
 } from './graphInfluence'
 import { getNodeValue } from './graphDisplay'
 import type { LinkRelationshipToggles } from './graphRelationships'
+import type { LinkRelationshipVisibilityMultipliers } from './graphRelationships'
 import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import type {
   ForcePreset,
@@ -26,6 +27,7 @@ type ForceGraphCanvasProps = {
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
   grayscaledEdgeRelationships: LinkRelationshipToggles
+  edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
   className?: string
 }
 
@@ -56,6 +58,7 @@ export function ForceGraphCanvas({
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
   grayscaledEdgeRelationships,
+  edgeRelationshipVisibilityMultipliers,
   className,
 }: ForceGraphCanvasProps) {
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -207,6 +210,7 @@ export function ForceGraphCanvas({
                 highlightedPackages,
                 highlightMutualPackageDependenciesOnly,
                 grayscaledEdgeRelationships,
+                edgeRelationshipVisibilityMultipliers,
               })
             }
             linkWidth={(link) =>
@@ -215,6 +219,7 @@ export function ForceGraphCanvas({
                 packageInfluenceConfig,
                 highlightedPackages,
                 highlightMutualPackageDependenciesOnly,
+                edgeRelationshipVisibilityMultipliers,
               })
             }
             linkDirectionalArrowLength={3.5}

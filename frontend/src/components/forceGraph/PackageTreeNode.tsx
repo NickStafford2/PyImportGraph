@@ -162,12 +162,6 @@ export function PackageTreeNode({
         packageName={packageName}
         settings={settings}
         onPackageInfluenceChange={onPackageInfluenceChange}
-        onReset={() =>
-          onPackageInfluenceChange(
-            packageName,
-            DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
-          )
-        }
       />
 
       {hasChildren && !isCollapsed && (
