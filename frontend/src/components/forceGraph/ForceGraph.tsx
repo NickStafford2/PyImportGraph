@@ -279,6 +279,7 @@ export function ForceGraph({
           edgeRelationshipVisibilityMultipliers={
             edgeRelationshipVisibilityMultipliers
           }
+          displayPrefix={displayPrefix}
           className={className}
         />
 
