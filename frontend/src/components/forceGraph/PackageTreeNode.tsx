@@ -1,15 +1,12 @@
 import type { PackagePanelNodeSnapshot } from '../../types'
-import {
-  DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
-  getPackageInfluenceSettings,
-} from './graphInfluence'
-import type {
-  PackageInfluenceConfig,
-  PackageInfluenceSettings,
-} from './types'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 import { getPackageColor } from './graphColors'
+import {
+  DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
+  getPackageInfluenceSettings
+} from './graphInfluence'
+import type { PackageInfluenceConfig, PackageInfluenceSettings } from './types'
 
 type PackageTreeNodeProps = {
   node: PackagePanelNodeSnapshot

@@ -7,12 +7,12 @@ from pathlib import Path
 from pyimportgraph.analysis.package_dependencies import _build_import_graph
 from pyimportgraph.analysis.symbol_usage import (
     Definition,
-    _FromImport,
-    _ParsedDefinition,
-    _ParsedFromImport,
     _discover_python_files,
+    _FromImport,
     _module_name_from_path,
     _parse_module,
+    _ParsedDefinition,
+    _ParsedFromImport,
 )
 from pyimportgraph.model.package_tree import PackageTree
 
