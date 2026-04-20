@@ -51,4 +51,5 @@ venv/
 context-export.toml
 out.txt
 sample.pyimportgraph.json
+context.md 
 
