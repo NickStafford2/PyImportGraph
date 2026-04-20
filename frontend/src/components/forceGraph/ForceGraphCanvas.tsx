@@ -277,6 +277,9 @@ export function ForceGraphCanvas({
             }
             linkDirectionalArrowLength={3.5}
             linkDirectionalArrowRelPos={1}
+            linkDirectionalParticles={2}
+            linkDirectionalParticleWidth={1.8}
+            linkDirectionalParticleSpeed={0.003}
             linkCurvature={0.08}
             cooldownTicks={preset.cooldownTicks}
             enableNodeDrag
