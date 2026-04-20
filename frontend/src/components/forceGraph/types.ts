@@ -15,7 +15,7 @@ export type GraphLink = {
   source: string
   target: string
   type: string
-  samePackage: boolean
+  isSamePackage: boolean
   weight: number
   sourcePackage: string
   targetPackage: string

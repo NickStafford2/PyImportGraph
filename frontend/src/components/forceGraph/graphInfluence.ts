@@ -43,7 +43,7 @@ export function getEffectiveLinkStrength(
   preset: ForcePreset,
   config: PackageInfluenceConfig,
 ): number {
-  const baseStrength = link.samePackage
+  const baseStrength = link.isSamePackage
     ? preset.linkStrength.samePackage
     : preset.linkStrength.crossPackage
 
@@ -55,7 +55,7 @@ export function getEffectiveLinkDistance(
   preset: ForcePreset,
   config: PackageInfluenceConfig,
 ): number {
-  const baseDistance = link.samePackage
+  const baseDistance = link.isSamePackage
     ? preset.linkDistance.samePackage
     : preset.linkDistance.crossPackage
 

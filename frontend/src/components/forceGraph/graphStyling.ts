@@ -68,7 +68,7 @@ export function getLinkColor({
     return `rgba(${MUTUAL_LINK_RGB}, ${opacity})`
   }
 
-  const baseOpacity = link.samePackage ? 0.7 : 0.35
+  const baseOpacity = link.isSamePackage ? 0.7 : 0.35
   const opacity = Math.max(
     0.06,
     baseOpacity * influence.edgeVisibilityMultiplier * highlightMultiplier,
@@ -98,7 +98,7 @@ export function getLinkWidth({
     link,
     highlightedPackages,
   )
-  const baseWidth = link.samePackage ? 4.0 : 2.0
+  const baseWidth = link.isSamePackage ? 4.0 : 2.0
 
   if (highlightMutualPackageDependenciesOnly) {
     if (!link.isMutualPackageDependency) {
