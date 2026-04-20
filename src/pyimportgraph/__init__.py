@@ -2,9 +2,9 @@ from pyimportgraph.analysis.package_dependencies import (
     PackageDependencyMap,
     build_package_dependency_map,
 )
+from pyimportgraph.analysis.package_query import PackageQuery
 from pyimportgraph.analysis.project_model import (
     ModuleImportQueryResult,
-    PackageImportQueryResult,
     ProjectModel,
 )
 from pyimportgraph.analysis.symbol_usage import (
@@ -20,7 +20,7 @@ __all__ = [
     "ExternalSymbolUse",
     "ModuleImportQueryResult",
     "PackageDependencyMap",
-    "PackageImportQueryResult",
+    "PackageQuery",
     "ProjectModel",
     "SymbolUsageReport",
     "build_package_dependency_map",

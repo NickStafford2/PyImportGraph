@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from pyimportgraph.analysis.package_dependencies import _build_import_graph
+from pyimportgraph.analysis.package_query import PackageQuery
 from pyimportgraph.analysis.symbol_usage import (
     Definition,
     _discover_python_files,
@@ -25,14 +26,6 @@ class ModuleImportQueryResult:
 
 
 @dataclass(frozen=True, slots=True)
-class PackageImportQueryResult:
-    package_name: str
-    imported_module_names: tuple[str, ...]
-    importing_modules: tuple[str, ...]
-    importing_packages: tuple[str, ...]
-
-
-@dataclass(frozen=True, slots=True)
 class ProjectModel:
     module_names: tuple[str, ...]
     package_tree: PackageTree
@@ -44,6 +37,7 @@ class ProjectModel:
     package_dependencies: dict[str, tuple[str, ...]]
     reciprocal_package_dependency_pairs: tuple[tuple[str, str], ...]
     packages_with_external_importers_list: tuple[str, ...]
+    mutual_dependency_packages_by_package: dict[str, tuple[str, ...]]
 
     @classmethod
     def build(
@@ -132,6 +126,11 @@ class ProjectModel:
             package_tree=package_tree,
             module_importers=module_importers,
         )
+        mutual_dependency_packages_by_package = (
+            _build_mutual_dependency_packages_by_package(
+                reciprocal_package_dependency_pairs
+            )
+        )
 
         return cls(
             module_names=all_module_names,
@@ -172,99 +171,66 @@ class ProjectModel:
             package_dependencies=package_dependencies,
             reciprocal_package_dependency_pairs=reciprocal_package_dependency_pairs,
             packages_with_external_importers_list=packages_with_external_importers_list,
+            mutual_dependency_packages_by_package=mutual_dependency_packages_by_package,
         )
 
-    def find_modules_importing_module(
-        self, module_name: str
-    ) -> ModuleImportQueryResult:
-        importing_modules = self.module_importers.get(module_name, ())
-        importing_packages = tuple(
+    def package_names(self) -> tuple[str, ...]:
+        return self.package_tree.package_names()
+
+    def root_package_names(self) -> tuple[str, ...]:
+        return tuple(
+            package_name
+            for package_name in self.package_tree.package_names()
+            if self.package_tree.node_for_package(package_name).parent_name is None
+        )
+
+    def package_query(self, package_name: str) -> PackageQuery:
+        self.package_tree.node_for_package(package_name)
+        return PackageQuery(model=self, package_name=package_name)
+
+    def module_package_name(self, module_name: str) -> str:
+        return self.package_tree.package_for_module(module_name)
+
+    def module_imports_for(self, module_name: str) -> tuple[str, ...]:
+        return self.module_imports.get(module_name, ())
+
+    def module_importers_for(self, module_name: str) -> tuple[str, ...]:
+        return self.module_importers.get(module_name, ())
+
+    def module_importing_packages(self, module_name: str) -> tuple[str, ...]:
+        return tuple(
             sorted(
                 {
-                    self.package_tree.package_for_module(importer_module_name)
-                    for importer_module_name in importing_modules
+                    self.module_package_name(importer_module_name)
+                    for importer_module_name in self.module_importers_for(module_name)
                 }
             )
         )
-        return ModuleImportQueryResult(
-            module_name=module_name,
-            importing_modules=importing_modules,
-            importing_packages=importing_packages,
-        )
 
-    def find_modules_importing_package(
-        self, package_name: str
-    ) -> PackageImportQueryResult:
-        subtree_module_names = set(self.package_tree.subtree_module_names(package_name))
-
-        importing_modules = sorted(
-            {
-                importer_module_name
-                for imported_module_name in subtree_module_names
-                for importer_module_name in self.module_importers.get(
-                    imported_module_name, ()
-                )
-                if importer_module_name not in subtree_module_names
-            }
-        )
-
-        importing_packages = sorted(
-            {
-                self.package_tree.package_for_module(importer_module_name)
-                for importer_module_name in importing_modules
-            }
-        )
-
-        return PackageImportQueryResult(
-            package_name=package_name,
-            imported_module_names=tuple(sorted(subtree_module_names)),
-            importing_modules=tuple(importing_modules),
-            importing_packages=tuple(importing_packages),
-        )
-
-    def find_external_interface_for_module(self, module_name: str) -> list[Definition]:
-        defining_package_name = self.package_tree.package_for_module(module_name)
+    def module_external_interface(self, module_name: str) -> tuple[Definition, ...]:
+        defining_package_name = self.module_package_name(module_name)
         external_definitions: list[Definition] = []
 
-        for definition in self.definitions_by_module.get(module_name, {}).values():
-            if self._definition_is_used_outside_package(
+        for definition in self.definitions_for_module(module_name):
+            if self.definition_is_used_outside_package(
                 definition_module_name=module_name,
                 symbol_name=definition.symbol_name,
                 defining_package_name=defining_package_name,
             ):
                 external_definitions.append(definition)
 
-        return sorted(
-            external_definitions,
-            key=lambda item: (item.line, item.symbol_name),
+        return tuple(
+            sorted(
+                external_definitions,
+                key=lambda item: (item.line, item.symbol_name),
+            )
         )
 
-    def find_external_interface_for_package(
-        self, package_name: str
-    ) -> list[Definition]:
-        subtree_module_names = self.package_tree.subtree_module_names(package_name)
-        external_definitions: list[Definition] = []
+    def definitions_for_module(self, module_name: str) -> tuple[Definition, ...]:
+        return tuple(self.definitions_by_module.get(module_name, {}).values())
 
-        for module_name in subtree_module_names:
-            for definition in self.definitions_by_module.get(module_name, {}).values():
-                if self._definition_is_used_outside_package_subtree(
-                    definition_module_name=module_name,
-                    symbol_name=definition.symbol_name,
-                    package_name=package_name,
-                ):
-                    external_definitions.append(definition)
-
-        return sorted(
-            external_definitions,
-            key=lambda item: (
-                item.module_name,
-                item.line,
-                item.symbol_name,
-            ),
-        )
-
-    def package_dependency_map(self) -> dict[str, tuple[str, ...]]:
-        return self.package_dependencies
+    def package_dependencies_for(self, package_name: str) -> tuple[str, ...]:
+        return self.package_dependencies.get(package_name, ())
 
     def packages_with_external_importers(self) -> tuple[str, ...]:
         return self.packages_with_external_importers_list
@@ -272,7 +238,60 @@ class ProjectModel:
     def reciprocal_package_dependencies(self) -> tuple[tuple[str, str], ...]:
         return self.reciprocal_package_dependency_pairs
 
-    def _definition_is_used_outside_package(
+    def mutual_dependency_packages_for(self, package_name: str) -> tuple[str, ...]:
+        return self.mutual_dependency_packages_by_package.get(package_name, ())
+
+    def has_reciprocal_package_dependency(
+        self,
+        source_package_name: str,
+        target_package_name: str,
+    ) -> bool:
+        return target_package_name in self.mutual_dependency_packages_for(
+            source_package_name
+        )
+
+    def cross_package_symbol_use_count(self) -> int:
+        count = 0
+
+        for (
+            imported_module_name,
+            imports,
+        ) in self.symbol_imports_by_imported_module.items():
+            if imported_module_name not in self.module_names:
+                continue
+
+            imported_package_name = self.module_package_name(imported_module_name)
+
+            count += sum(
+                1
+                for symbol_import in imports
+                if symbol_import.importer_module in self.module_names
+                and self.module_package_name(symbol_import.importer_module)
+                != imported_package_name
+            )
+
+        return count
+
+    def find_modules_importing_module(
+        self, module_name: str
+    ) -> ModuleImportQueryResult:
+        importing_modules = self.module_importers_for(module_name)
+        importing_packages = self.module_importing_packages(module_name)
+        return ModuleImportQueryResult(
+            module_name=module_name,
+            importing_modules=importing_modules,
+            importing_packages=importing_packages,
+        )
+
+    def find_external_interface_for_module(self, module_name: str) -> list[Definition]:
+        return list(self.module_external_interface(module_name))
+
+    def find_external_interface_for_package(
+        self, package_name: str
+    ) -> list[Definition]:
+        return list(self.package_query(package_name).external_interface)
+
+    def definition_is_used_outside_package(
         self,
         *,
         definition_module_name: str,
@@ -285,7 +304,7 @@ class ProjectModel:
             if symbol_import.imported_name != symbol_name:
                 continue
 
-            importer_package_name = self.package_tree.package_for_module(
+            importer_package_name = self.module_package_name(
                 symbol_import.importer_module
             )
             if importer_package_name != defining_package_name:
@@ -293,7 +312,7 @@ class ProjectModel:
 
         return False
 
-    def _definition_is_used_outside_package_subtree(
+    def definition_is_used_outside_package_subtree(
         self,
         *,
         definition_module_name: str,
@@ -462,3 +481,17 @@ def _build_packages_with_external_importers(
             packages_with_external_importers.append(package_name)
 
     return tuple(sorted(packages_with_external_importers))
+
+
+def _build_mutual_dependency_packages_by_package(
+    reciprocal_pairs: tuple[tuple[str, str], ...],
+) -> dict[str, tuple[str, ...]]:
+    values: dict[str, set[str]] = {}
+
+    for source_package_name, target_package_name in reciprocal_pairs:
+        values.setdefault(source_package_name, set()).add(target_package_name)
+
+    return {
+        package_name: tuple(sorted(other_package_names))
+        for package_name, other_package_names in sorted(values.items())
+    }
