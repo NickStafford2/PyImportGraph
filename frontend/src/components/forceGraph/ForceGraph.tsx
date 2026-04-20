@@ -3,6 +3,7 @@ import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
 import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
+import { buildGraphData } from './graphDisplay'
 import { FORCE_PRESETS } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
@@ -63,7 +64,10 @@ export function ForceGraph({
   ])
 
   const preset = FORCE_PRESETS[presetKey]
-  const graphData = snapshot.force_graph
+  const graphData = useMemo(
+    () => buildGraphData(snapshot.force_graph),
+    [snapshot.force_graph],
+  )
 
   return (
     <section>

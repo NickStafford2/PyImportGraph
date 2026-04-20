@@ -7,6 +7,7 @@ import {
   getEffectiveLinkDistance,
   getEffectiveLinkStrength,
 } from './graphInfluence'
+import { getNodeValue } from './graphDisplay'
 import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import type {
   ForcePreset,
@@ -101,7 +102,7 @@ export function ForceGraphCanvas({
     graph.d3Force(
       'collision',
       forceCollide<GraphNode>((node: GraphNode) =>
-        Math.max(6, node.val * preset.collisionRadiusMultiplier),
+        Math.max(6, getNodeValue(node) * preset.collisionRadiusMultiplier),
       ).strength(preset.collisionStrength),
     )
 
@@ -127,8 +128,8 @@ export function ForceGraphCanvas({
             width={dimensions.width}
             height={dimensions.height}
             graphData={graphData}
-            nodeId="id"
-            nodeVal="val"
+            nodeId="module_name"
+            nodeVal={getNodeValue}
             nodeColor={(node) => getNodeColor(node, highlightedPackages)}
             nodeLabel={(node) => `
               <div style="
@@ -137,14 +138,14 @@ export function ForceGraphCanvas({
                 line-height: 1.4;
               ">
                 <div style="font-weight: 600; color: #e2e8f0; margin-bottom: 4px;">
-                  ${node.displayName}
+                  ${node.module_name}
                 </div>
 
                 <div style="color: #94a3b8;">
-                  <div><b>Package:</b> ${node.group}</div>
-                  <div><b>Imports:</b> ${node.importCount}</div>
-                  <div><b>Imported by:</b> ${node.importedByCount}</div>
-                  <div><b>External interface:</b> ${node.externalInterfaceCount}</div>
+                  <div><b>Package:</b> ${node.package_name}</div>
+                  <div><b>Imports:</b> ${node.import_count}</div>
+                  <div><b>Imported by:</b> ${node.imported_by_count}</div>
+                  <div><b>External interface:</b> ${node.external_interface_count}</div>
                 </div>
               </div>
             `}

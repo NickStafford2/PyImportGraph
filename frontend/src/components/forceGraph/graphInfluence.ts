@@ -23,8 +23,14 @@ export function getLinkPackageInfluence(
   link: GraphLink,
   config: PackageInfluenceConfig,
 ): PackageInfluenceSettings {
-  const sourceSettings = getPackageInfluenceSettings(link.sourcePackage, config)
-  const targetSettings = getPackageInfluenceSettings(link.targetPackage, config)
+  const sourceSettings = getPackageInfluenceSettings(
+    link.source_package_name,
+    config,
+  )
+  const targetSettings = getPackageInfluenceSettings(
+    link.target_package_name,
+    config,
+  )
 
   return {
     edgeStrengthMultiplier: Math.min(
@@ -43,7 +49,7 @@ export function getEffectiveLinkStrength(
   preset: ForcePreset,
   config: PackageInfluenceConfig,
 ): number {
-  const baseStrength = link.isSamePackage
+  const baseStrength = link.is_same_package
     ? preset.linkStrength.samePackage
     : preset.linkStrength.crossPackage
 
@@ -55,7 +61,7 @@ export function getEffectiveLinkDistance(
   preset: ForcePreset,
   config: PackageInfluenceConfig,
 ): number {
-  const baseDistance = link.isSamePackage
+  const baseDistance = link.is_same_package
     ? preset.linkDistance.samePackage
     : preset.linkDistance.crossPackage
 

@@ -19,8 +19,8 @@ function getLinkHighlightMultiplier(
   highlightedPackages: ReadonlySet<string>,
 ): number {
   const touchesHighlightedPackage =
-    isPackageHighlighted(link.sourcePackage, highlightedPackages) ||
-    isPackageHighlighted(link.targetPackage, highlightedPackages)
+    isPackageHighlighted(link.source_package_name, highlightedPackages) ||
+    isPackageHighlighted(link.target_package_name, highlightedPackages)
 
   return touchesHighlightedPackage ? 1 : 0.2
 }
@@ -29,8 +29,8 @@ export function getNodeColor(
   node: GraphNode,
   highlightedPackages: ReadonlySet<string>,
 ): string {
-  if (isPackageHighlighted(node.group, highlightedPackages)) {
-    return getPackageColor(node.group)
+  if (isPackageHighlighted(node.package_name, highlightedPackages)) {
+    return getPackageColor(node.package_name)
   }
 
   return GREYED_NODE_COLOR
@@ -56,7 +56,7 @@ export function getLinkColor({
   )
 
   if (highlightMutualPackageDependenciesOnly) {
-    if (!link.isMutualPackageDependency) {
+    if (!link.is_mutual_package_dependency) {
       return `rgba(${INACTIVE_LINK_RGB}, 0.06)`
     }
 
@@ -68,7 +68,7 @@ export function getLinkColor({
     return `rgba(${MUTUAL_LINK_RGB}, ${opacity})`
   }
 
-  const baseOpacity = link.isSamePackage ? 0.7 : 0.35
+  const baseOpacity = link.is_same_package ? 0.7 : 0.35
   const opacity = Math.max(
     0.06,
     baseOpacity * influence.edgeVisibilityMultiplier * highlightMultiplier,
@@ -98,10 +98,10 @@ export function getLinkWidth({
     link,
     highlightedPackages,
   )
-  const baseWidth = link.isSamePackage ? 4.0 : 2.0
+  const baseWidth = link.is_same_package ? 4.0 : 2.0
 
   if (highlightMutualPackageDependenciesOnly) {
-    if (!link.isMutualPackageDependency) {
+    if (!link.is_mutual_package_dependency) {
       return 0.15
     }
 

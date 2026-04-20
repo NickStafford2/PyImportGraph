@@ -1,26 +1,13 @@
 // frontend/src/components/forceGraph/types.ts
 
-export type GraphNode = {
-  id: string
-  name: string
-  displayName: string
-  group: string
-  val: number
-  importCount: number
-  importedByCount: number
-  externalInterfaceCount: number
-}
+import type {
+  ForceGraphLinkSnapshot,
+  ForceGraphNodeSnapshot,
+} from '../../types'
 
-export type GraphLink = {
-  source: string
-  target: string
-  type: string
-  isSamePackage: boolean
-  weight: number
-  sourcePackage: string
-  targetPackage: string
-  isMutualPackageDependency: boolean
-}
+export type GraphNode = ForceGraphNodeSnapshot
+
+export type GraphLink = ForceGraphLinkSnapshot & { source: string; target: string }
 
 export type GraphData = {
   nodes: GraphNode[]

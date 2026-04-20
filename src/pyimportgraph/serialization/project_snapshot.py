@@ -5,7 +5,7 @@ from typing import Any
 from pyimportgraph.analysis import ProjectModel
 from pyimportgraph.analysis.package_query import PackageQuery
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 
 def build_project_snapshot(model: ProjectModel) -> dict[str, Any]:
@@ -160,17 +160,11 @@ def _build_force_graph_snapshot(model: ProjectModel) -> dict[str, Any]:
 
         nodes.append(
             {
-                "id": module_name,
-                "name": module_name,
-                "displayName": module_name,
-                "group": package_name,
-                "val": max(
-                    2,
-                    1 + import_count + imported_by_count + external_interface_count,
-                ),
-                "importCount": import_count,
-                "importedByCount": imported_by_count,
-                "externalInterfaceCount": external_interface_count,
+                "module_name": module_name,
+                "package_name": package_name,
+                "import_count": import_count,
+                "imported_by_count": imported_by_count,
+                "external_interface_count": external_interface_count,
             }
         )
 
@@ -191,14 +185,13 @@ def _build_force_graph_snapshot(model: ProjectModel) -> dict[str, Any]:
 
             links.append(
                 {
-                    "source": item.importer_module,
-                    "target": imported_module_name,
+                    "source_module_name": item.importer_module,
+                    "target_module_name": imported_module_name,
                     "type": "symbol_import",
-                    "samePackage": same_package,
-                    "weight": 1 if same_package else 0.5,
-                    "sourcePackage": source_package,
-                    "targetPackage": target_package,
-                    "isMutualPackageDependency": (
+                    "is_same_package": same_package,
+                    "source_package_name": source_package,
+                    "target_package_name": target_package,
+                    "is_mutual_package_dependency": (
                         model.has_reciprocal_package_dependency(
                             source_package,
                             target_package,

@@ -50,25 +50,21 @@ export type EdgeSnapshot = {
 }
 
 export type ForceGraphNodeSnapshot = {
-  id: string
-  name: string
-  displayName: string
-  group: string
-  val: number
-  importCount: number
-  importedByCount: number
-  externalInterfaceCount: number
+  module_name: string
+  package_name: string
+  import_count: number
+  imported_by_count: number
+  external_interface_count: number
 }
 
 export type ForceGraphLinkSnapshot = {
-  source: string
-  target: string
+  source_module_name: string
+  target_module_name: string
   type: 'symbol_import'
-  samePackage: boolean
-  weight: number
-  sourcePackage: string
-  targetPackage: string
-  isMutualPackageDependency: boolean
+  is_same_package: boolean
+  source_package_name: string
+  target_package_name: string
+  is_mutual_package_dependency: boolean
 }
 
 export type ForceGraphSnapshot = {
