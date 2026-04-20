@@ -35,7 +35,7 @@ export const FORCE_PRESETS: Record<ForcePresetKey, ForcePreset> = {
     },
     linkStrength: {
       samePackage: 1.0,
-      crossPackage: 0.08,
+      crossPackage: 0.01,
     },
   },
   spreadOut: {
