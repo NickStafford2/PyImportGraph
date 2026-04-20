@@ -1,11 +1,56 @@
 import { getPackageColor } from './graphColors'
 import { getLinkPackageInfluence } from './graphInfluence'
+import { getLinkPackageRelationship } from './graphRelationships'
 import type { GraphLink, GraphNode, PackageInfluenceConfig } from './types'
 
 const GREYED_NODE_COLOR = '#475569'
 const INACTIVE_LINK_RGB = '100, 116, 139'
-const ACTIVE_LINK_RGB = '148, 163, 184'
+const SAME_PACKAGE_LINK_RGB = '148, 163, 184'
+const SUBPACKAGE_LINK_RGB = '96, 165, 250'
+const CROSS_PACKAGE_LINK_RGB = '245, 158, 11'
 const MUTUAL_LINK_RGB = '244, 114, 182'
+
+function getBaseLinkColor(link: GraphLink): string {
+  const relationship = getLinkPackageRelationship(link)
+
+  if (relationship === 'same_package') {
+    return SAME_PACKAGE_LINK_RGB
+  }
+
+  if (relationship === 'subpackage') {
+    return SUBPACKAGE_LINK_RGB
+  }
+
+  return CROSS_PACKAGE_LINK_RGB
+}
+
+function getBaseLinkOpacity(link: GraphLink): number {
+  const relationship = getLinkPackageRelationship(link)
+
+  if (relationship === 'same_package') {
+    return 0.28
+  }
+
+  if (relationship === 'subpackage') {
+    return 0.5
+  }
+
+  return 0.72
+}
+
+function getBaseLinkWidth(link: GraphLink): number {
+  const relationship = getLinkPackageRelationship(link)
+
+  if (relationship === 'same_package') {
+    return 1.35
+  }
+
+  if (relationship === 'subpackage') {
+    return 2.2
+  }
+
+  return 3.0
+}
 
 function isPackageHighlighted(
   packageName: string,
@@ -68,14 +113,14 @@ export function getLinkColor({
     return `rgba(${MUTUAL_LINK_RGB}, ${opacity})`
   }
 
-  const baseOpacity = link.is_same_package ? 0.7 : 0.35
+  const baseOpacity = getBaseLinkOpacity(link)
   const opacity = Math.max(
     0.06,
     baseOpacity * influence.edgeVisibilityMultiplier * highlightMultiplier,
   )
 
   const isDimmedByHighlight = highlightMultiplier < 1
-  const rgb = isDimmedByHighlight ? INACTIVE_LINK_RGB : ACTIVE_LINK_RGB
+  const rgb = isDimmedByHighlight ? INACTIVE_LINK_RGB : getBaseLinkColor(link)
 
   return `rgba(${rgb}, ${opacity})`
 }
@@ -98,7 +143,7 @@ export function getLinkWidth({
     link,
     highlightedPackages,
   )
-  const baseWidth = link.is_same_package ? 4.0 : 2.0
+  const baseWidth = getBaseLinkWidth(link)
 
   if (highlightMutualPackageDependenciesOnly) {
     if (!link.is_mutual_package_dependency) {
