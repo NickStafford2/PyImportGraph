@@ -1,17 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
 import { ForceGraphEdgeControls } from './ForceGraphEdgeControls'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
-import { buildPackageColorMap } from './graphColors'
-import { buildGraphData } from './graphDisplay'
-import {
-  buildDefaultEdgeRelationshipConfig,
-  type EdgeRelationshipConfig,
-  type EdgeRelationshipSettings,
-  getLinkPackageRelationship,
-  type LinkPackageRelationship,
-} from './graphRelationships'
+import { useForceGraphDisplay } from './useForceGraphDisplay'
+import { useForceGraphEdgeRelationshipConfig } from './useForceGraphEdgeRelationshipConfig'
 import { useForceGraphState } from './useForceGraphState'
 
 type ForceGraphProps = {
@@ -54,88 +46,26 @@ export function ForceGraph({
     collapseAllPackages,
   } = useForceGraphState({ packages })
 
-  const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
-    useState(false)
-  const [showOnlyExternallyImportedIncludedPackages, setShowOnlyExternallyImportedIncludedPackages] =
-    useState(false)
-  const [edgeRelationshipConfig, setEdgeRelationshipConfig] =
-    useState<EdgeRelationshipConfig>(buildDefaultEdgeRelationshipConfig)
+  const { edgeRelationshipConfig, updateEdgeRelationship } =
+    useForceGraphEdgeRelationshipConfig()
 
-  const packagesWithExternalImporters = useMemo(() => {
-    return new Set(snapshot.package_panel.externally_imported_package_names)
-  }, [snapshot.package_panel.externally_imported_package_names])
-  const rootPackageNames = useMemo(
-    () => snapshot.package_panel.roots.map((root) => root.package_name),
-    [snapshot.package_panel.roots],
-  )
-  const packageColorMap = useMemo(
-    () => buildPackageColorMap(packages, rootPackageNames),
-    [packages, rootPackageNames],
-  )
-
-  useEffect(() => {
-    if (showOnlyExternallyImportedIncludedPackages) {
-      includeOnlyPackages(packagesWithExternalImporters)
-      return
-    }
-
-    includeAllPackages()
-  }, [
+  const {
+    graphData,
+    packageColorMap,
+    showOnlyExternallyImportedPackages,
+    setShowOnlyExternallyImportedPackages,
     showOnlyExternallyImportedIncludedPackages,
-    packagesWithExternalImporters,
+    setShowOnlyExternallyImportedIncludedPackages,
+  } = useForceGraphDisplay({
+    snapshot,
+    packages,
+    includedPackages,
     includeOnlyPackages,
     includeAllPackages,
-  ])
-
-  useEffect(() => {
-    if (showOnlyExternallyImportedPackages) {
-      highlightOnlyPackages(packagesWithExternalImporters)
-      return
-    }
-
-    highlightAllPackages()
-  }, [
-    showOnlyExternallyImportedPackages,
-    packagesWithExternalImporters,
     highlightOnlyPackages,
     highlightAllPackages,
-  ])
-
-  const fullGraphData = useMemo(
-    () => buildGraphData(snapshot.force_graph),
-    [snapshot.force_graph],
-  )
-  const graphData = useMemo(() => {
-    const nodes = fullGraphData.nodes.filter((node) =>
-      includedPackages.has(node.package_name),
-    )
-    const includedNodeIds = new Set(nodes.map((node) => node.module_name))
-
-    return {
-      nodes,
-      links: fullGraphData.links.filter(
-        (link) =>
-          includedPackages.has(link.source_package_name) &&
-          includedPackages.has(link.target_package_name) &&
-          includedNodeIds.has(link.source_module_name) &&
-          includedNodeIds.has(link.target_module_name) &&
-          edgeRelationshipConfig[getLinkPackageRelationship(link)].included,
-      ),
-    }
-  }, [edgeRelationshipConfig, fullGraphData, includedPackages])
-
-  function updateEdgeRelationship(
-    relationship: LinkPackageRelationship,
-    updates: Partial<EdgeRelationshipSettings>,
-  ): void {
-    setEdgeRelationshipConfig((current) => ({
-      ...current,
-      [relationship]: {
-        ...current[relationship],
-        ...updates,
-      },
-    }))
-  }
+    edgeRelationshipConfig,
+  })
 
   return (
     <section>
