@@ -11,8 +11,11 @@ import {
 } from './graphInfluence'
 import type { PackageColorMap } from './graphColors'
 import { getNodeValue } from './graphDisplay'
-import type { LinkRelationshipToggles } from './graphRelationships'
-import type { LinkRelationshipVisibilityMultipliers } from './graphRelationships'
+import type {
+  LinkRelationshipStrengthMultipliers,
+  LinkRelationshipToggles,
+  LinkRelationshipVisibilityMultipliers,
+} from './graphRelationships'
 import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import type {
   ForceGraphConfig,
@@ -30,6 +33,7 @@ type ForceGraphCanvasProps = {
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
   highlightedEdgeRelationships: LinkRelationshipToggles
+  edgeRelationshipStrengthMultipliers: LinkRelationshipStrengthMultipliers
   edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
   displayPrefix: string | null
   className?: string
@@ -104,6 +108,7 @@ export function ForceGraphCanvas({
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
   highlightedEdgeRelationships,
+  edgeRelationshipStrengthMultipliers,
   edgeRelationshipVisibilityMultipliers,
   displayPrefix,
   className,
@@ -170,11 +175,21 @@ export function ForceGraphCanvas({
     const linkForce = graph.d3Force('link')
     if (linkForce != null) {
       linkForce.distance((link: GraphLink) =>
-        getEffectiveLinkDistance(link, forceGraphConfig, packageInfluenceConfig),
+        getEffectiveLinkDistance(
+          link,
+          forceGraphConfig,
+          packageInfluenceConfig,
+          edgeRelationshipStrengthMultipliers,
+        ),
       )
 
       linkForce.strength((link: GraphLink) =>
-        getEffectiveLinkStrength(link, forceGraphConfig, packageInfluenceConfig),
+        getEffectiveLinkStrength(
+          link,
+          forceGraphConfig,
+          packageInfluenceConfig,
+          edgeRelationshipStrengthMultipliers,
+        ),
       )
     }
 
@@ -196,7 +211,12 @@ export function ForceGraphCanvas({
     }
 
     graph.d3ReheatSimulation()
-  }, [forceGraphConfig, graphData, packageInfluenceConfig])
+  }, [
+    edgeRelationshipStrengthMultipliers,
+    forceGraphConfig,
+    graphData,
+    packageInfluenceConfig,
+  ])
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">

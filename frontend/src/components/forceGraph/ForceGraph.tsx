@@ -8,6 +8,7 @@ import {
   getLinkPackageRelationship,
   LINK_PACKAGE_RELATIONSHIPS,
   type LinkPackageRelationship,
+  type LinkRelationshipStrengthMultipliers,
   type LinkRelationshipToggles,
   type LinkRelationshipVisibilityMultipliers,
 } from './graphRelationships'
@@ -36,7 +37,7 @@ const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   direct_child_package: true,
 }
 
-const EDGE_RELATIONSHIP_VISIBILITY_OPTIONS = [
+const EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS = [
   0.25,
   0.5,
   1,
@@ -46,6 +47,14 @@ const EDGE_RELATIONSHIP_VISIBILITY_OPTIONS = [
 ] as const
 
 const DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS: LinkRelationshipVisibilityMultipliers =
+{
+  same_package: 1,
+  subpackage: 1,
+  cross_package: 1,
+  direct_child_package: 1,
+}
+
+const DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS: LinkRelationshipStrengthMultipliers =
 {
   same_package: 1,
   subpackage: 1,
@@ -121,6 +130,10 @@ export function ForceGraph({
   const [edgeRelationshipVisibilityMultipliers, setEdgeRelationshipVisibilityMultipliers] =
     useState<LinkRelationshipVisibilityMultipliers>(
       DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS,
+    )
+  const [edgeRelationshipStrengthMultipliers, setEdgeRelationshipStrengthMultipliers] =
+    useState<LinkRelationshipStrengthMultipliers>(
+      DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS,
     )
 
   const packagesWithExternalImporters = useMemo(() => {
@@ -213,6 +226,16 @@ export function ForceGraph({
     }))
   }
 
+  function setEdgeRelationshipStrengthMultiplier(
+    relationship: LinkPackageRelationship,
+    multiplier: number,
+  ): void {
+    setEdgeRelationshipStrengthMultipliers((current) => ({
+      ...current,
+      [relationship]: multiplier,
+    }))
+  }
+
   return (
     <section>
       <h2 className="mb-4 text-3xl font-semibold text-white">
@@ -297,7 +320,7 @@ export function ForceGraph({
                   <MultiplierSlider
                     label="Emphasis"
                     value={edgeRelationshipVisibilityMultipliers[relationship]}
-                    options={EDGE_RELATIONSHIP_VISIBILITY_OPTIONS}
+                    options={EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS}
                     onChange={(multiplier) =>
                       setEdgeRelationshipVisibilityMultiplier(
                         relationship,
@@ -305,6 +328,18 @@ export function ForceGraph({
                       )
                     }
                     ariaLabel={`${copy.label} edge emphasis`}
+                  />
+                  <MultiplierSlider
+                    label="Edge weight"
+                    value={edgeRelationshipStrengthMultipliers[relationship]}
+                    options={EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS}
+                    onChange={(multiplier) =>
+                      setEdgeRelationshipStrengthMultiplier(
+                        relationship,
+                        multiplier,
+                      )
+                    }
+                    ariaLabel={`${copy.label} edge weight`}
                   />
                 </div>
               </div>
@@ -324,6 +359,9 @@ export function ForceGraph({
             highlightMutualPackageDependenciesOnly
           }
           highlightedEdgeRelationships={highlightedEdgeRelationships}
+          edgeRelationshipStrengthMultipliers={
+            edgeRelationshipStrengthMultipliers
+          }
           edgeRelationshipVisibilityMultipliers={
             edgeRelationshipVisibilityMultipliers
           }

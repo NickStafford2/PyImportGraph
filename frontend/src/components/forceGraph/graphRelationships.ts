@@ -11,6 +11,10 @@ export type LinkRelationshipVisibilityMultipliers = Record<
   LinkPackageRelationship,
   number
 >
+export type LinkRelationshipStrengthMultipliers = Record<
+  LinkPackageRelationship,
+  number
+>
 
 export const LINK_PACKAGE_RELATIONSHIPS: LinkPackageRelationship[] = [
   'same_package',
