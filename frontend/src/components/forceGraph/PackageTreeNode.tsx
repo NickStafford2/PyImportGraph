@@ -195,11 +195,13 @@ export function PackageTreeNode({
         onPackageHighlightChange={handlePackageHighlightChange}
       />
 
-      <PackageInfluenceControls
-        packageName={packageName}
-        settings={settings}
-        onPackageInfluenceChange={onPackageInfluenceChange}
-      />
+      {isIncluded && (
+        <PackageInfluenceControls
+          packageName={packageName}
+          settings={settings}
+          onPackageInfluenceChange={onPackageInfluenceChange}
+        />
+      )}
 
       {hasChildren && (
         <PackageTreeNodeFooter
