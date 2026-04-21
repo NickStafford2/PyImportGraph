@@ -12,7 +12,15 @@ export const DEFAULT_PACKAGE_INFLUENCE_SETTINGS: PackageInfluenceSettings = {
   edgeVisibilityMultiplier: 1,
 }
 
-export const PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS = [1, 0.5, 0.25, 0.1] as const
+export const PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS = [
+  0,
+  0.25,
+  0.5,
+  1,
+  1.5,
+  2,
+  3,
+] as const
 
 export function getPackageInfluenceSettings(
   packageName: string,

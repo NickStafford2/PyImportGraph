@@ -16,20 +16,36 @@ export function PackageInfluenceControls({
   settings,
   onPackageInfluenceChange,
 }: PackageInfluenceControlsProps) {
-  function handleSliderChange(nextMultiplier: number): void {
+  function handleVisibilitySliderChange(nextMultiplier: number): void {
     onPackageInfluenceChange(packageName, {
-      edgeStrengthMultiplier: nextMultiplier,
+      ...settings,
       edgeVisibilityMultiplier: nextMultiplier,
     })
   }
 
+  function handleStrengthSliderChange(nextMultiplier: number): void {
+    onPackageInfluenceChange(packageName, {
+      ...settings,
+      edgeStrengthMultiplier: nextMultiplier,
+    })
+  }
+
   return (
-    <MultiplierSlider
-      label="Edge influence"
-      value={settings.edgeStrengthMultiplier}
-      options={PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS}
-      onChange={handleSliderChange}
-      ariaLabel={`Edge influence for ${packageName}`}
-    />
+    <div className="space-y-2">
+      <MultiplierSlider
+        label="Edge emphasis"
+        value={settings.edgeVisibilityMultiplier}
+        options={PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS}
+        onChange={handleVisibilitySliderChange}
+        ariaLabel={`Edge emphasis for ${packageName}`}
+      />
+      <MultiplierSlider
+        label="Edge weight"
+        value={settings.edgeStrengthMultiplier}
+        options={PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS}
+        onChange={handleStrengthSliderChange}
+        ariaLabel={`Edge weight for ${packageName}`}
+      />
+    </div>
   )
 }
