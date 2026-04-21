@@ -14,16 +14,7 @@ export type GraphData = {
   links: GraphLink[]
 }
 
-export type ForcePresetKey =
-  | 'balanced'
-  | 'packageClusters'
-  | 'spreadOut'
-  | 'dependencyChains'
-
-export type ForcePreset = {
-  key: ForcePresetKey
-  label: string
-  description: string
+export type ForceGraphConfig = {
   chargeStrength: number
   velocityDecay: number
   cooldownTicks: number

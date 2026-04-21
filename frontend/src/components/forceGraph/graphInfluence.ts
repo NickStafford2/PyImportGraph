@@ -1,5 +1,5 @@
 import type {
-  ForcePreset,
+  ForceGraphConfig,
   GraphLink,
   PackageInfluenceConfig,
   PackageInfluenceSettings,
@@ -46,24 +46,27 @@ export function getLinkPackageInfluence(
 
 export function getEffectiveLinkStrength(
   link: GraphLink,
-  preset: ForcePreset,
-  config: PackageInfluenceConfig,
+  forceGraphConfig: ForceGraphConfig,
+  packageInfluenceConfig: PackageInfluenceConfig,
 ): number {
   const baseStrength = link.is_same_package
-    ? preset.linkStrength.samePackage
-    : preset.linkStrength.crossPackage
+    ? forceGraphConfig.linkStrength.samePackage
+    : forceGraphConfig.linkStrength.crossPackage
 
-  return baseStrength * getLinkPackageInfluence(link, config).edgeStrengthMultiplier
+  return (
+    baseStrength *
+    getLinkPackageInfluence(link, packageInfluenceConfig).edgeStrengthMultiplier
+  )
 }
 
 export function getEffectiveLinkDistance(
   link: GraphLink,
-  preset: ForcePreset,
+  forceGraphConfig: ForceGraphConfig,
   config: PackageInfluenceConfig,
 ): number {
   const baseDistance = link.is_same_package
-    ? preset.linkDistance.samePackage
-    : preset.linkDistance.crossPackage
+    ? forceGraphConfig.linkDistance.samePackage
+    : forceGraphConfig.linkDistance.crossPackage
 
   const strengthMultiplier = getLinkPackageInfluence(
     link,

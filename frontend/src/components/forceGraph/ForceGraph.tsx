@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
-import { ForceGraphControls } from './ForceGraphControls'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
 import { buildGraphData } from './graphDisplay'
 import {
@@ -12,7 +11,7 @@ import {
   type LinkRelationshipVisibilityMultipliers,
 } from './graphRelationships'
 import { MultiplierSlider } from './MultiplierSlider'
-import { FORCE_PRESETS } from './presets'
+import { FORCE_GRAPH_CONFIG } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
 
@@ -76,8 +75,6 @@ export function ForceGraph({
   const packages: PackageSnapshot[] = snapshot.packages
 
   const {
-    presetKey,
-    setPresetKey,
     highlightedPackages,
     highlightPackage,
     unhighlightPackage,
@@ -125,7 +122,6 @@ export function ForceGraph({
     highlightAllPackages,
   ])
 
-  const preset = FORCE_PRESETS[presetKey]
   const fullGraphData = useMemo(
     () => buildGraphData(snapshot.force_graph),
     [snapshot.force_graph],
@@ -269,7 +265,7 @@ export function ForceGraph({
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <ForceGraphCanvas
           graphData={graphData}
-          preset={preset}
+          forceGraphConfig={FORCE_GRAPH_CONFIG}
           packageInfluenceConfig={packageInfluenceConfig}
           highlightedPackages={highlightedPackages}
           highlightMutualPackageDependenciesOnly={
@@ -310,7 +306,6 @@ export function ForceGraph({
         />
       </div>
 
-      <ForceGraphControls value={presetKey} onChange={setPresetKey} />
     </section>
   )
 }

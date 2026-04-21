@@ -14,7 +14,7 @@ import type { LinkRelationshipToggles } from './graphRelationships'
 import type { LinkRelationshipVisibilityMultipliers } from './graphRelationships'
 import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import type {
-  ForcePreset,
+  ForceGraphConfig,
   GraphData,
   GraphLink,
   GraphNode,
@@ -23,7 +23,7 @@ import type {
 
 type ForceGraphCanvasProps = {
   graphData: GraphData
-  preset: ForcePreset
+  forceGraphConfig: ForceGraphConfig
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
@@ -96,7 +96,7 @@ function createInitNodeLabelSprite(label: string) {
 
 export function ForceGraphCanvas({
   graphData,
-  preset,
+  forceGraphConfig,
   packageInfluenceConfig,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
@@ -167,33 +167,33 @@ export function ForceGraphCanvas({
     const linkForce = graph.d3Force('link')
     if (linkForce != null) {
       linkForce.distance((link: GraphLink) =>
-        getEffectiveLinkDistance(link, preset, packageInfluenceConfig),
+        getEffectiveLinkDistance(link, forceGraphConfig, packageInfluenceConfig),
       )
 
       linkForce.strength((link: GraphLink) =>
-        getEffectiveLinkStrength(link, preset, packageInfluenceConfig),
+        getEffectiveLinkStrength(link, forceGraphConfig, packageInfluenceConfig),
       )
     }
 
     const chargeForce = graph.d3Force('charge')
     if (chargeForce != null) {
-      chargeForce.strength(preset.chargeStrength)
+      chargeForce.strength(forceGraphConfig.chargeStrength)
     }
 
     graph.d3Force(
       'collision',
       forceCollide<GraphNode>((node: GraphNode) =>
-        Math.max(6, getNodeValue(node) * preset.collisionRadiusMultiplier),
-      ).strength(preset.collisionStrength),
+        Math.max(6, getNodeValue(node) * forceGraphConfig.collisionRadiusMultiplier),
+      ).strength(forceGraphConfig.collisionStrength),
     )
 
     const graphWithVelocityDecay = graph as ForceGraphMethodsWithVelocityDecay
     if (typeof graphWithVelocityDecay.d3VelocityDecay === 'function') {
-      graphWithVelocityDecay.d3VelocityDecay(preset.velocityDecay)
+      graphWithVelocityDecay.d3VelocityDecay(forceGraphConfig.velocityDecay)
     }
 
     graph.d3ReheatSimulation()
-  }, [graphData, packageInfluenceConfig, preset])
+  }, [forceGraphConfig, graphData, packageInfluenceConfig])
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70">
@@ -281,7 +281,7 @@ export function ForceGraphCanvas({
             linkDirectionalParticleWidth={1.8}
             linkDirectionalParticleSpeed={0.003}
             linkCurvature={0.08}
-            cooldownTicks={preset.cooldownTicks}
+            cooldownTicks={forceGraphConfig.cooldownTicks}
             enableNodeDrag
             showNavInfo
           />

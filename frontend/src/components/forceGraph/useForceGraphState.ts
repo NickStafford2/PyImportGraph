@@ -4,9 +4,7 @@ import {
   buildPackageInfluenceConfig,
   updatePackageInfluenceConfig,
 } from './graphInfluence'
-import { DEFAULT_FORCE_PRESET } from './presets'
 import type {
-  ForcePresetKey,
   PackageInfluenceConfig,
   PackageInfluenceSettings,
 } from './types'
@@ -16,9 +14,6 @@ type UseForceGraphStateArgs = {
 }
 
 type UseForceGraphStateResult = {
-  packageNames: string[]
-  presetKey: ForcePresetKey
-  setPresetKey: (value: ForcePresetKey) => void
   highlightedPackages: ReadonlySet<string>
   highlightPackage: (packageName: string) => void
   unhighlightPackage: (packageName: string) => void
@@ -68,9 +63,6 @@ export function useForceGraphState({
   const knownPackageNames = useMemo(() => {
     return new Set(packageNames)
   }, [packageNames])
-
-  const [presetKey, setPresetKey] =
-    useState<ForcePresetKey>(DEFAULT_FORCE_PRESET)
 
   const [highlightedPackages, setHighlightedPackages] = useState<Set<string>>(
     () => new Set(packageNames),
@@ -231,9 +223,6 @@ export function useForceGraphState({
   }, [packageNames])
 
   return {
-    packageNames,
-    presetKey,
-    setPresetKey,
     highlightedPackages,
     highlightPackage,
     unhighlightPackage,
