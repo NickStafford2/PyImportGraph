@@ -4,6 +4,7 @@ type ToggleSwitchProps = {
   ariaLabel: string
   title?: string
   disabled?: boolean
+  color?: 'selection' | 'visibility'
 }
 
 export function ToggleSwitch({
@@ -12,7 +13,15 @@ export function ToggleSwitch({
   ariaLabel,
   title,
   disabled = false,
+  color = 'selection',
 }: ToggleSwitchProps) {
+  const checkedClasses =
+    color === 'visibility'
+      ? 'border-emerald-500 bg-emerald-500/20'
+      : 'border-sky-500 bg-sky-500/20'
+  const thumbCheckedClasses =
+    color === 'visibility' ? 'translate-x-4 bg-emerald-400' : 'translate-x-4 bg-sky-400'
+
   return (
     <button
       type="button"
@@ -28,14 +37,14 @@ export function ToggleSwitch({
         disabled
           ? 'cursor-not-allowed border-slate-800 bg-slate-900/50 opacity-50'
           : checked
-            ? 'border-sky-500 bg-sky-500/20'
+            ? checkedClasses
             : 'border-slate-700 bg-slate-950/80 hover:border-slate-500',
       ].join(' ')}
     >
       <span
         className={[
           'inline-block h-3.5 w-3.5 rounded-full transition-transform',
-          checked ? 'translate-x-4 bg-sky-400' : 'translate-x-1 bg-slate-400',
+          checked ? thumbCheckedClasses : 'translate-x-1 bg-slate-400',
         ].join(' ')}
       />
     </button>

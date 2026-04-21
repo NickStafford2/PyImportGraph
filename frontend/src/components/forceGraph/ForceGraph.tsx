@@ -191,6 +191,7 @@ export function ForceGraph({
           onChange={setHighlightMutualPackageDependenciesOnly}
           ariaLabel="Highlight mutual package dependency edges"
           title="Highlight mutual package dependency edges"
+          color="selection"
         />
       </div>
 
@@ -229,6 +230,7 @@ export function ForceGraph({
                     }
                     ariaLabel={`Toggle ${copy.label.toLowerCase()} edge visibility`}
                     title={`Toggle ${copy.label.toLowerCase()} edge visibility`}
+                    color="visibility"
                   />
 
                   <div className="text-xs text-slate-400">Grayscale</div>
@@ -239,6 +241,7 @@ export function ForceGraph({
                     }
                     ariaLabel={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
                     title={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
+                    color="selection"
                   />
                 </div>
 

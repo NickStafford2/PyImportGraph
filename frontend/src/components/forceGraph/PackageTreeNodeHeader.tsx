@@ -98,6 +98,7 @@ export function PackageTreeNodeHeader({
             ariaLabel="Toggle subtree highlight"
             title="Toggle subtree highlight"
             disabled={isSubtreeHighlightDisabled}
+            color="selection"
           />
 
           <button

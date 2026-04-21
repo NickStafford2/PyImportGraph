@@ -86,6 +86,7 @@ export function ForceGraphPackagesPanel({
             onChange={onShowOnlyExternallyImportedPackagesChange}
             ariaLabel="Only highlight packages imported outside their own package"
             title="Only highlight packages imported outside their own package"
+            color="selection"
           />
         </div>
 
