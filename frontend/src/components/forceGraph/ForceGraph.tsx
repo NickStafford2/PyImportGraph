@@ -203,6 +203,7 @@ export function ForceGraph({
     const nodes = fullGraphData.nodes.filter((node) =>
       includedPackages.has(node.package_name),
     )
+    const includedNodeIds = new Set(nodes.map((node) => node.module_name))
 
     return {
       nodes,
@@ -210,6 +211,8 @@ export function ForceGraph({
         (link) =>
           includedPackages.has(link.source_package_name) &&
           includedPackages.has(link.target_package_name) &&
+          includedNodeIds.has(link.source_module_name) &&
+          includedNodeIds.has(link.target_module_name) &&
           includedEdgeRelationships[getLinkPackageRelationship(link)],
       ),
     }

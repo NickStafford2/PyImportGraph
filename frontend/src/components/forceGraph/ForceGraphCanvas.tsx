@@ -175,45 +175,70 @@ export function ForceGraphCanvas({
       return
     }
 
-    const linkForce = graph.d3Force('link')
-    if (linkForce != null) {
-      linkForce.distance((link: GraphLink) =>
-        getEffectiveLinkDistance(
-          link,
-          forceGraphConfig,
-          packageInfluenceConfig,
-          edgeRelationshipStrengthMultipliers,
-        ),
+    let isCancelled = false
+    let reheatFrameId = 0
+    const configureFrameId = requestAnimationFrame(() => {
+      if (isCancelled) {
+        return
+      }
+
+      const linkForce = graph.d3Force('link')
+      if (linkForce != null) {
+        linkForce.distance((link: GraphLink) =>
+          getEffectiveLinkDistance(
+            link,
+            forceGraphConfig,
+            packageInfluenceConfig,
+            edgeRelationshipStrengthMultipliers,
+          ),
+        )
+
+        linkForce.strength((link: GraphLink) =>
+          getEffectiveLinkStrength(
+            link,
+            forceGraphConfig,
+            packageInfluenceConfig,
+            edgeRelationshipStrengthMultipliers,
+          ),
+        )
+      }
+
+      const chargeForce = graph.d3Force('charge')
+      if (chargeForce != null) {
+        chargeForce.strength(forceGraphConfig.chargeStrength)
+      }
+
+      graph.d3Force(
+        'collision',
+        forceCollide<GraphNode>((node: GraphNode) =>
+          Math.max(
+            6,
+            getNodeValue(node) * forceGraphConfig.collisionRadiusMultiplier,
+          ),
+        ).strength(forceGraphConfig.collisionStrength),
       )
 
-      linkForce.strength((link: GraphLink) =>
-        getEffectiveLinkStrength(
-          link,
-          forceGraphConfig,
-          packageInfluenceConfig,
-          edgeRelationshipStrengthMultipliers,
-        ),
-      )
+      const graphWithVelocityDecay = graph as ForceGraphMethodsWithVelocityDecay
+      if (typeof graphWithVelocityDecay.d3VelocityDecay === 'function') {
+        graphWithVelocityDecay.d3VelocityDecay(forceGraphConfig.velocityDecay)
+      }
+
+      reheatFrameId = requestAnimationFrame(() => {
+        if (isCancelled || graphData.nodes.length === 0) {
+          return
+        }
+
+        graph.d3ReheatSimulation()
+      })
+    })
+
+    return () => {
+      isCancelled = true
+      cancelAnimationFrame(configureFrameId)
+      if (reheatFrameId !== 0) {
+        cancelAnimationFrame(reheatFrameId)
+      }
     }
-
-    const chargeForce = graph.d3Force('charge')
-    if (chargeForce != null) {
-      chargeForce.strength(forceGraphConfig.chargeStrength)
-    }
-
-    graph.d3Force(
-      'collision',
-      forceCollide<GraphNode>((node: GraphNode) =>
-        Math.max(6, getNodeValue(node) * forceGraphConfig.collisionRadiusMultiplier),
-      ).strength(forceGraphConfig.collisionStrength),
-    )
-
-    const graphWithVelocityDecay = graph as ForceGraphMethodsWithVelocityDecay
-    if (typeof graphWithVelocityDecay.d3VelocityDecay === 'function') {
-      graphWithVelocityDecay.d3VelocityDecay(forceGraphConfig.velocityDecay)
-    }
-
-    graph.d3ReheatSimulation()
   }, [
     edgeRelationshipStrengthMultipliers,
     forceGraphConfig,
