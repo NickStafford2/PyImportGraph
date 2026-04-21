@@ -38,6 +38,7 @@ const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
 }
 
 const EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS = [
+  0,
   0.25,
   0.5,
   1,

@@ -88,6 +88,10 @@ export function getEffectiveLinkDistance(
   const combinedStrengthMultiplier =
     strengthMultiplier * relationshipStrengthMultipliers[relationship]
 
+  if (combinedStrengthMultiplier <= 0) {
+    return baseDistance
+  }
+
   const distanceMultiplier =
     combinedStrengthMultiplier >= 1
       ? 1
