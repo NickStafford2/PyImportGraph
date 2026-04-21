@@ -274,7 +274,7 @@ export function ForceGraph({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-4">
           {LINK_PACKAGE_RELATIONSHIPS.map((relationship) => {
             const copy = EDGE_RELATIONSHIP_COPY[relationship]
 
