@@ -5,7 +5,7 @@ from typing import Any
 from pyimportgraph.analysis import ProjectModel
 from pyimportgraph.analysis.package_query import PackageQuery
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 9
 
 
 def build_project_snapshot(model: ProjectModel) -> dict[str, Any]:
@@ -199,6 +199,31 @@ def _build_force_graph_snapshot(model: ProjectModel) -> dict[str, Any]:
                     ),
                 }
             )
+
+    module_names = set(model.module_names)
+
+    for package_name in sorted(model.package_names()):
+        parent_package_name = model.package_query(package_name).parent_name
+        if parent_package_name is None:
+            continue
+
+        if (
+            package_name not in module_names
+            or parent_package_name not in module_names
+        ):
+            continue
+
+        links.append(
+            {
+                "source_module_name": parent_package_name,
+                "target_module_name": package_name,
+                "type": "package_child",
+                "is_same_package": False,
+                "source_package_name": parent_package_name,
+                "target_package_name": package_name,
+                "is_mutual_package_dependency": False,
+            }
+        )
 
     return {
         "nodes": nodes,

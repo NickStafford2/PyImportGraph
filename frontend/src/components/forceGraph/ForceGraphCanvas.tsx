@@ -280,12 +280,16 @@ export function ForceGraphCanvas({
                 edgeRelationshipVisibilityMultipliers,
               })
             }
-            linkDirectionalArrowLength={3.5}
+            linkDirectionalArrowLength={(link) =>
+              link.type === 'package_child' ? 0 : 3.5
+            }
             linkDirectionalArrowRelPos={1}
-            linkDirectionalParticles={2}
+            linkDirectionalParticles={(link) =>
+              link.type === 'package_child' ? 0 : 2
+            }
             linkDirectionalParticleWidth={1.8}
             linkDirectionalParticleSpeed={0.003}
-            linkCurvature={0.08}
+            linkCurvature={(link) => (link.type === 'package_child' ? 0 : 0.08)}
             cooldownTicks={forceGraphConfig.cooldownTicks}
             enableNodeDrag
             showNavInfo

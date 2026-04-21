@@ -26,12 +26,14 @@ const DEFAULT_INCLUDED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   same_package: true,
   subpackage: true,
   cross_package: true,
+  direct_child_package: true,
 }
 
 const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   same_package: true,
   subpackage: true,
   cross_package: true,
+  direct_child_package: true,
 }
 
 const EDGE_RELATIONSHIP_VISIBILITY_OPTIONS = [
@@ -44,11 +46,12 @@ const EDGE_RELATIONSHIP_VISIBILITY_OPTIONS = [
 ] as const
 
 const DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS: LinkRelationshipVisibilityMultipliers =
-  {
-    same_package: 1,
-    subpackage: 1,
-    cross_package: 1,
-  }
+{
+  same_package: 1,
+  subpackage: 1,
+  cross_package: 1,
+  direct_child_package: 1,
+}
 
 const EDGE_RELATIONSHIP_COPY: Record<
   LinkPackageRelationship,
@@ -65,6 +68,11 @@ const EDGE_RELATIONSHIP_COPY: Record<
   cross_package: {
     label: 'Cross package',
     description: 'Imports between separate package branches.',
+  },
+  direct_child_package: {
+    label: 'Direct child package',
+    description:
+      'Structural edges from a package root to its immediate child package root.',
   },
 }
 
@@ -239,7 +247,7 @@ export function ForceGraph({
         <div className="mb-3">
           <div className="text-sm font-medium text-white">Edge type display</div>
           <div className="text-xs text-slate-400">
-            Include or highlight same-package, subpackage, and cross-package edges.
+            Include or highlight same-package, structural parent-child, subpackage, and cross-package edges.
           </div>
         </div>
 

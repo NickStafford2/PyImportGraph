@@ -60,7 +60,7 @@ export type ForceGraphNodeSnapshot = {
 export type ForceGraphLinkSnapshot = {
   source_module_name: string
   target_module_name: string
-  type: 'symbol_import'
+  type: 'symbol_import' | 'package_child'
   is_same_package: boolean
   source_package_name: string
   target_package_name: string

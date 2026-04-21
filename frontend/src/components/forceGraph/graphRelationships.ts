@@ -2,6 +2,7 @@ import type { GraphLink } from './types'
 
 export type LinkPackageRelationship =
   | 'same_package'
+  | 'direct_child_package'
   | 'subpackage'
   | 'cross_package'
 
@@ -15,6 +16,7 @@ export const LINK_PACKAGE_RELATIONSHIPS: LinkPackageRelationship[] = [
   'same_package',
   'subpackage',
   'cross_package',
+  'direct_child_package',
 ]
 
 function isAncestorPackage(ancestor: string, descendant: string): boolean {
@@ -24,6 +26,10 @@ function isAncestorPackage(ancestor: string, descendant: string): boolean {
 export function getLinkPackageRelationship(
   link: GraphLink,
 ): LinkPackageRelationship {
+  if (link.type === 'package_child') {
+    return 'direct_child_package'
+  }
+
   const sourcePackageName = link.source_package_name
   const targetPackageName = link.target_package_name
 

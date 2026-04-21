@@ -4,6 +4,7 @@ import type {
   PackageInfluenceConfig,
   PackageInfluenceSettings,
 } from './types'
+import { getLinkPackageRelationship } from './graphRelationships'
 
 export const DEFAULT_PACKAGE_INFLUENCE_SETTINGS: PackageInfluenceSettings = {
   edgeStrengthMultiplier: 1,
@@ -49,9 +50,13 @@ export function getEffectiveLinkStrength(
   forceGraphConfig: ForceGraphConfig,
   packageInfluenceConfig: PackageInfluenceConfig,
 ): number {
-  const baseStrength = link.is_same_package
-    ? forceGraphConfig.linkStrength.samePackage
-    : forceGraphConfig.linkStrength.crossPackage
+  const relationship = getLinkPackageRelationship(link)
+  const baseStrength =
+    relationship === 'same_package'
+      ? forceGraphConfig.linkStrength.samePackage
+      : relationship === 'direct_child_package'
+        ? forceGraphConfig.linkStrength.directChildPackage
+        : forceGraphConfig.linkStrength.crossPackage
 
   return (
     baseStrength *
@@ -64,9 +69,13 @@ export function getEffectiveLinkDistance(
   forceGraphConfig: ForceGraphConfig,
   config: PackageInfluenceConfig,
 ): number {
-  const baseDistance = link.is_same_package
-    ? forceGraphConfig.linkDistance.samePackage
-    : forceGraphConfig.linkDistance.crossPackage
+  const relationship = getLinkPackageRelationship(link)
+  const baseDistance =
+    relationship === 'same_package'
+      ? forceGraphConfig.linkDistance.samePackage
+      : relationship === 'direct_child_package'
+        ? forceGraphConfig.linkDistance.directChildPackage
+        : forceGraphConfig.linkDistance.crossPackage
 
   const strengthMultiplier = getLinkPackageInfluence(
     link,

@@ -8,10 +8,12 @@ export const FORCE_GRAPH_CONFIG: ForceGraphConfig = {
   collisionRadiusMultiplier: 1.7,
   linkDistance: {
     samePackage: 24,
+    directChildPackage: 60,
     crossPackage: 130,
   },
   linkStrength: {
     samePackage: 1.0,
+    directChildPackage: 0.08,
     crossPackage: 0.01,
   },
 }

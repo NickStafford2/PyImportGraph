@@ -22,10 +22,12 @@ export type ForceGraphConfig = {
   collisionRadiusMultiplier: number
   linkDistance: {
     samePackage: number
+    directChildPackage: number
     crossPackage: number
   }
   linkStrength: {
     samePackage: number
+    directChildPackage: number
     crossPackage: number
   }
 }
