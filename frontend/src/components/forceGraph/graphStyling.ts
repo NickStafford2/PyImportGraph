@@ -47,14 +47,14 @@ function getBaseLinkWidth(link: GraphLink): number {
   const relationship = getLinkPackageRelationship(link)
 
   if (relationship === 'same_package') {
-    return 1.35
+    return 4.05
   }
 
   if (relationship === 'subpackage') {
     return 2.2
   }
 
-  return 3.0
+  return 1.5
 }
 
 function isPackageHighlighted(
