@@ -6,10 +6,11 @@ type MultiplierSliderProps = {
   options: readonly number[]
   onChange: (nextValue: number) => void
   ariaLabel: string
+  formatValue?: (value: number) => string
 }
 
-function formatMultiplierLabel(multiplier: number): string {
-  return `${Math.round(multiplier * 100)}%`
+function defaultFormatValue(value: number): string {
+  return `${Math.round(value * 100)}%`
 }
 
 function getClosestSliderIndex(
@@ -43,6 +44,7 @@ export function MultiplierSlider({
   options,
   onChange,
   ariaLabel,
+  formatValue = defaultFormatValue,
 }: MultiplierSliderProps) {
   const sortedOptions = [...options].sort((left, right) => left - right)
   const sliderIndex = getClosestSliderIndex(value, sortedOptions)
@@ -77,7 +79,7 @@ export function MultiplierSlider({
       />
 
       <div className="text-[11px] text-slate-400">
-        {formatMultiplierLabel(currentValue)}
+        {formatValue(currentValue)}
       </div>
     </div>
   )

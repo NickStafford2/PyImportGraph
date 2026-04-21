@@ -1,11 +1,10 @@
 import type {
-  ForceGraphConfig,
   GraphLink,
   PackageInfluenceConfig,
   PackageInfluenceSettings,
 } from './types'
-import { getLinkPackageRelationship } from './graphRelationships'
-import type { LinkRelationshipStrengthMultipliers } from './graphRelationships'
+import { getLinkEdgeRelationshipSettings } from './graphRelationships'
+import type { EdgeRelationshipConfig } from './graphRelationships'
 
 export const DEFAULT_PACKAGE_INFLUENCE_SETTINGS: PackageInfluenceSettings = {
   edgeStrengthMultiplier: 1,
@@ -56,56 +55,40 @@ export function getLinkPackageInfluence(
 
 export function getEffectiveLinkStrength(
   link: GraphLink,
-  forceGraphConfig: ForceGraphConfig,
+  edgeRelationshipConfig: EdgeRelationshipConfig,
   packageInfluenceConfig: PackageInfluenceConfig,
-  relationshipStrengthMultipliers: LinkRelationshipStrengthMultipliers,
 ): number {
-  const relationship = getLinkPackageRelationship(link)
-  const baseStrength =
-    relationship === 'same_package'
-      ? forceGraphConfig.linkStrength.samePackage
-      : relationship === 'direct_child_package'
-        ? forceGraphConfig.linkStrength.directChildPackage
-        : relationship === 'sibling_package'
-          ? forceGraphConfig.linkStrength.siblingPackage
-          : relationship === 'sibling_module'
-            ? forceGraphConfig.linkStrength.siblingModule
-          : forceGraphConfig.linkStrength.crossPackage
+  const relationshipSettings = getLinkEdgeRelationshipSettings(
+    link,
+    edgeRelationshipConfig,
+  )
 
   return (
-    baseStrength *
-    relationshipStrengthMultipliers[relationship] *
+    relationshipSettings.baseStrength *
+    relationshipSettings.strengthMultiplier *
     getLinkPackageInfluence(link, packageInfluenceConfig).edgeStrengthMultiplier
   )
 }
 
 export function getEffectiveLinkDistance(
   link: GraphLink,
-  forceGraphConfig: ForceGraphConfig,
+  edgeRelationshipConfig: EdgeRelationshipConfig,
   config: PackageInfluenceConfig,
-  relationshipStrengthMultipliers: LinkRelationshipStrengthMultipliers,
 ): number {
-  const relationship = getLinkPackageRelationship(link)
-  const baseDistance =
-    relationship === 'same_package'
-      ? forceGraphConfig.linkDistance.samePackage
-      : relationship === 'direct_child_package'
-        ? forceGraphConfig.linkDistance.directChildPackage
-        : relationship === 'sibling_package'
-          ? forceGraphConfig.linkDistance.siblingPackage
-          : relationship === 'sibling_module'
-            ? forceGraphConfig.linkDistance.siblingModule
-          : forceGraphConfig.linkDistance.crossPackage
+  const relationshipSettings = getLinkEdgeRelationshipSettings(
+    link,
+    edgeRelationshipConfig,
+  )
 
   const strengthMultiplier = getLinkPackageInfluence(
     link,
     config,
   ).edgeStrengthMultiplier
   const combinedStrengthMultiplier =
-    strengthMultiplier * relationshipStrengthMultipliers[relationship]
+    strengthMultiplier * relationshipSettings.strengthMultiplier
 
   if (combinedStrengthMultiplier <= 0) {
-    return baseDistance
+    return relationshipSettings.baseDistance
   }
 
   const distanceMultiplier =
@@ -113,7 +96,7 @@ export function getEffectiveLinkDistance(
       ? 1
       : 1 + (1 - combinedStrengthMultiplier) * 0.35
 
-  return baseDistance * distanceMultiplier
+  return relationshipSettings.baseDistance * distanceMultiplier
 }
 
 export function buildPackageInfluenceConfig(

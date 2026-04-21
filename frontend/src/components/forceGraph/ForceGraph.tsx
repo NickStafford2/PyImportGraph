@@ -5,15 +5,17 @@ import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
 import { buildPackageColorMap } from './graphColors'
 import { buildGraphData } from './graphDisplay'
 import {
+  buildDefaultEdgeRelationshipConfig,
+  EDGE_RELATIONSHIP_BASE_DISTANCE_OPTIONS,
+  EDGE_RELATIONSHIP_BASE_STRENGTH_OPTIONS,
+  EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS,
+  type EdgeRelationshipConfig,
+  type EdgeRelationshipSettings,
   getLinkPackageRelationship,
   LINK_PACKAGE_RELATIONSHIPS,
   type LinkPackageRelationship,
-  type LinkRelationshipStrengthMultipliers,
-  type LinkRelationshipToggles,
-  type LinkRelationshipVisibilityMultipliers,
 } from './graphRelationships'
 import { MultiplierSlider } from './MultiplierSlider'
-import { FORCE_GRAPH_CONFIG } from './presets'
 import { ToggleSwitch } from './ToggleSwitch'
 import { useForceGraphState } from './useForceGraphState'
 
@@ -21,54 +23,6 @@ type ForceGraphProps = {
   snapshot: ProjectSnapshot
   displayPrefix: string | null
   className?: string
-}
-
-const DEFAULT_INCLUDED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
-  same_package: true,
-  subpackage: true,
-  cross_package: true,
-  direct_child_package: true,
-  sibling_package: true,
-  sibling_module: true,
-}
-
-const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
-  same_package: true,
-  subpackage: true,
-  cross_package: true,
-  direct_child_package: true,
-  sibling_package: true,
-  sibling_module: true,
-}
-
-const EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS = [
-  0,
-  0.25,
-  0.5,
-  1,
-  1.5,
-  2,
-  3,
-] as const
-
-const DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS: LinkRelationshipVisibilityMultipliers =
-{
-  same_package: 1,
-  subpackage: 1,
-  cross_package: 1,
-  direct_child_package: 1,
-  sibling_package: 1,
-  sibling_module: 1,
-}
-
-const DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS: LinkRelationshipStrengthMultipliers =
-{
-  same_package: 1,
-  subpackage: 1,
-  cross_package: 1,
-  direct_child_package: 1,
-  sibling_package: 1,
-  sibling_module: 1,
 }
 
 const EDGE_RELATIONSHIP_COPY: Record<
@@ -102,6 +56,14 @@ const EDGE_RELATIONSHIP_COPY: Record<
     description:
       'Structural edges between direct peer modules in the same package.',
   },
+}
+
+function formatStrengthValue(value: number): string {
+  return value.toFixed(2).replace(/\.?0+$/, '')
+}
+
+function formatDistanceValue(value: number): string {
+  return `${Math.round(value)}`
 }
 
 export function ForceGraph({
@@ -142,18 +104,8 @@ export function ForceGraph({
     useState(false)
   const [showOnlyExternallyImportedIncludedPackages, setShowOnlyExternallyImportedIncludedPackages] =
     useState(false)
-  const [includedEdgeRelationships, setIncludedEdgeRelationships] =
-    useState<LinkRelationshipToggles>(DEFAULT_INCLUDED_EDGE_RELATIONSHIPS)
-  const [highlightedEdgeRelationships, setHighlightedEdgeRelationships] =
-    useState<LinkRelationshipToggles>(DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS)
-  const [edgeRelationshipVisibilityMultipliers, setEdgeRelationshipVisibilityMultipliers] =
-    useState<LinkRelationshipVisibilityMultipliers>(
-      DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS,
-    )
-  const [edgeRelationshipStrengthMultipliers, setEdgeRelationshipStrengthMultipliers] =
-    useState<LinkRelationshipStrengthMultipliers>(
-      DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS,
-    )
+  const [edgeRelationshipConfig, setEdgeRelationshipConfig] =
+    useState<EdgeRelationshipConfig>(buildDefaultEdgeRelationshipConfig)
 
   const packagesWithExternalImporters = useMemo(() => {
     return new Set(snapshot.package_panel.externally_imported_package_names)
@@ -213,48 +165,21 @@ export function ForceGraph({
           includedPackages.has(link.target_package_name) &&
           includedNodeIds.has(link.source_module_name) &&
           includedNodeIds.has(link.target_module_name) &&
-          includedEdgeRelationships[getLinkPackageRelationship(link)],
+          edgeRelationshipConfig[getLinkPackageRelationship(link)].included,
       ),
     }
-  }, [fullGraphData, includedEdgeRelationships, includedPackages])
+  }, [edgeRelationshipConfig, fullGraphData, includedPackages])
 
-  function setEdgeRelationshipIncluded(
+  function updateEdgeRelationship(
     relationship: LinkPackageRelationship,
-    isIncluded: boolean,
+    updates: Partial<EdgeRelationshipSettings>,
   ): void {
-    setIncludedEdgeRelationships((current) => ({
+    setEdgeRelationshipConfig((current) => ({
       ...current,
-      [relationship]: isIncluded,
-    }))
-  }
-
-  function setEdgeRelationshipHighlighted(
-    relationship: LinkPackageRelationship,
-    isHighlighted: boolean,
-  ): void {
-    setHighlightedEdgeRelationships((current) => ({
-      ...current,
-      [relationship]: isHighlighted,
-    }))
-  }
-
-  function setEdgeRelationshipVisibilityMultiplier(
-    relationship: LinkPackageRelationship,
-    multiplier: number,
-  ): void {
-    setEdgeRelationshipVisibilityMultipliers((current) => ({
-      ...current,
-      [relationship]: multiplier,
-    }))
-  }
-
-  function setEdgeRelationshipStrengthMultiplier(
-    relationship: LinkPackageRelationship,
-    multiplier: number,
-  ): void {
-    setEdgeRelationshipStrengthMultipliers((current) => ({
-      ...current,
-      [relationship]: multiplier,
+      [relationship]: {
+        ...current[relationship],
+        ...updates,
+      },
     }))
   }
 
@@ -266,7 +191,7 @@ export function ForceGraph({
 
       <p className="my-2 text-sm text-slate-400">
         The graph is completely interactable. Drag and Drop. Explore in 3d.
-        Adjust edge weights to identify influence.
+        Adjust edge visibility, weight, and spacing to identify influence.
       </p>
 
       <div className="mb-4 flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-3">
@@ -299,6 +224,7 @@ export function ForceGraph({
         <div className="grid gap-3 md:grid-cols-6">
           {LINK_PACKAGE_RELATIONSHIPS.map((relationship) => {
             const copy = EDGE_RELATIONSHIP_COPY[relationship]
+            const settings = edgeRelationshipConfig[relationship]
 
             return (
               <div
@@ -317,9 +243,9 @@ export function ForceGraph({
                 <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2">
                   <div className="text-xs text-slate-400">Included</div>
                   <ToggleSwitch
-                    checked={includedEdgeRelationships[relationship]}
+                    checked={settings.included}
                     onChange={(checked) =>
-                      setEdgeRelationshipIncluded(relationship, checked)
+                      updateEdgeRelationship(relationship, { included: checked })
                     }
                     ariaLabel={`Toggle ${copy.label.toLowerCase()} edge inclusion`}
                     title={`Toggle ${copy.label.toLowerCase()} edge inclusion`}
@@ -328,9 +254,9 @@ export function ForceGraph({
 
                   <div className="text-xs text-slate-400">Highlighted</div>
                   <ToggleSwitch
-                    checked={highlightedEdgeRelationships[relationship]}
+                    checked={settings.highlighted}
                     onChange={(checked) =>
-                      setEdgeRelationshipHighlighted(relationship, checked)
+                      updateEdgeRelationship(relationship, { highlighted: checked })
                     }
                     ariaLabel={`Toggle ${copy.label.toLowerCase()} edge highlighting`}
                     title={`Toggle ${copy.label.toLowerCase()} edge highlighting`}
@@ -340,28 +266,46 @@ export function ForceGraph({
 
                 <div className="mt-3">
                   <MultiplierSlider
-                    label="Emphasis"
-                    value={edgeRelationshipVisibilityMultipliers[relationship]}
+                    label="Visibility"
+                    value={settings.visibilityMultiplier}
                     options={EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS}
                     onChange={(multiplier) =>
-                      setEdgeRelationshipVisibilityMultiplier(
-                        relationship,
-                        multiplier,
-                      )
+                      updateEdgeRelationship(relationship, {
+                        visibilityMultiplier: multiplier,
+                      })
                     }
-                    ariaLabel={`${copy.label} edge emphasis`}
+                    ariaLabel={`${copy.label} edge visibility`}
                   />
                   <MultiplierSlider
-                    label="Edge weight"
-                    value={edgeRelationshipStrengthMultipliers[relationship]}
+                    label="Weight"
+                    value={settings.strengthMultiplier}
                     options={EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS}
                     onChange={(multiplier) =>
-                      setEdgeRelationshipStrengthMultiplier(
-                        relationship,
-                        multiplier,
-                      )
+                      updateEdgeRelationship(relationship, {
+                        strengthMultiplier: multiplier,
+                      })
                     }
                     ariaLabel={`${copy.label} edge weight`}
+                  />
+                  <MultiplierSlider
+                    label="Base strength"
+                    value={settings.baseStrength}
+                    options={EDGE_RELATIONSHIP_BASE_STRENGTH_OPTIONS}
+                    onChange={(value) =>
+                      updateEdgeRelationship(relationship, { baseStrength: value })
+                    }
+                    ariaLabel={`${copy.label} base edge strength`}
+                    formatValue={formatStrengthValue}
+                  />
+                  <MultiplierSlider
+                    label="Base distance"
+                    value={settings.baseDistance}
+                    options={EDGE_RELATIONSHIP_BASE_DISTANCE_OPTIONS}
+                    onChange={(value) =>
+                      updateEdgeRelationship(relationship, { baseDistance: value })
+                    }
+                    ariaLabel={`${copy.label} base edge distance`}
+                    formatValue={formatDistanceValue}
                   />
                 </div>
               </div>
@@ -373,19 +317,12 @@ export function ForceGraph({
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <ForceGraphCanvas
           graphData={graphData}
-          forceGraphConfig={FORCE_GRAPH_CONFIG}
+          edgeRelationshipConfig={edgeRelationshipConfig}
           packageInfluenceConfig={packageInfluenceConfig}
           packageColorMap={packageColorMap}
           highlightedPackages={highlightedPackages}
           highlightMutualPackageDependenciesOnly={
             highlightMutualPackageDependenciesOnly
-          }
-          highlightedEdgeRelationships={highlightedEdgeRelationships}
-          edgeRelationshipStrengthMultipliers={
-            edgeRelationshipStrengthMultipliers
-          }
-          edgeRelationshipVisibilityMultipliers={
-            edgeRelationshipVisibilityMultipliers
           }
           displayPrefix={displayPrefix}
           className={className}

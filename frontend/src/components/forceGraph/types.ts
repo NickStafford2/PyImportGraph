@@ -14,28 +14,6 @@ export type GraphData = {
   links: GraphLink[]
 }
 
-export type ForceGraphConfig = {
-  chargeStrength: number
-  velocityDecay: number
-  cooldownTicks: number
-  collisionStrength: number
-  collisionRadiusMultiplier: number
-  linkDistance: {
-    samePackage: number
-    directChildPackage: number
-    siblingPackage: number
-    siblingModule: number
-    crossPackage: number
-  }
-  linkStrength: {
-    samePackage: number
-    directChildPackage: number
-    siblingPackage: number
-    siblingModule: number
-    crossPackage: number
-  }
-}
-
 export type PackageInfluenceSettings = {
   edgeStrengthMultiplier: number
   edgeVisibilityMultiplier: number

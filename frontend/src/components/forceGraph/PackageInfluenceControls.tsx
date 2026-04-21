@@ -33,14 +33,14 @@ export function PackageInfluenceControls({
   return (
     <div className="space-y-2">
       <MultiplierSlider
-        label="Edge emphasis"
+        label="Visibility"
         value={settings.edgeVisibilityMultiplier}
         options={PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS}
         onChange={handleVisibilitySliderChange}
-        ariaLabel={`Edge emphasis for ${packageName}`}
+        ariaLabel={`Edge visibility for ${packageName}`}
       />
       <MultiplierSlider
-        label="Edge weight"
+        label="Weight"
         value={settings.edgeStrengthMultiplier}
         options={PACKAGE_INFLUENCE_MULTIPLIER_OPTIONS}
         onChange={handleStrengthSliderChange}

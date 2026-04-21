@@ -7,13 +7,10 @@ import type { PackageColorMap } from './graphColors'
 import { getNodeValue } from './graphDisplay'
 import { getEffectiveLinkDistance, getEffectiveLinkStrength } from './graphInfluence'
 import type {
-  LinkRelationshipStrengthMultipliers,
-  LinkRelationshipToggles,
-  LinkRelationshipVisibilityMultipliers,
+  EdgeRelationshipConfig,
 } from './graphRelationships'
 import { getLinkColor, getLinkWidth, getNodeColor } from './graphStyling'
 import type {
-  ForceGraphConfig,
   GraphData,
   GraphLink,
   GraphNode,
@@ -22,14 +19,11 @@ import type {
 
 type ForceGraphCanvasProps = {
   graphData: GraphData
-  forceGraphConfig: ForceGraphConfig
+  edgeRelationshipConfig: EdgeRelationshipConfig
   packageInfluenceConfig: PackageInfluenceConfig
   packageColorMap: PackageColorMap
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
-  highlightedEdgeRelationships: LinkRelationshipToggles
-  edgeRelationshipStrengthMultipliers: LinkRelationshipStrengthMultipliers
-  edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
   displayPrefix: string | null
   className?: string
 }
@@ -45,6 +39,11 @@ type ForceGraphMethodsWithVelocityDecay = ForceGraphMethods<GraphNode, GraphLink
 
 const INIT_NODE_HALO_COLOR = '#22d3ee'
 const DEFAULT_NODE_REL_SIZE = 4
+const CHARGE_STRENGTH = -110
+const VELOCITY_DECAY = 0.22
+const COOLDOWN_TICKS = 140
+const COLLISION_STRENGTH = 0.75
+const COLLISION_RADIUS_MULTIPLIER = 1.7
 
 function isStructuralLink(link: GraphLink): boolean {
   return (
@@ -105,14 +104,11 @@ function createInitNodeLabelSprite(label: string) {
 
 export function ForceGraphCanvas({
   graphData,
-  forceGraphConfig,
+  edgeRelationshipConfig,
   packageInfluenceConfig,
   packageColorMap,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
-  highlightedEdgeRelationships,
-  edgeRelationshipStrengthMultipliers,
-  edgeRelationshipVisibilityMultipliers,
   displayPrefix,
   className,
 }: ForceGraphCanvasProps) {
@@ -187,25 +183,23 @@ export function ForceGraphCanvas({
         linkForce.distance((link: GraphLink) =>
           getEffectiveLinkDistance(
             link,
-            forceGraphConfig,
+            edgeRelationshipConfig,
             packageInfluenceConfig,
-            edgeRelationshipStrengthMultipliers,
           ),
         )
 
         linkForce.strength((link: GraphLink) =>
           getEffectiveLinkStrength(
             link,
-            forceGraphConfig,
+            edgeRelationshipConfig,
             packageInfluenceConfig,
-            edgeRelationshipStrengthMultipliers,
           ),
         )
       }
 
       const chargeForce = graph.d3Force('charge')
       if (chargeForce != null) {
-        chargeForce.strength(forceGraphConfig.chargeStrength)
+        chargeForce.strength(CHARGE_STRENGTH)
       }
 
       graph.d3Force(
@@ -213,14 +207,14 @@ export function ForceGraphCanvas({
         forceCollide<GraphNode>((node: GraphNode) =>
           Math.max(
             6,
-            getNodeValue(node) * forceGraphConfig.collisionRadiusMultiplier,
+            getNodeValue(node) * COLLISION_RADIUS_MULTIPLIER,
           ),
-        ).strength(forceGraphConfig.collisionStrength),
+        ).strength(COLLISION_STRENGTH),
       )
 
       const graphWithVelocityDecay = graph as ForceGraphMethodsWithVelocityDecay
       if (typeof graphWithVelocityDecay.d3VelocityDecay === 'function') {
-        graphWithVelocityDecay.d3VelocityDecay(forceGraphConfig.velocityDecay)
+        graphWithVelocityDecay.d3VelocityDecay(VELOCITY_DECAY)
       }
 
       reheatFrameId = requestAnimationFrame(() => {
@@ -240,8 +234,7 @@ export function ForceGraphCanvas({
       }
     }
   }, [
-    edgeRelationshipStrengthMultipliers,
-    forceGraphConfig,
+    edgeRelationshipConfig,
     graphData,
     packageInfluenceConfig,
   ])
@@ -315,8 +308,7 @@ export function ForceGraphCanvas({
                 packageInfluenceConfig,
                 highlightedPackages,
                 highlightMutualPackageDependenciesOnly,
-                highlightedEdgeRelationships,
-                edgeRelationshipVisibilityMultipliers,
+                edgeRelationshipConfig,
               })
             }
             linkWidth={(link) =>
@@ -325,7 +317,7 @@ export function ForceGraphCanvas({
                 packageInfluenceConfig,
                 highlightedPackages,
                 highlightMutualPackageDependenciesOnly,
-                edgeRelationshipVisibilityMultipliers,
+                edgeRelationshipConfig,
               })
             }
             linkDirectionalArrowLength={(link) =>
@@ -338,7 +330,7 @@ export function ForceGraphCanvas({
             linkDirectionalParticleWidth={1.8}
             linkDirectionalParticleSpeed={0.003}
             linkCurvature={(link) => (isStructuralLink(link) ? 0 : 0.08)}
-            cooldownTicks={forceGraphConfig.cooldownTicks}
+            cooldownTicks={COOLDOWN_TICKS}
             enableNodeDrag
             showNavInfo
           />
