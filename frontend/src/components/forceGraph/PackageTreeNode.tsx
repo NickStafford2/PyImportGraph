@@ -41,7 +41,7 @@ function getContainerClasses(depth: number): string {
         : 'bg-slate-900/90'
 
   return [
-    'rounded-xl border px-1 py-2 transition',
+    'rounded-l-xl border-y border-l pl-2 py-2 transition',
     depthClass,
     'border-slate-800',
   ].join(' ')
