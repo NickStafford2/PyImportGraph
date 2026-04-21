@@ -14,6 +14,11 @@ type UseForceGraphStateArgs = {
 }
 
 type UseForceGraphStateResult = {
+  includedPackages: ReadonlySet<string>
+  includePackage: (packageName: string) => void
+  unincludePackage: (packageName: string) => void
+  includeAllPackages: () => void
+  excludeAllPackages: () => void
   highlightedPackages: ReadonlySet<string>
   highlightPackage: (packageName: string) => void
   unhighlightPackage: (packageName: string) => void
@@ -51,6 +56,31 @@ function getKnownPackageNames(
   return [...packageNames].filter((packageName) => knownPackageNames.has(packageName))
 }
 
+function reconcileKnownPackageSet(
+  current: ReadonlySet<string>,
+  packageNames: readonly string[],
+): Set<string> {
+  const next = new Set<string>()
+
+  for (const packageName of packageNames) {
+    if (current.has(packageName)) {
+      next.add(packageName)
+    }
+  }
+
+  if (current.size === 0) {
+    return next
+  }
+
+  for (const packageName of packageNames) {
+    if (!current.has(packageName)) {
+      next.add(packageName)
+    }
+  }
+
+  return next
+}
+
 export function useForceGraphState({
   packages,
 }: UseForceGraphStateArgs): UseForceGraphStateResult {
@@ -64,6 +94,9 @@ export function useForceGraphState({
     return new Set(packageNames)
   }, [packageNames])
 
+  const [includedPackages, setIncludedPackages] = useState<Set<string>>(
+    () => new Set(packageNames),
+  )
   const [highlightedPackages, setHighlightedPackages] = useState<Set<string>>(
     () => new Set(packageNames),
   )
@@ -79,6 +112,10 @@ export function useForceGraphState({
     useState<PackageInfluenceConfig>(() => buildPackageInfluenceConfig(packageNames))
 
   useEffect(() => {
+    setIncludedPackages((current) =>
+      reconcileKnownPackageSet(current, packageNames),
+    )
+
     setPackageInfluenceConfig((currentConfig) => {
       const nextConfig = buildPackageInfluenceConfig(packageNames)
 
@@ -93,25 +130,7 @@ export function useForceGraphState({
     })
 
     setHighlightedPackages((current) => {
-      const next = new Set<string>()
-
-      for (const packageName of packageNames) {
-        if (current.has(packageName) || !knownPackageNames.has(packageName)) {
-          next.add(packageName)
-        }
-      }
-
-      if (current.size === 0) {
-        return new Set()
-      }
-
-      for (const packageName of packageNames) {
-        if (!current.has(packageName) && !next.has(packageName)) {
-          next.add(packageName)
-        }
-      }
-
-      return next
+      return reconcileKnownPackageSet(current, packageNames)
     })
 
     setCollapsedPackages((current) =>
@@ -119,8 +138,52 @@ export function useForceGraphState({
     )
   }, [knownPackageNames, packageNames])
 
-  const highlightPackage = useCallback((packageName: string) => {
+  useEffect(() => {
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+
+      for (const packageName of [...next]) {
+        if (!includedPackages.has(packageName)) {
+          next.delete(packageName)
+        }
+      }
+
+      return next
+    })
+  }, [includedPackages])
+
+  const includePackage = useCallback((packageName: string) => {
     if (!knownPackageNames.has(packageName)) {
+      return
+    }
+
+    setIncludedPackages((current) => {
+      const next = new Set(current)
+      next.add(packageName)
+      return next
+    })
+  }, [knownPackageNames])
+
+  const unincludePackage = useCallback((packageName: string) => {
+    if (!knownPackageNames.has(packageName)) {
+      return
+    }
+
+    setIncludedPackages((current) => {
+      const next = new Set(current)
+      next.delete(packageName)
+      return next
+    })
+
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+      next.delete(packageName)
+      return next
+    })
+  }, [knownPackageNames])
+
+  const highlightPackage = useCallback((packageName: string) => {
+    if (!knownPackageNames.has(packageName) || !includedPackages.has(packageName)) {
       return
     }
 
@@ -129,7 +192,7 @@ export function useForceGraphState({
       next.add(packageName)
       return next
     })
-  }, [knownPackageNames])
+  }, [includedPackages, knownPackageNames])
 
   const unhighlightPackage = useCallback((packageName: string) => {
     if (!knownPackageNames.has(packageName)) {
@@ -146,7 +209,10 @@ export function useForceGraphState({
   const highlightPackages = useCallback((
     packageNamesToHighlight: Iterable<string>,
   ) => {
-    const names = getKnownPackageNames(packageNamesToHighlight, knownPackageNames)
+    const names = getKnownPackageNames(
+      packageNamesToHighlight,
+      knownPackageNames,
+    ).filter((packageName) => includedPackages.has(packageName))
 
     setHighlightedPackages((current) => {
       const next = new Set(current)
@@ -157,7 +223,7 @@ export function useForceGraphState({
 
       return next
     })
-  }, [knownPackageNames])
+  }, [includedPackages, knownPackageNames])
 
   const unhighlightPackages = useCallback((
     packageNamesToUnhighlight: Iterable<string>,
@@ -179,15 +245,27 @@ export function useForceGraphState({
     packageNamesToHighlight: Iterable<string>,
   ) => {
     setHighlightedPackages(
-      filterKnownPackageNames(packageNamesToHighlight, knownPackageNames),
+      new Set(
+        [...filterKnownPackageNames(packageNamesToHighlight, knownPackageNames)]
+          .filter((packageName) => includedPackages.has(packageName)),
+      ),
     )
-  }, [knownPackageNames])
+  }, [includedPackages, knownPackageNames])
 
   const highlightAllPackages = useCallback(() => {
-    setHighlightedPackages(new Set(packageNames))
-  }, [packageNames])
+    setHighlightedPackages(new Set(includedPackages))
+  }, [includedPackages])
 
   const unhighlightAllPackages = useCallback(() => {
+    setHighlightedPackages(new Set())
+  }, [])
+
+  const includeAllPackages = useCallback(() => {
+    setIncludedPackages(new Set(packageNames))
+  }, [packageNames])
+
+  const excludeAllPackages = useCallback(() => {
+    setIncludedPackages(new Set())
     setHighlightedPackages(new Set())
   }, [])
 
@@ -223,6 +301,11 @@ export function useForceGraphState({
   }, [packageNames])
 
   return {
+    includedPackages,
+    includePackage,
+    unincludePackage,
+    includeAllPackages,
+    excludeAllPackages,
     highlightedPackages,
     highlightPackage,
     unhighlightPackage,

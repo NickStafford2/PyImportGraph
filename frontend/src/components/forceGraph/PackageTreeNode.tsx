@@ -3,7 +3,6 @@ import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 import { getPackageColor } from './graphColors'
 import {
-  DEFAULT_PACKAGE_INFLUENCE_SETTINGS,
   getPackageInfluenceSettings
 } from './graphInfluence'
 import type { PackageInfluenceConfig, PackageInfluenceSettings } from './types'
@@ -11,13 +10,15 @@ import type { PackageInfluenceConfig, PackageInfluenceSettings } from './types'
 type PackageTreeNodeProps = {
   node: PackagePanelNodeSnapshot
   displayPrefix: string | null
+  includedPackages: ReadonlySet<string>
   highlightedPackages: ReadonlySet<string>
   showOnlyExternallyImportedPackages: boolean
+  onIncludePackage: (packageName: string) => void
+  onUnincludePackage: (packageName: string) => void
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
   onHighlightPackageTree: (packageNames: Iterable<string>) => void
   onUnhighlightPackageTree: (packageNames: Iterable<string>) => void
-  onHighlightOnlyPackage: (packageNames: Iterable<string>) => void
   packageInfluenceConfig: PackageInfluenceConfig
   onPackageInfluenceChange: (
     packageName: string,
@@ -61,13 +62,15 @@ function areAllPackagesHighlighted(
 export function PackageTreeNode({
   node,
   displayPrefix,
+  includedPackages,
   highlightedPackages,
   showOnlyExternallyImportedPackages,
+  onIncludePackage,
+  onUnincludePackage,
   onHighlightPackage,
   onUnhighlightPackage,
   onHighlightPackageTree,
   onUnhighlightPackageTree,
-  onHighlightOnlyPackage,
   packageInfluenceConfig,
   onPackageInfluenceChange,
   collapsedPackages,
@@ -75,15 +78,20 @@ export function PackageTreeNode({
   depth,
 }: PackageTreeNodeProps) {
   const packageName = node.package_name
+  const isIncluded = includedPackages.has(packageName)
   const isCollapsed = collapsedPackages.has(packageName)
   const hasChildren = node.children.length > 0
 
-  const eligibleSubtreePackageNames = showOnlyExternallyImportedPackages
-    ? node.externally_imported_subtree_package_names
-    : node.subtree_package_names
+  const eligibleSubtreePackageNames = (
+    showOnlyExternallyImportedPackages
+      ? node.externally_imported_subtree_package_names
+      : node.subtree_package_names
+  ).filter((candidate) => includedPackages.has(candidate))
 
   const packageCanBeHighlighted =
-    !showOnlyExternallyImportedPackages || node.is_externally_imported
+    isIncluded && (
+      !showOnlyExternallyImportedPackages || node.is_externally_imported
+    )
 
   const isHighlighted =
     packageCanBeHighlighted && highlightedPackages.has(packageName)
@@ -116,6 +124,15 @@ export function PackageTreeNode({
     onUnhighlightPackage(packageName)
   }
 
+  function handlePackageIncludeChange(nextChecked: boolean) {
+    if (nextChecked) {
+      onIncludePackage(packageName)
+      return
+    }
+
+    onUnincludePackage(packageName)
+  }
+
   function handleSubtreeHighlightChange(nextChecked: boolean) {
     if (eligibleSubtreePackageNames.length === 0) {
       return
@@ -145,6 +162,7 @@ export function PackageTreeNode({
       <PackageTreeNodeHeader
         packageName={packageName}
         displayPrefix={displayPrefix}
+        isIncluded={isIncluded}
         isGreyed={isGreyed}
         isHighlighted={isHighlighted}
         isSubtreeHighlighted={isSubtreeHighlighted}
@@ -152,9 +170,9 @@ export function PackageTreeNode({
         isCollapsed={isCollapsed}
         isHighlightDisabled={!packageCanBeHighlighted}
         isSubtreeHighlightDisabled={eligibleSubtreePackageNames.length === 0}
+        onPackageIncludeChange={handlePackageIncludeChange}
         onPackageHighlightChange={handlePackageHighlightChange}
         onSubtreeHighlightChange={handleSubtreeHighlightChange}
-        onHighlightOnlyPackage={() => onHighlightOnlyPackage([packageName])}
         onToggleCollapsedPackage={onToggleCollapsedPackage}
       />
 
@@ -171,15 +189,17 @@ export function PackageTreeNode({
               key={childNode.package_name}
               node={childNode}
               displayPrefix={displayPrefix}
+              includedPackages={includedPackages}
               highlightedPackages={highlightedPackages}
               showOnlyExternallyImportedPackages={
                 showOnlyExternallyImportedPackages
               }
+              onIncludePackage={onIncludePackage}
+              onUnincludePackage={onUnincludePackage}
               onHighlightPackage={onHighlightPackage}
               onUnhighlightPackage={onUnhighlightPackage}
               onHighlightPackageTree={onHighlightPackageTree}
               onUnhighlightPackageTree={onUnhighlightPackageTree}
-              onHighlightOnlyPackage={onHighlightOnlyPackage}
               packageInfluenceConfig={packageInfluenceConfig}
               onPackageInfluenceChange={onPackageInfluenceChange}
               collapsedPackages={collapsedPackages}

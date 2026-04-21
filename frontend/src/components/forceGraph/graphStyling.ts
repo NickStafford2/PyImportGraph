@@ -91,7 +91,7 @@ type GetLinkColorArgs = {
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
-  grayscaledEdgeRelationships: LinkRelationshipToggles
+  highlightedEdgeRelationships: LinkRelationshipToggles
   edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
 }
 
@@ -100,7 +100,7 @@ export function getLinkColor({
   packageInfluenceConfig,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
-  grayscaledEdgeRelationships,
+  highlightedEdgeRelationships,
   edgeRelationshipVisibilityMultipliers,
 }: GetLinkColorArgs): string {
   const influence = getLinkPackageInfluence(link, packageInfluenceConfig)
@@ -109,7 +109,7 @@ export function getLinkColor({
     highlightedPackages,
   )
   const relationship = getLinkPackageRelationship(link)
-  const isGrayscaled = grayscaledEdgeRelationships[relationship]
+  const isHighlightedRelationship = highlightedEdgeRelationships[relationship]
   const relationshipVisibilityMultiplier =
     edgeRelationshipVisibilityMultipliers[relationship]
 
@@ -126,7 +126,7 @@ export function getLinkColor({
         highlightMultiplier,
     )
 
-    const rgb = isGrayscaled ? GRAYSCALED_LINK_RGB : MUTUAL_LINK_RGB
+    const rgb = isHighlightedRelationship ? MUTUAL_LINK_RGB : GRAYSCALED_LINK_RGB
 
     return `rgba(${rgb}, ${opacity})`
   }
@@ -143,9 +143,9 @@ export function getLinkColor({
   const isDimmedByHighlight = highlightMultiplier < 1
   const rgb = isDimmedByHighlight
     ? INACTIVE_LINK_RGB
-    : isGrayscaled
-      ? GRAYSCALED_LINK_RGB
-      : getBaseLinkColor(link)
+    : isHighlightedRelationship
+      ? getBaseLinkColor(link)
+      : GRAYSCALED_LINK_RGB
 
   return `rgba(${rgb}, ${opacity})`
 }

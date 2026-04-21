@@ -27,7 +27,7 @@ type ForceGraphCanvasProps = {
   packageInfluenceConfig: PackageInfluenceConfig
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
-  grayscaledEdgeRelationships: LinkRelationshipToggles
+  highlightedEdgeRelationships: LinkRelationshipToggles
   edgeRelationshipVisibilityMultipliers: LinkRelationshipVisibilityMultipliers
   displayPrefix: string | null
   className?: string
@@ -100,7 +100,7 @@ export function ForceGraphCanvas({
   packageInfluenceConfig,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
-  grayscaledEdgeRelationships,
+  highlightedEdgeRelationships,
   edgeRelationshipVisibilityMultipliers,
   displayPrefix,
   className,
@@ -262,7 +262,7 @@ export function ForceGraphCanvas({
                 packageInfluenceConfig,
                 highlightedPackages,
                 highlightMutualPackageDependenciesOnly,
-                grayscaledEdgeRelationships,
+                highlightedEdgeRelationships,
                 edgeRelationshipVisibilityMultipliers,
               })
             }

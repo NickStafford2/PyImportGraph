@@ -21,16 +21,16 @@ type ForceGraphProps = {
   className?: string
 }
 
-const DEFAULT_VISIBLE_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
+const DEFAULT_INCLUDED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   same_package: true,
   subpackage: true,
   cross_package: true,
 }
 
-const DEFAULT_GRAYSCALED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
-  same_package: false,
-  subpackage: false,
-  cross_package: false,
+const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
+  same_package: true,
+  subpackage: true,
+  cross_package: true,
 }
 
 const EDGE_RELATIONSHIP_VISIBILITY_OPTIONS = [
@@ -75,6 +75,11 @@ export function ForceGraph({
   const packages: PackageSnapshot[] = snapshot.packages
 
   const {
+    includedPackages,
+    includePackage,
+    unincludePackage,
+    includeAllPackages,
+    excludeAllPackages,
     highlightedPackages,
     highlightPackage,
     unhighlightPackage,
@@ -95,10 +100,10 @@ export function ForceGraph({
 
   const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
     useState(false)
-  const [visibleEdgeRelationships, setVisibleEdgeRelationships] =
-    useState<LinkRelationshipToggles>(DEFAULT_VISIBLE_EDGE_RELATIONSHIPS)
-  const [grayscaledEdgeRelationships, setGrayscaledEdgeRelationships] =
-    useState<LinkRelationshipToggles>(DEFAULT_GRAYSCALED_EDGE_RELATIONSHIPS)
+  const [includedEdgeRelationships, setIncludedEdgeRelationships] =
+    useState<LinkRelationshipToggles>(DEFAULT_INCLUDED_EDGE_RELATIONSHIPS)
+  const [highlightedEdgeRelationships, setHighlightedEdgeRelationships] =
+    useState<LinkRelationshipToggles>(DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS)
   const [edgeRelationshipVisibilityMultipliers, setEdgeRelationshipVisibilityMultipliers] =
     useState<LinkRelationshipVisibilityMultipliers>(
       DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS,
@@ -127,31 +132,38 @@ export function ForceGraph({
     [snapshot.force_graph],
   )
   const graphData = useMemo(() => {
+    const nodes = fullGraphData.nodes.filter((node) =>
+      includedPackages.has(node.package_name),
+    )
+
     return {
-      ...fullGraphData,
+      nodes,
       links: fullGraphData.links.filter(
-        (link) => visibleEdgeRelationships[getLinkPackageRelationship(link)],
+        (link) =>
+          includedPackages.has(link.source_package_name) &&
+          includedPackages.has(link.target_package_name) &&
+          includedEdgeRelationships[getLinkPackageRelationship(link)],
       ),
     }
-  }, [fullGraphData, visibleEdgeRelationships])
+  }, [fullGraphData, includedEdgeRelationships, includedPackages])
 
-  function setEdgeRelationshipVisibility(
+  function setEdgeRelationshipIncluded(
     relationship: LinkPackageRelationship,
-    isVisible: boolean,
+    isIncluded: boolean,
   ): void {
-    setVisibleEdgeRelationships((current) => ({
+    setIncludedEdgeRelationships((current) => ({
       ...current,
-      [relationship]: isVisible,
+      [relationship]: isIncluded,
     }))
   }
 
-  function setEdgeRelationshipGrayscale(
+  function setEdgeRelationshipHighlighted(
     relationship: LinkPackageRelationship,
-    isGrayscaled: boolean,
+    isHighlighted: boolean,
   ): void {
-    setGrayscaledEdgeRelationships((current) => ({
+    setHighlightedEdgeRelationships((current) => ({
       ...current,
-      [relationship]: isGrayscaled,
+      [relationship]: isHighlighted,
     }))
   }
 
@@ -199,7 +211,7 @@ export function ForceGraph({
         <div className="mb-3">
           <div className="text-sm font-medium text-white">Edge type display</div>
           <div className="text-xs text-slate-400">
-            Show, hide, or grayscale same-package, subpackage, and cross-package edges.
+            Include or highlight same-package, subpackage, and cross-package edges.
           </div>
         </div>
 
@@ -222,32 +234,32 @@ export function ForceGraph({
                 </div>
 
                 <div className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-2">
-                  <div className="text-xs text-slate-400">Visible</div>
+                  <div className="text-xs text-slate-400">Included</div>
                   <ToggleSwitch
-                    checked={visibleEdgeRelationships[relationship]}
+                    checked={includedEdgeRelationships[relationship]}
                     onChange={(checked) =>
-                      setEdgeRelationshipVisibility(relationship, checked)
+                      setEdgeRelationshipIncluded(relationship, checked)
                     }
-                    ariaLabel={`Toggle ${copy.label.toLowerCase()} edge visibility`}
-                    title={`Toggle ${copy.label.toLowerCase()} edge visibility`}
+                    ariaLabel={`Toggle ${copy.label.toLowerCase()} edge inclusion`}
+                    title={`Toggle ${copy.label.toLowerCase()} edge inclusion`}
                     color="visibility"
                   />
 
-                  <div className="text-xs text-slate-400">Grayscale</div>
+                  <div className="text-xs text-slate-400">Highlighted</div>
                   <ToggleSwitch
-                    checked={grayscaledEdgeRelationships[relationship]}
+                    checked={highlightedEdgeRelationships[relationship]}
                     onChange={(checked) =>
-                      setEdgeRelationshipGrayscale(relationship, checked)
+                      setEdgeRelationshipHighlighted(relationship, checked)
                     }
-                    ariaLabel={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
-                    title={`Toggle grayscale for ${copy.label.toLowerCase()} edges`}
+                    ariaLabel={`Toggle ${copy.label.toLowerCase()} edge highlighting`}
+                    title={`Toggle ${copy.label.toLowerCase()} edge highlighting`}
                     color="selection"
                   />
                 </div>
 
                 <div className="mt-3">
                   <MultiplierSlider
-                    label="Visibility"
+                    label="Emphasis"
                     value={edgeRelationshipVisibilityMultipliers[relationship]}
                     options={EDGE_RELATIONSHIP_VISIBILITY_OPTIONS}
                     onChange={(multiplier) =>
@@ -256,7 +268,7 @@ export function ForceGraph({
                         multiplier,
                       )
                     }
-                    ariaLabel={`${copy.label} edge visibility`}
+                    ariaLabel={`${copy.label} edge emphasis`}
                   />
                 </div>
               </div>
@@ -274,7 +286,7 @@ export function ForceGraph({
           highlightMutualPackageDependenciesOnly={
             highlightMutualPackageDependenciesOnly
           }
-          grayscaledEdgeRelationships={grayscaledEdgeRelationships}
+          highlightedEdgeRelationships={highlightedEdgeRelationships}
           edgeRelationshipVisibilityMultipliers={
             edgeRelationshipVisibilityMultipliers
           }
@@ -286,10 +298,13 @@ export function ForceGraph({
           roots={snapshot.package_panel.roots}
           packages={packages}
           displayPrefix={displayPrefix}
+          includedPackages={includedPackages}
           highlightedPackages={highlightedPackages}
           showOnlyExternallyImportedPackages={
             showOnlyExternallyImportedPackages
           }
+          onIncludePackage={includePackage}
+          onUnincludePackage={unincludePackage}
           onShowOnlyExternallyImportedPackagesChange={
             setShowOnlyExternallyImportedPackages
           }
@@ -297,7 +312,8 @@ export function ForceGraph({
           onUnhighlightPackage={unhighlightPackage}
           onHighlightPackageTree={highlightPackages}
           onUnhighlightPackageTree={unhighlightPackages}
-          onHighlightOnlyPackage={highlightOnlyPackages}
+          onIncludeAllPackages={includeAllPackages}
+          onExcludeAllPackages={excludeAllPackages}
           onHighlightAllPackages={highlightAllPackages}
           onUnhighlightAllPackages={unhighlightAllPackages}
           packageInfluenceConfig={packageInfluenceConfig}

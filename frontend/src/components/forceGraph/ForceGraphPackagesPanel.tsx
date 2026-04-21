@@ -10,14 +10,18 @@ type ForceGraphPackagesPanelProps = {
   roots: PackagePanelNodeSnapshot[]
   packages: PackageSnapshot[]
   displayPrefix: string | null
+  includedPackages: ReadonlySet<string>
   highlightedPackages: ReadonlySet<string>
   showOnlyExternallyImportedPackages: boolean
+  onIncludePackage: (packageName: string) => void
+  onUnincludePackage: (packageName: string) => void
   onShowOnlyExternallyImportedPackagesChange: (value: boolean) => void
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
   onHighlightPackageTree: (packageNames: Iterable<string>) => void
   onUnhighlightPackageTree: (packageNames: Iterable<string>) => void
-  onHighlightOnlyPackage: (packageNames: Iterable<string>) => void
+  onIncludeAllPackages: () => void
+  onExcludeAllPackages: () => void
   onHighlightAllPackages: () => void
   onUnhighlightAllPackages: () => void
   packageInfluenceConfig: PackageInfluenceConfig
@@ -35,14 +39,18 @@ export function ForceGraphPackagesPanel({
   roots,
   packages,
   displayPrefix,
+  includedPackages,
   highlightedPackages,
   showOnlyExternallyImportedPackages,
+  onIncludePackage,
+  onUnincludePackage,
   onShowOnlyExternallyImportedPackagesChange,
   onHighlightPackage,
   onUnhighlightPackage,
   onHighlightPackageTree,
   onUnhighlightPackageTree,
-  onHighlightOnlyPackage,
+  onIncludeAllPackages,
+  onExcludeAllPackages,
   onHighlightAllPackages,
   onUnhighlightAllPackages,
   packageInfluenceConfig,
@@ -52,6 +60,7 @@ export function ForceGraphPackagesPanel({
   onExpandAllPackages,
   onCollapseAllPackages,
 }: ForceGraphPackagesPanelProps) {
+  const includedCount = includedPackages.size
   const highlightedCount = highlightedPackages.size
   const totalCount = packages.length
   const externallyImportedCount = packages.filter(
@@ -65,7 +74,7 @@ export function ForceGraphPackagesPanel({
           <div className="flex w-full flex-row justify-between">
             <h3 className="text-md font-semibold text-white">Packages</h3>
             <span className="mt-1 text-xs text-slate-400">
-              {highlightedCount} of {totalCount} highlighted
+              {includedCount} of {totalCount} included, {highlightedCount} highlighted
             </span>
           </div>
         </div>
@@ -93,8 +102,24 @@ export function ForceGraphPackagesPanel({
         <div className="mt-3 flex flex-wrap gap-2">
           <button
             type="button"
+            onClick={onIncludeAllPackages}
+            disabled={includedCount === totalCount}
+            className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Include all
+          </button>
+          <button
+            type="button"
+            onClick={onExcludeAllPackages}
+            disabled={includedCount === 0}
+            className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Exclude all
+          </button>
+          <button
+            type="button"
             onClick={onHighlightAllPackages}
-            disabled={highlightedCount === totalCount}
+            disabled={includedCount === 0 || highlightedCount === includedCount}
             className="rounded-lg border border-slate-700 bg-slate-950/70 px-2 py-1 text-[11px] text-slate-300 transition hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Highlight all
@@ -131,13 +156,15 @@ export function ForceGraphPackagesPanel({
               key={node.package_name}
               node={node}
               displayPrefix={displayPrefix}
+              includedPackages={includedPackages}
               highlightedPackages={highlightedPackages}
               showOnlyExternallyImportedPackages={showOnlyExternallyImportedPackages}
+              onIncludePackage={onIncludePackage}
+              onUnincludePackage={onUnincludePackage}
               onHighlightPackage={onHighlightPackage}
               onUnhighlightPackage={onUnhighlightPackage}
               onHighlightPackageTree={onHighlightPackageTree}
               onUnhighlightPackageTree={onUnhighlightPackageTree}
-              onHighlightOnlyPackage={onHighlightOnlyPackage}
               packageInfluenceConfig={packageInfluenceConfig}
               onPackageInfluenceChange={onPackageInfluenceChange}
               collapsedPackages={collapsedPackages}
