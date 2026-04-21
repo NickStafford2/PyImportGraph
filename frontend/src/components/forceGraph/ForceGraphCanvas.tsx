@@ -61,9 +61,9 @@ function createInitNodeLabelSprite(label: string) {
     return new THREE.Sprite()
   }
 
-  const fontSize = 56
-  const horizontalPadding = 24
-  const verticalPadding = 16
+  const fontSize = 168
+  const horizontalPadding = 72
+  const verticalPadding = 48
 
   context.font = `600 ${fontSize}px sans-serif`
   const textWidth = Math.ceil(context.measureText(label).width)
@@ -88,7 +88,7 @@ function createInitNodeLabelSprite(label: string) {
 
   const sprite = new THREE.Sprite(material)
   const aspectRatio = canvas.width / canvas.height
-  const spriteHeight = 12
+  const spriteHeight = 36
   sprite.scale.set(spriteHeight * aspectRatio, spriteHeight, 1)
 
   return sprite
