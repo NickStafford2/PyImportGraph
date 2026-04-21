@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from itertools import combinations
 from typing import Any
 
 from pyimportgraph.analysis import ProjectModel
 from pyimportgraph.analysis.package_query import PackageQuery
 
-SCHEMA_VERSION = 9
+SCHEMA_VERSION = 10
 
 
 def build_project_snapshot(model: ProjectModel) -> dict[str, Any]:
@@ -224,6 +225,36 @@ def _build_force_graph_snapshot(model: ProjectModel) -> dict[str, Any]:
                 "is_mutual_package_dependency": False,
             }
         )
+
+    sibling_groups: dict[str, list[str]] = {}
+    for package_name in sorted(model.package_names()):
+        parent_package_name = model.package_query(package_name).parent_name
+        if parent_package_name is None:
+            continue
+
+        sibling_groups.setdefault(parent_package_name, []).append(package_name)
+
+    for sibling_package_names in sibling_groups.values():
+        available_sibling_package_names = [
+            package_name
+            for package_name in sibling_package_names
+            if package_name in module_names
+        ]
+
+        for source_package_name, target_package_name in combinations(
+            available_sibling_package_names, 2
+        ):
+            links.append(
+                {
+                    "source_module_name": source_package_name,
+                    "target_module_name": target_package_name,
+                    "type": "package_sibling",
+                    "is_same_package": False,
+                    "source_package_name": source_package_name,
+                    "target_package_name": target_package_name,
+                    "is_mutual_package_dependency": False,
+                }
+            )
 
     return {
         "nodes": nodes,

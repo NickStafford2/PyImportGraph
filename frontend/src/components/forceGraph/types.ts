@@ -23,11 +23,13 @@ export type ForceGraphConfig = {
   linkDistance: {
     samePackage: number
     directChildPackage: number
+    siblingPackage: number
     crossPackage: number
   }
   linkStrength: {
     samePackage: number
     directChildPackage: number
+    siblingPackage: number
     crossPackage: number
   }
 }

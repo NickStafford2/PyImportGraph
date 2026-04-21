@@ -9,11 +9,13 @@ export const FORCE_GRAPH_CONFIG: ForceGraphConfig = {
   linkDistance: {
     samePackage: 24,
     directChildPackage: 60,
+    siblingPackage: 84,
     crossPackage: 130,
   },
   linkStrength: {
     samePackage: 1.0,
     directChildPackage: 0.08,
+    siblingPackage: 0.04,
     crossPackage: 0.01,
   },
 }

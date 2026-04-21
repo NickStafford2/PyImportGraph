@@ -58,7 +58,9 @@ export function getEffectiveLinkStrength(
       ? forceGraphConfig.linkStrength.samePackage
       : relationship === 'direct_child_package'
         ? forceGraphConfig.linkStrength.directChildPackage
-        : forceGraphConfig.linkStrength.crossPackage
+        : relationship === 'sibling_package'
+          ? forceGraphConfig.linkStrength.siblingPackage
+          : forceGraphConfig.linkStrength.crossPackage
 
   return (
     baseStrength *
@@ -79,7 +81,9 @@ export function getEffectiveLinkDistance(
       ? forceGraphConfig.linkDistance.samePackage
       : relationship === 'direct_child_package'
         ? forceGraphConfig.linkDistance.directChildPackage
-        : forceGraphConfig.linkDistance.crossPackage
+        : relationship === 'sibling_package'
+          ? forceGraphConfig.linkDistance.siblingPackage
+          : forceGraphConfig.linkDistance.crossPackage
 
   const strengthMultiplier = getLinkPackageInfluence(
     link,

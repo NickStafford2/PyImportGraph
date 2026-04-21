@@ -46,6 +46,10 @@ type ForceGraphMethodsWithVelocityDecay = ForceGraphMethods<GraphNode, GraphLink
 const INIT_NODE_HALO_COLOR = '#22d3ee'
 const DEFAULT_NODE_REL_SIZE = 4
 
+function isStructuralLink(link: GraphLink): boolean {
+  return link.type === 'package_child' || link.type === 'package_sibling'
+}
+
 function isInitModuleNode(node: GraphNode): boolean {
   return node.module_name === node.package_name
 }
@@ -296,15 +300,15 @@ export function ForceGraphCanvas({
               })
             }
             linkDirectionalArrowLength={(link) =>
-              link.type === 'package_child' ? 0 : 3.5
+              isStructuralLink(link) ? 0 : 3.5
             }
             linkDirectionalArrowRelPos={1}
             linkDirectionalParticles={(link) =>
-              link.type === 'package_child' ? 0 : 2
+              isStructuralLink(link) ? 0 : 2
             }
             linkDirectionalParticleWidth={1.8}
             linkDirectionalParticleSpeed={0.003}
-            linkCurvature={(link) => (link.type === 'package_child' ? 0 : 0.08)}
+            linkCurvature={(link) => (isStructuralLink(link) ? 0 : 0.08)}
             cooldownTicks={forceGraphConfig.cooldownTicks}
             enableNodeDrag
             showNavInfo

@@ -28,6 +28,7 @@ const DEFAULT_INCLUDED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   subpackage: true,
   cross_package: true,
   direct_child_package: true,
+  sibling_package: true,
 }
 
 const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
@@ -35,6 +36,7 @@ const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   subpackage: true,
   cross_package: true,
   direct_child_package: true,
+  sibling_package: true,
 }
 
 const EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS = [
@@ -53,6 +55,7 @@ const DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS: LinkRelationshipVisibili
   subpackage: 1,
   cross_package: 1,
   direct_child_package: 1,
+  sibling_package: 1,
 }
 
 const DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS: LinkRelationshipStrengthMultipliers =
@@ -61,6 +64,7 @@ const DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS: LinkRelationshipStrengthMu
   subpackage: 1,
   cross_package: 1,
   direct_child_package: 1,
+  sibling_package: 1,
 }
 
 const EDGE_RELATIONSHIP_COPY: Record<
@@ -83,6 +87,11 @@ const EDGE_RELATIONSHIP_COPY: Record<
     label: 'Direct child package',
     description:
       'Structural edges from a package root to its immediate child package root.',
+  },
+  sibling_package: {
+    label: 'Sibling package',
+    description:
+      'Structural edges between packages that share the same direct parent.',
   },
 }
 
@@ -271,11 +280,11 @@ export function ForceGraph({
         <div className="mb-3">
           <div className="text-sm font-medium text-white">Edge type display</div>
           <div className="text-xs text-slate-400">
-            Include or highlight same-package, structural parent-child, subpackage, and cross-package edges.
+            Include or highlight same-package, subpackage, cross-package, and structural package-tree edges.
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
           {LINK_PACKAGE_RELATIONSHIPS.map((relationship) => {
             const copy = EDGE_RELATIONSHIP_COPY[relationship]
 
