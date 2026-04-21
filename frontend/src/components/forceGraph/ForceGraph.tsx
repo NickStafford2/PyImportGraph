@@ -81,6 +81,7 @@ export function ForceGraph({
     unincludePackage,
     includePackages,
     unincludePackages,
+    includeOnlyPackages,
     includeAllPackages,
     excludeAllPackages,
     highlightedPackages,
@@ -103,6 +104,8 @@ export function ForceGraph({
 
   const [showOnlyExternallyImportedPackages, setShowOnlyExternallyImportedPackages] =
     useState(false)
+  const [showOnlyExternallyImportedIncludedPackages, setShowOnlyExternallyImportedIncludedPackages] =
+    useState(false)
   const [includedEdgeRelationships, setIncludedEdgeRelationships] =
     useState<LinkRelationshipToggles>(DEFAULT_INCLUDED_EDGE_RELATIONSHIPS)
   const [highlightedEdgeRelationships, setHighlightedEdgeRelationships] =
@@ -123,6 +126,20 @@ export function ForceGraph({
     () => buildPackageColorMap(packages, rootPackageNames),
     [packages, rootPackageNames],
   )
+
+  useEffect(() => {
+    if (showOnlyExternallyImportedIncludedPackages) {
+      includeOnlyPackages(packagesWithExternalImporters)
+      return
+    }
+
+    includeAllPackages()
+  }, [
+    showOnlyExternallyImportedIncludedPackages,
+    packagesWithExternalImporters,
+    includeOnlyPackages,
+    includeAllPackages,
+  ])
 
   useEffect(() => {
     if (showOnlyExternallyImportedPackages) {
@@ -313,6 +330,9 @@ export function ForceGraph({
           packageColorMap={packageColorMap}
           includedPackages={includedPackages}
           highlightedPackages={highlightedPackages}
+          showOnlyExternallyImportedIncludedPackages={
+            showOnlyExternallyImportedIncludedPackages
+          }
           showOnlyExternallyImportedPackages={
             showOnlyExternallyImportedPackages
           }
@@ -320,6 +340,9 @@ export function ForceGraph({
           onUnincludePackage={unincludePackage}
           onIncludePackageTree={includePackages}
           onUnincludePackageTree={unincludePackages}
+          onShowOnlyExternallyImportedIncludedPackagesChange={
+            setShowOnlyExternallyImportedIncludedPackages
+          }
           onShowOnlyExternallyImportedPackagesChange={
             setShowOnlyExternallyImportedPackages
           }

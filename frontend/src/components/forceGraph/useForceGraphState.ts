@@ -19,6 +19,7 @@ type UseForceGraphStateResult = {
   unincludePackage: (packageName: string) => void
   includePackages: (packageNames: Iterable<string>) => void
   unincludePackages: (packageNames: Iterable<string>) => void
+  includeOnlyPackages: (packageNames: Iterable<string>) => void
   includeAllPackages: () => void
   excludeAllPackages: () => void
   highlightedPackages: ReadonlySet<string>
@@ -308,6 +309,14 @@ export function useForceGraphState({
     setIncludedPackages(new Set(packageNames))
   }, [packageNames])
 
+  const includeOnlyPackages = useCallback((
+    packageNamesToInclude: Iterable<string>,
+  ) => {
+    setIncludedPackages(
+      filterKnownPackageNames(packageNamesToInclude, knownPackageNames),
+    )
+  }, [knownPackageNames])
+
   const excludeAllPackages = useCallback(() => {
     setIncludedPackages(new Set())
     setHighlightedPackages(new Set())
@@ -350,6 +359,7 @@ export function useForceGraphState({
     unincludePackage,
     includePackages,
     unincludePackages,
+    includeOnlyPackages,
     includeAllPackages,
     excludeAllPackages,
     highlightedPackages,

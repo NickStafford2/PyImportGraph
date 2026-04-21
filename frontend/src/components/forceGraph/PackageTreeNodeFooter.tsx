@@ -58,14 +58,16 @@ export function PackageTreeNodeFooter({
         Subpackages
       </span>
 
-      <ToggleSwitch
-        checked={isSubtreeHighlighted}
-        onChange={onSubtreeHighlightChange}
-        ariaLabel={`Toggle subtree highlight for ${packageName}`}
-        title={`Toggle subtree highlight for ${packageName}`}
-        disabled={isSubtreeHighlightDisabled}
-        color="selection"
-      />
+      {!isSubtreeHighlightDisabled && (
+        <ToggleSwitch
+          checked={isSubtreeHighlighted}
+          onChange={onSubtreeHighlightChange}
+          ariaLabel={`Toggle subtree highlight for ${packageName}`}
+          title={`Toggle subtree highlight for ${packageName}`}
+          disabled={isSubtreeHighlightDisabled}
+          color="selection"
+        />
+      )}
 
       <ToggleSwitch
         checked={isSubtreeIncluded}

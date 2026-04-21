@@ -60,20 +60,20 @@ export function PackageTreeNodeHeader({
         </span>
       </div>
 
-      <ToggleSwitch
-        checked={isHighlighted}
-        onChange={onPackageHighlightChange}
-        ariaLabel={`Toggle highlight for ${packageName}`}
-        title={
-          isHighlightDisabled
-            ? isIncluded
+      {isIncluded && (
+        <ToggleSwitch
+          checked={isHighlighted}
+          onChange={onPackageHighlightChange}
+          ariaLabel={`Toggle highlight for ${packageName}`}
+          title={
+            isHighlightDisabled
               ? `${packageName} is not imported outside its own package`
-              : `${packageName} is not included in the graph`
-            : `Toggle highlight for ${packageName}`
-        }
-        disabled={isHighlightDisabled}
-        color="selection"
-      />
+              : `Toggle highlight for ${packageName}`
+          }
+          disabled={isHighlightDisabled}
+          color="selection"
+        />
+      )}
 
       <ToggleSwitch
         checked={isIncluded}

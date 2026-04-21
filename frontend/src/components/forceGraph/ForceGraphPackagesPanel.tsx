@@ -14,11 +14,13 @@ type ForceGraphPackagesPanelProps = {
   packageColorMap: PackageColorMap
   includedPackages: ReadonlySet<string>
   highlightedPackages: ReadonlySet<string>
+  showOnlyExternallyImportedIncludedPackages: boolean
   showOnlyExternallyImportedPackages: boolean
   onIncludePackage: (packageName: string) => void
   onUnincludePackage: (packageName: string) => void
   onIncludePackageTree: (packageNames: Iterable<string>) => void
   onUnincludePackageTree: (packageNames: Iterable<string>) => void
+  onShowOnlyExternallyImportedIncludedPackagesChange: (value: boolean) => void
   onShowOnlyExternallyImportedPackagesChange: (value: boolean) => void
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
@@ -46,11 +48,13 @@ export function ForceGraphPackagesPanel({
   packageColorMap,
   includedPackages,
   highlightedPackages,
+  showOnlyExternallyImportedIncludedPackages,
   showOnlyExternallyImportedPackages,
   onIncludePackage,
   onUnincludePackage,
   onIncludePackageTree,
   onUnincludePackageTree,
+  onShowOnlyExternallyImportedIncludedPackagesChange,
   onShowOnlyExternallyImportedPackagesChange,
   onHighlightPackage,
   onUnhighlightPackage,
@@ -89,21 +93,37 @@ export function ForceGraphPackagesPanel({
         <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/60 px-2 py-2">
           <div className="min-w-0">
             <div className="text-[11px] font-medium uppercase tracking-wide text-slate-300">
-              Only highlight externally imported
+              Only externally imported
             </div>
             <div className="text-[11px] text-slate-500">
-              Keeps {externallyImportedCount} package
-              {externallyImportedCount === 1 ? '' : 's'} highlighted
+              Limits controls to {externallyImportedCount} package
+              {externallyImportedCount === 1 ? '' : 's'}
             </div>
           </div>
 
-          <ToggleSwitch
-            checked={showOnlyExternallyImportedPackages}
-            onChange={onShowOnlyExternallyImportedPackagesChange}
-            ariaLabel="Only highlight packages imported outside their own package"
-            title="Only highlight packages imported outside their own package"
-            color="selection"
-          />
+          <div className="grid grid-cols-[auto_auto] items-center gap-x-3 gap-y-2">
+            <div className="text-[11px] text-slate-400">Included</div>
+            <ToggleSwitch
+              checked={showOnlyExternallyImportedIncludedPackages}
+              onChange={onShowOnlyExternallyImportedIncludedPackagesChange}
+              ariaLabel="Only include packages imported outside their own package"
+              title="Only include packages imported outside their own package"
+              color="visibility"
+            />
+
+            {!showOnlyExternallyImportedIncludedPackages && (
+              <>
+                <div className="text-[11px] text-slate-400">Highlighted</div>
+                <ToggleSwitch
+                  checked={showOnlyExternallyImportedPackages}
+                  onChange={onShowOnlyExternallyImportedPackagesChange}
+                  ariaLabel="Only highlight packages imported outside their own package"
+                  title="Only highlight packages imported outside their own package"
+                  color="selection"
+                />
+              </>
+            )}
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
