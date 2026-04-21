@@ -4,6 +4,7 @@ export type LinkPackageRelationship =
   | 'same_package'
   | 'direct_child_package'
   | 'sibling_package'
+  | 'sibling_module'
   | 'subpackage'
   | 'cross_package'
 
@@ -23,6 +24,7 @@ export const LINK_PACKAGE_RELATIONSHIPS: LinkPackageRelationship[] = [
   'cross_package',
   'direct_child_package',
   'sibling_package',
+  'sibling_module',
 ]
 
 function isAncestorPackage(ancestor: string, descendant: string): boolean {
@@ -38,6 +40,10 @@ export function getLinkPackageRelationship(
 
   if (link.type === 'package_sibling') {
     return 'sibling_package'
+  }
+
+  if (link.type === 'module_sibling') {
+    return 'sibling_module'
   }
 
   const sourcePackageName = link.source_package_name

@@ -24,12 +24,14 @@ export type ForceGraphConfig = {
     samePackage: number
     directChildPackage: number
     siblingPackage: number
+    siblingModule: number
     crossPackage: number
   }
   linkStrength: {
     samePackage: number
     directChildPackage: number
     siblingPackage: number
+    siblingModule: number
     crossPackage: number
   }
 }

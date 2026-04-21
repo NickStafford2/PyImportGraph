@@ -47,7 +47,11 @@ const INIT_NODE_HALO_COLOR = '#22d3ee'
 const DEFAULT_NODE_REL_SIZE = 4
 
 function isStructuralLink(link: GraphLink): boolean {
-  return link.type === 'package_child' || link.type === 'package_sibling'
+  return (
+    link.type === 'package_child' ||
+    link.type === 'package_sibling' ||
+    link.type === 'module_sibling'
+  )
 }
 
 function isInitModuleNode(node: GraphNode): boolean {

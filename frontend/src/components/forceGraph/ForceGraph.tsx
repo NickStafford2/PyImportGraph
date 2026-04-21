@@ -29,6 +29,7 @@ const DEFAULT_INCLUDED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   cross_package: true,
   direct_child_package: true,
   sibling_package: true,
+  sibling_module: true,
 }
 
 const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
@@ -37,6 +38,7 @@ const DEFAULT_HIGHLIGHTED_EDGE_RELATIONSHIPS: LinkRelationshipToggles = {
   cross_package: true,
   direct_child_package: true,
   sibling_package: true,
+  sibling_module: true,
 }
 
 const EDGE_RELATIONSHIP_MULTIPLIER_OPTIONS = [
@@ -56,6 +58,7 @@ const DEFAULT_EDGE_RELATIONSHIP_VISIBILITY_MULTIPLIERS: LinkRelationshipVisibili
   cross_package: 1,
   direct_child_package: 1,
   sibling_package: 1,
+  sibling_module: 1,
 }
 
 const DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS: LinkRelationshipStrengthMultipliers =
@@ -65,6 +68,7 @@ const DEFAULT_EDGE_RELATIONSHIP_STRENGTH_MULTIPLIERS: LinkRelationshipStrengthMu
   cross_package: 1,
   direct_child_package: 1,
   sibling_package: 1,
+  sibling_module: 1,
 }
 
 const EDGE_RELATIONSHIP_COPY: Record<
@@ -92,6 +96,11 @@ const EDGE_RELATIONSHIP_COPY: Record<
     label: 'Sibling package',
     description:
       'Structural edges between packages that share the same direct parent.',
+  },
+  sibling_module: {
+    label: 'Sibling module',
+    description:
+      'Structural edges between direct peer modules in the same package.',
   },
 }
 
@@ -284,7 +293,7 @@ export function ForceGraph({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-5">
+        <div className="grid gap-3 md:grid-cols-6">
           {LINK_PACKAGE_RELATIONSHIPS.map((relationship) => {
             const copy = EDGE_RELATIONSHIP_COPY[relationship]
 

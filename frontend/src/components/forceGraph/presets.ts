@@ -10,12 +10,14 @@ export const FORCE_GRAPH_CONFIG: ForceGraphConfig = {
     samePackage: 24,
     directChildPackage: 60,
     siblingPackage: 84,
+    siblingModule: 42,
     crossPackage: 130,
   },
   linkStrength: {
     samePackage: 1.0,
     directChildPackage: 0.08,
     siblingPackage: 0.04,
+    siblingModule: 0.1,
     crossPackage: 0.01,
   },
 }
