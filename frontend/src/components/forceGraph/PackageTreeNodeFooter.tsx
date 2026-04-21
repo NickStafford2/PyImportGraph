@@ -25,27 +25,6 @@ export function PackageTreeNodeFooter({
 }: PackageTreeNodeFooterProps) {
   return (
     <div className="mt-2 flex items-center justify-end gap-2 border-t border-slate-800 pt-2">
-      <span className="mr-auto text-[11px] uppercase tracking-wide text-slate-500">
-        Subpackages
-      </span>
-
-      <ToggleSwitch
-        checked={isSubtreeHighlighted}
-        onChange={onSubtreeHighlightChange}
-        ariaLabel={`Toggle subtree highlight for ${packageName}`}
-        title={`Toggle subtree highlight for ${packageName}`}
-        disabled={isSubtreeHighlightDisabled}
-        color="selection"
-      />
-
-      <ToggleSwitch
-        checked={isSubtreeIncluded}
-        onChange={onSubtreeIncludeChange}
-        ariaLabel={`Toggle subtree inclusion for ${packageName}`}
-        title={`Toggle subtree inclusion for ${packageName}`}
-        disabled={isSubtreeIncludeDisabled}
-        color="visibility"
-      />
 
       <button
         type="button"
@@ -74,6 +53,29 @@ export function PackageTreeNodeFooter({
           </svg>
         )}
       </button>
+
+      <span className="mr-auto text-[11px] uppercase tracking-wide text-slate-500">
+        Subpackages
+      </span>
+
+      <ToggleSwitch
+        checked={isSubtreeHighlighted}
+        onChange={onSubtreeHighlightChange}
+        ariaLabel={`Toggle subtree highlight for ${packageName}`}
+        title={`Toggle subtree highlight for ${packageName}`}
+        disabled={isSubtreeHighlightDisabled}
+        color="selection"
+      />
+
+      <ToggleSwitch
+        checked={isSubtreeIncluded}
+        onChange={onSubtreeIncludeChange}
+        ariaLabel={`Toggle subtree inclusion for ${packageName}`}
+        title={`Toggle subtree inclusion for ${packageName}`}
+        disabled={isSubtreeIncludeDisabled}
+        color="visibility"
+      />
+
     </div>
   )
 }
