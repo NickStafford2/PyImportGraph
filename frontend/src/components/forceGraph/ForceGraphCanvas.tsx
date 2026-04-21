@@ -1,16 +1,11 @@
-// frontend/src/components/forceGraph/ForceGraphCanvas.tsx
-
 import { forceCollide } from 'd3-force-3d'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import ForceGraph3D, { type ForceGraphMethods } from 'react-force-graph-3d'
 import * as THREE from 'three'
 import { trimModulePrefix } from '../../lib/moduleName'
-import {
-  getEffectiveLinkDistance,
-  getEffectiveLinkStrength,
-} from './graphInfluence'
 import type { PackageColorMap } from './graphColors'
 import { getNodeValue } from './graphDisplay'
+import { getEffectiveLinkDistance, getEffectiveLinkStrength } from './graphInfluence'
 import type {
   LinkRelationshipStrengthMultipliers,
   LinkRelationshipToggles,
