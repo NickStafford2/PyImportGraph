@@ -68,7 +68,7 @@ export function SectionHeader() {
     <div className="sticky top-0 z-40 mb-4 border-b border-slate-800 bg-slate-950/90 backdrop-blur">
       <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-400">
         <div className="flex flex-col">
-          <h1 className="mb-4 text-6xl font-semibold text-white">
+          <h1 className="mb-4 sm:text-2xl md:text-4xl lg:text-5xl font-semibold text-white">
             Package Name Here
           </h1>
         </div>
@@ -82,7 +82,7 @@ export function SectionHeader() {
                 key={section.id}
                 href={`#${section.id}`}
                 className={[
-                  'min-w-[9rem] rounded-lg px-5 py-3 text-center transition-colors',
+                  'sm:min-w-[5rem] lg:min-w-[9rem] sm:rounded-md lg:rounded-lg px-5 py-3 text-center transition-colors',
                   isActive
                     ? 'bg-slate-700 text-white'
                     : 'text-slate-400 hover:text-white',
