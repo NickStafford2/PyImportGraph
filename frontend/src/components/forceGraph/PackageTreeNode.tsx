@@ -1,8 +1,8 @@
 import type { PackagePanelNodeSnapshot } from '../../types'
+import { getPackageColor, type PackageColorMap } from './graphColors'
 import { PackageTreeNodeFooter } from './PackageTreeNodeFooter'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
-import { getPackageColor } from './graphColors'
 import {
   getPackageInfluenceSettings
 } from './graphInfluence'
@@ -11,6 +11,7 @@ import type { PackageInfluenceConfig, PackageInfluenceSettings } from './types'
 type PackageTreeNodeProps = {
   node: PackagePanelNodeSnapshot
   displayPrefix: string | null
+  packageColorMap: PackageColorMap
   includedPackages: ReadonlySet<string>
   highlightedPackages: ReadonlySet<string>
   showOnlyExternallyImportedPackages: boolean
@@ -65,6 +66,7 @@ function areAllPackagesHighlighted(
 export function PackageTreeNode({
   node,
   displayPrefix,
+  packageColorMap,
   includedPackages,
   highlightedPackages,
   showOnlyExternallyImportedPackages,
@@ -171,7 +173,7 @@ export function PackageTreeNode({
     onUnincludePackageTree(subtreePackageNamesForInclusion)
   }
 
-  const packageColor = getPackageColor(packageName)
+  const packageColor = getPackageColor(packageName, packageColorMap)
 
   return (
     <div
@@ -187,6 +189,7 @@ export function PackageTreeNode({
       <PackageTreeNodeHeader
         packageName={packageName}
         displayPrefix={displayPrefix}
+        packageColorMap={packageColorMap}
         isIncluded={isIncluded}
         isGreyed={isGreyed}
         isHighlighted={isHighlighted}
@@ -224,6 +227,7 @@ export function PackageTreeNode({
               key={childNode.package_name}
               node={childNode}
               displayPrefix={displayPrefix}
+              packageColorMap={packageColorMap}
               includedPackages={includedPackages}
               highlightedPackages={highlightedPackages}
               showOnlyExternallyImportedPackages={

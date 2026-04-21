@@ -9,6 +9,7 @@ import {
   getEffectiveLinkDistance,
   getEffectiveLinkStrength,
 } from './graphInfluence'
+import type { PackageColorMap } from './graphColors'
 import { getNodeValue } from './graphDisplay'
 import type { LinkRelationshipToggles } from './graphRelationships'
 import type { LinkRelationshipVisibilityMultipliers } from './graphRelationships'
@@ -25,6 +26,7 @@ type ForceGraphCanvasProps = {
   graphData: GraphData
   forceGraphConfig: ForceGraphConfig
   packageInfluenceConfig: PackageInfluenceConfig
+  packageColorMap: PackageColorMap
   highlightedPackages: ReadonlySet<string>
   highlightMutualPackageDependenciesOnly: boolean
   highlightedEdgeRelationships: LinkRelationshipToggles
@@ -98,6 +100,7 @@ export function ForceGraphCanvas({
   graphData,
   forceGraphConfig,
   packageInfluenceConfig,
+  packageColorMap,
   highlightedPackages,
   highlightMutualPackageDependenciesOnly,
   highlightedEdgeRelationships,
@@ -211,7 +214,9 @@ export function ForceGraphCanvas({
             graphData={graphData}
             nodeId="module_name"
             nodeVal={getNodeValue}
-            nodeColor={(node) => getNodeColor(node, highlightedPackages)}
+            nodeColor={(node) =>
+              getNodeColor(node, highlightedPackages, packageColorMap)
+            }
             nodeThreeObject={(node: GraphNode) => {
               if (!isInitModuleNode(node)) {
                 return undefined

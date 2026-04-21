@@ -1,12 +1,13 @@
 // frontend/src/components/forceGraph/PackageTreeNodeHeader.tsx
 
 import { trimModulePrefix } from '../../lib/moduleName'
-import { getPackageColor } from './graphColors'
+import { getPackageColor, type PackageColorMap } from './graphColors'
 import { ToggleSwitch } from './ToggleSwitch'
 
 type PackageTreeNodeHeaderProps = {
   packageName: string
   displayPrefix: string | null
+  packageColorMap: PackageColorMap
   isIncluded: boolean
   isGreyed: boolean
   isHighlighted: boolean
@@ -21,6 +22,7 @@ const EXCLUDED_LEGEND_COLOR = '#1e293b'
 export function PackageTreeNodeHeader({
   packageName,
   displayPrefix,
+  packageColorMap,
   isIncluded,
   isGreyed,
   isHighlighted,
@@ -47,7 +49,7 @@ export function PackageTreeNodeHeader({
           className="h-3 w-3 shrink-0 rounded-full transition"
           style={{
             backgroundColor: isHighlighted
-              ? getPackageColor(packageName)
+              ? getPackageColor(packageName, packageColorMap)
               : isIncluded
                 ? GREYED_LEGEND_COLOR
                 : EXCLUDED_LEGEND_COLOR,

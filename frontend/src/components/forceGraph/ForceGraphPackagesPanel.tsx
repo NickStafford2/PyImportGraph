@@ -1,4 +1,5 @@
 import type { PackagePanelNodeSnapshot, PackageSnapshot } from '../../types'
+import type { PackageColorMap } from './graphColors'
 import { ToggleSwitch } from './ToggleSwitch'
 import type {
   PackageInfluenceConfig,
@@ -10,6 +11,7 @@ type ForceGraphPackagesPanelProps = {
   roots: PackagePanelNodeSnapshot[]
   packages: PackageSnapshot[]
   displayPrefix: string | null
+  packageColorMap: PackageColorMap
   includedPackages: ReadonlySet<string>
   highlightedPackages: ReadonlySet<string>
   showOnlyExternallyImportedPackages: boolean
@@ -41,6 +43,7 @@ export function ForceGraphPackagesPanel({
   roots,
   packages,
   displayPrefix,
+  packageColorMap,
   includedPackages,
   highlightedPackages,
   showOnlyExternallyImportedPackages,
@@ -160,6 +163,7 @@ export function ForceGraphPackagesPanel({
               key={node.package_name}
               node={node}
               displayPrefix={displayPrefix}
+              packageColorMap={packageColorMap}
               includedPackages={includedPackages}
               highlightedPackages={highlightedPackages}
               showOnlyExternallyImportedPackages={showOnlyExternallyImportedPackages}

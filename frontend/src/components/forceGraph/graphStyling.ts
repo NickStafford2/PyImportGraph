@@ -1,4 +1,4 @@
-import { getPackageColor } from './graphColors'
+import { getPackageColor, type PackageColorMap } from './graphColors'
 import { getLinkPackageInfluence } from './graphInfluence'
 import {
   getLinkPackageRelationship,
@@ -78,9 +78,10 @@ function getLinkHighlightMultiplier(
 export function getNodeColor(
   node: GraphNode,
   highlightedPackages: ReadonlySet<string>,
+  packageColorMap: PackageColorMap,
 ): string {
   if (isPackageHighlighted(node.package_name, highlightedPackages)) {
-    return getPackageColor(node.package_name)
+    return getPackageColor(node.package_name, packageColorMap)
   }
 
   return GREYED_NODE_COLOR

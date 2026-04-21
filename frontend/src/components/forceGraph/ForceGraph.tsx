@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { PackageSnapshot, ProjectSnapshot } from '../../types'
 import { ForceGraphCanvas } from './ForceGraphCanvas'
 import { ForceGraphPackagesPanel } from './ForceGraphPackagesPanel'
+import { buildPackageColorMap } from './graphColors'
 import { buildGraphData } from './graphDisplay'
 import {
   getLinkPackageRelationship,
@@ -114,6 +115,14 @@ export function ForceGraph({
   const packagesWithExternalImporters = useMemo(() => {
     return new Set(snapshot.package_panel.externally_imported_package_names)
   }, [snapshot.package_panel.externally_imported_package_names])
+  const rootPackageNames = useMemo(
+    () => snapshot.package_panel.roots.map((root) => root.package_name),
+    [snapshot.package_panel.roots],
+  )
+  const packageColorMap = useMemo(
+    () => buildPackageColorMap(packages, rootPackageNames),
+    [packages, rootPackageNames],
+  )
 
   useEffect(() => {
     if (showOnlyExternallyImportedPackages) {
@@ -284,6 +293,7 @@ export function ForceGraph({
           graphData={graphData}
           forceGraphConfig={FORCE_GRAPH_CONFIG}
           packageInfluenceConfig={packageInfluenceConfig}
+          packageColorMap={packageColorMap}
           highlightedPackages={highlightedPackages}
           highlightMutualPackageDependenciesOnly={
             highlightMutualPackageDependenciesOnly
@@ -300,6 +310,7 @@ export function ForceGraph({
           roots={snapshot.package_panel.roots}
           packages={packages}
           displayPrefix={displayPrefix}
+          packageColorMap={packageColorMap}
           includedPackages={includedPackages}
           highlightedPackages={highlightedPackages}
           showOnlyExternallyImportedPackages={
