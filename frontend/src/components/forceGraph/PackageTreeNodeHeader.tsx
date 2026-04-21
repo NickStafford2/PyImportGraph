@@ -10,18 +10,9 @@ type PackageTreeNodeHeaderProps = {
   isIncluded: boolean
   isGreyed: boolean
   isHighlighted: boolean
-  isSubtreeIncluded: boolean
-  isSubtreeHighlighted: boolean
-  hasChildren: boolean
-  isCollapsed: boolean
-  isSubtreeIncludeDisabled: boolean
   isHighlightDisabled: boolean
-  isSubtreeHighlightDisabled: boolean
   onPackageIncludeChange: (checked: boolean) => void
-  onSubtreeIncludeChange: (checked: boolean) => void
   onPackageHighlightChange: (checked: boolean) => void
-  onSubtreeHighlightChange: (checked: boolean) => void
-  onToggleCollapsedPackage: (packageName: string) => void
 }
 
 const GREYED_LEGEND_COLOR = '#475569'
@@ -33,18 +24,9 @@ export function PackageTreeNodeHeader({
   isIncluded,
   isGreyed,
   isHighlighted,
-  isSubtreeIncluded,
-  isSubtreeHighlighted,
-  hasChildren,
-  isCollapsed,
-  isSubtreeIncludeDisabled,
   isHighlightDisabled,
-  isSubtreeHighlightDisabled,
   onPackageIncludeChange,
-  onSubtreeIncludeChange,
   onPackageHighlightChange,
-  onSubtreeHighlightChange,
-  onToggleCollapsedPackage,
 }: PackageTreeNodeHeaderProps) {
   const displayName = trimModulePrefix(packageName, displayPrefix)
 
@@ -98,62 +80,6 @@ export function PackageTreeNodeHeader({
         title={`Toggle inclusion for ${packageName}`}
         color="visibility"
       />
-
-      {hasChildren && (
-        <>
-          <ToggleSwitch
-            checked={isSubtreeIncluded}
-            onChange={onSubtreeIncludeChange}
-            ariaLabel="Toggle subtree inclusion"
-            title="Toggle subtree inclusion"
-            disabled={isSubtreeIncludeDisabled}
-            color="visibility"
-          />
-
-          <ToggleSwitch
-            checked={isSubtreeHighlighted}
-            onChange={onSubtreeHighlightChange}
-            ariaLabel="Toggle subtree highlight"
-            title="Toggle subtree highlight"
-            disabled={isSubtreeHighlightDisabled}
-            color="selection"
-          />
-
-          <button
-            type="button"
-            onClick={() => onToggleCollapsedPackage(packageName)}
-            disabled={!hasChildren}
-            className={[
-              'flex h-6 w-6 shrink-0 items-center justify-center rounded-md border text-[11px] transition',
-              hasChildren
-                ? 'border-slate-700 bg-slate-950/70 text-slate-300 hover:border-slate-500'
-                : 'border-transparent text-slate-600',
-            ].join(' ')}
-            aria-label={isCollapsed ? 'Expand package' : 'Collapse package'}
-            title={isCollapsed ? 'Expand package' : 'Collapse package'}
-          >
-            {isCollapsed ? (
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M6 2v8M2 6h8"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            ) : (
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                <path
-                  d="M2 6h8"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
-          </button>
-        </>
-      )}
     </div>
   )
 }

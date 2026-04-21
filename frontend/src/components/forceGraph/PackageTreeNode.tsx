@@ -1,4 +1,5 @@
 import type { PackagePanelNodeSnapshot } from '../../types'
+import { PackageTreeNodeFooter } from './PackageTreeNodeFooter'
 import { PackageInfluenceControls } from './PackageInfluenceControls'
 import { PackageTreeNodeHeader } from './PackageTreeNodeHeader'
 import { getPackageColor } from './graphColors'
@@ -189,18 +190,9 @@ export function PackageTreeNode({
         isIncluded={isIncluded}
         isGreyed={isGreyed}
         isHighlighted={isHighlighted}
-        isSubtreeIncluded={isSubtreeIncluded}
-        isSubtreeHighlighted={isSubtreeHighlighted}
-        hasChildren={hasChildren}
-        isCollapsed={isCollapsed}
-        isSubtreeIncludeDisabled={subtreePackageNamesForInclusion.length === 0}
         isHighlightDisabled={!packageCanBeHighlighted}
-        isSubtreeHighlightDisabled={eligibleSubtreePackageNames.length === 0}
         onPackageIncludeChange={handlePackageIncludeChange}
-        onSubtreeIncludeChange={handleSubtreeIncludeChange}
         onPackageHighlightChange={handlePackageHighlightChange}
-        onSubtreeHighlightChange={handleSubtreeHighlightChange}
-        onToggleCollapsedPackage={onToggleCollapsedPackage}
       />
 
       <PackageInfluenceControls
@@ -208,6 +200,20 @@ export function PackageTreeNode({
         settings={settings}
         onPackageInfluenceChange={onPackageInfluenceChange}
       />
+
+      {hasChildren && (
+        <PackageTreeNodeFooter
+          packageName={packageName}
+          isSubtreeIncluded={isSubtreeIncluded}
+          isSubtreeHighlighted={isSubtreeHighlighted}
+          isCollapsed={isCollapsed}
+          isSubtreeIncludeDisabled={subtreePackageNamesForInclusion.length === 0}
+          isSubtreeHighlightDisabled={eligibleSubtreePackageNames.length === 0}
+          onSubtreeIncludeChange={handleSubtreeIncludeChange}
+          onSubtreeHighlightChange={handleSubtreeHighlightChange}
+          onToggleCollapsedPackage={onToggleCollapsedPackage}
+        />
+      )}
 
       {hasChildren && !isCollapsed && (
         <div className="mt-3 space-y-3">
