@@ -15,6 +15,8 @@ type PackageTreeNodeProps = {
   showOnlyExternallyImportedPackages: boolean
   onIncludePackage: (packageName: string) => void
   onUnincludePackage: (packageName: string) => void
+  onIncludePackageTree: (packageNames: Iterable<string>) => void
+  onUnincludePackageTree: (packageNames: Iterable<string>) => void
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
   onHighlightPackageTree: (packageNames: Iterable<string>) => void
@@ -67,6 +69,8 @@ export function PackageTreeNode({
   showOnlyExternallyImportedPackages,
   onIncludePackage,
   onUnincludePackage,
+  onIncludePackageTree,
+  onUnincludePackageTree,
   onHighlightPackage,
   onUnhighlightPackage,
   onHighlightPackageTree,
@@ -87,6 +91,9 @@ export function PackageTreeNode({
       ? node.externally_imported_subtree_package_names
       : node.subtree_package_names
   ).filter((candidate) => includedPackages.has(candidate))
+  const subtreePackageNamesForInclusion = showOnlyExternallyImportedPackages
+    ? node.externally_imported_subtree_package_names
+    : node.subtree_package_names
 
   const packageCanBeHighlighted =
     isIncluded && (
@@ -99,6 +106,10 @@ export function PackageTreeNode({
   const isSubtreeHighlighted = areAllPackagesHighlighted(
     eligibleSubtreePackageNames,
     highlightedPackages,
+  )
+  const isSubtreeIncluded = areAllPackagesHighlighted(
+    subtreePackageNamesForInclusion,
+    includedPackages,
   )
 
   const isGreyed = !hasAnyHighlightedPackage(
@@ -146,6 +157,19 @@ export function PackageTreeNode({
     onUnhighlightPackageTree(eligibleSubtreePackageNames)
   }
 
+  function handleSubtreeIncludeChange(nextChecked: boolean) {
+    if (subtreePackageNamesForInclusion.length === 0) {
+      return
+    }
+
+    if (nextChecked) {
+      onIncludePackageTree(subtreePackageNamesForInclusion)
+      return
+    }
+
+    onUnincludePackageTree(subtreePackageNamesForInclusion)
+  }
+
   const packageColor = getPackageColor(packageName)
 
   return (
@@ -165,12 +189,15 @@ export function PackageTreeNode({
         isIncluded={isIncluded}
         isGreyed={isGreyed}
         isHighlighted={isHighlighted}
+        isSubtreeIncluded={isSubtreeIncluded}
         isSubtreeHighlighted={isSubtreeHighlighted}
         hasChildren={hasChildren}
         isCollapsed={isCollapsed}
+        isSubtreeIncludeDisabled={subtreePackageNamesForInclusion.length === 0}
         isHighlightDisabled={!packageCanBeHighlighted}
         isSubtreeHighlightDisabled={eligibleSubtreePackageNames.length === 0}
         onPackageIncludeChange={handlePackageIncludeChange}
+        onSubtreeIncludeChange={handleSubtreeIncludeChange}
         onPackageHighlightChange={handlePackageHighlightChange}
         onSubtreeHighlightChange={handleSubtreeHighlightChange}
         onToggleCollapsedPackage={onToggleCollapsedPackage}
@@ -196,6 +223,8 @@ export function PackageTreeNode({
               }
               onIncludePackage={onIncludePackage}
               onUnincludePackage={onUnincludePackage}
+              onIncludePackageTree={onIncludePackageTree}
+              onUnincludePackageTree={onUnincludePackageTree}
               onHighlightPackage={onHighlightPackage}
               onUnhighlightPackage={onUnhighlightPackage}
               onHighlightPackageTree={onHighlightPackageTree}

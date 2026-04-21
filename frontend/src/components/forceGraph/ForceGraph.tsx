@@ -78,6 +78,8 @@ export function ForceGraph({
     includedPackages,
     includePackage,
     unincludePackage,
+    includePackages,
+    unincludePackages,
     includeAllPackages,
     excludeAllPackages,
     highlightedPackages,
@@ -305,6 +307,8 @@ export function ForceGraph({
           }
           onIncludePackage={includePackage}
           onUnincludePackage={unincludePackage}
+          onIncludePackageTree={includePackages}
+          onUnincludePackageTree={unincludePackages}
           onShowOnlyExternallyImportedPackagesChange={
             setShowOnlyExternallyImportedPackages
           }

@@ -15,6 +15,8 @@ type ForceGraphPackagesPanelProps = {
   showOnlyExternallyImportedPackages: boolean
   onIncludePackage: (packageName: string) => void
   onUnincludePackage: (packageName: string) => void
+  onIncludePackageTree: (packageNames: Iterable<string>) => void
+  onUnincludePackageTree: (packageNames: Iterable<string>) => void
   onShowOnlyExternallyImportedPackagesChange: (value: boolean) => void
   onHighlightPackage: (packageName: string) => void
   onUnhighlightPackage: (packageName: string) => void
@@ -44,6 +46,8 @@ export function ForceGraphPackagesPanel({
   showOnlyExternallyImportedPackages,
   onIncludePackage,
   onUnincludePackage,
+  onIncludePackageTree,
+  onUnincludePackageTree,
   onShowOnlyExternallyImportedPackagesChange,
   onHighlightPackage,
   onUnhighlightPackage,
@@ -161,6 +165,8 @@ export function ForceGraphPackagesPanel({
               showOnlyExternallyImportedPackages={showOnlyExternallyImportedPackages}
               onIncludePackage={onIncludePackage}
               onUnincludePackage={onUnincludePackage}
+              onIncludePackageTree={onIncludePackageTree}
+              onUnincludePackageTree={onUnincludePackageTree}
               onHighlightPackage={onHighlightPackage}
               onUnhighlightPackage={onUnhighlightPackage}
               onHighlightPackageTree={onHighlightPackageTree}

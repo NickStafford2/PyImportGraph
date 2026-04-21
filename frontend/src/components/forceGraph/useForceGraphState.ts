@@ -17,6 +17,8 @@ type UseForceGraphStateResult = {
   includedPackages: ReadonlySet<string>
   includePackage: (packageName: string) => void
   unincludePackage: (packageName: string) => void
+  includePackages: (packageNames: Iterable<string>) => void
+  unincludePackages: (packageNames: Iterable<string>) => void
   includeAllPackages: () => void
   excludeAllPackages: () => void
   highlightedPackages: ReadonlySet<string>
@@ -182,6 +184,48 @@ export function useForceGraphState({
     })
   }, [knownPackageNames])
 
+  const includePackages = useCallback((
+    packageNamesToInclude: Iterable<string>,
+  ) => {
+    const names = getKnownPackageNames(packageNamesToInclude, knownPackageNames)
+
+    setIncludedPackages((current) => {
+      const next = new Set(current)
+
+      for (const packageName of names) {
+        next.add(packageName)
+      }
+
+      return next
+    })
+  }, [knownPackageNames])
+
+  const unincludePackages = useCallback((
+    packageNamesToUninclude: Iterable<string>,
+  ) => {
+    const names = getKnownPackageNames(packageNamesToUninclude, knownPackageNames)
+
+    setIncludedPackages((current) => {
+      const next = new Set(current)
+
+      for (const packageName of names) {
+        next.delete(packageName)
+      }
+
+      return next
+    })
+
+    setHighlightedPackages((current) => {
+      const next = new Set(current)
+
+      for (const packageName of names) {
+        next.delete(packageName)
+      }
+
+      return next
+    })
+  }, [knownPackageNames])
+
   const highlightPackage = useCallback((packageName: string) => {
     if (!knownPackageNames.has(packageName) || !includedPackages.has(packageName)) {
       return
@@ -304,6 +348,8 @@ export function useForceGraphState({
     includedPackages,
     includePackage,
     unincludePackage,
+    includePackages,
+    unincludePackages,
     includeAllPackages,
     excludeAllPackages,
     highlightedPackages,

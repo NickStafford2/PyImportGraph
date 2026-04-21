@@ -10,12 +10,15 @@ type PackageTreeNodeHeaderProps = {
   isIncluded: boolean
   isGreyed: boolean
   isHighlighted: boolean
+  isSubtreeIncluded: boolean
   isSubtreeHighlighted: boolean
   hasChildren: boolean
   isCollapsed: boolean
+  isSubtreeIncludeDisabled: boolean
   isHighlightDisabled: boolean
   isSubtreeHighlightDisabled: boolean
   onPackageIncludeChange: (checked: boolean) => void
+  onSubtreeIncludeChange: (checked: boolean) => void
   onPackageHighlightChange: (checked: boolean) => void
   onSubtreeHighlightChange: (checked: boolean) => void
   onToggleCollapsedPackage: (packageName: string) => void
@@ -30,12 +33,15 @@ export function PackageTreeNodeHeader({
   isIncluded,
   isGreyed,
   isHighlighted,
+  isSubtreeIncluded,
   isSubtreeHighlighted,
   hasChildren,
   isCollapsed,
+  isSubtreeIncludeDisabled,
   isHighlightDisabled,
   isSubtreeHighlightDisabled,
   onPackageIncludeChange,
+  onSubtreeIncludeChange,
   onPackageHighlightChange,
   onSubtreeHighlightChange,
   onToggleCollapsedPackage,
@@ -44,19 +50,9 @@ export function PackageTreeNodeHeader({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <button
-        type="button"
-        aria-pressed={isHighlighted}
-        aria-disabled={isHighlightDisabled}
-        aria-label={`Toggle highlight for ${packageName}`}
-        disabled={isHighlightDisabled}
-        onClick={() => onPackageHighlightChange(!isHighlighted)}
+      <div
         className={[
           'flex min-w-0 flex-1 items-center gap-2 rounded-lg px-1 py-1 text-left text-xs transition',
-          'focus:outline-none focus:ring-2 focus:ring-sky-500/40',
-          isHighlightDisabled
-            ? 'cursor-not-allowed opacity-50'
-            : 'cursor-pointer',
           isIncluded
             ? isGreyed
               ? 'text-slate-500'
@@ -64,13 +60,6 @@ export function PackageTreeNodeHeader({
             : 'text-slate-500 opacity-60',
           isHighlighted ? 'bg-sky-500/10' : '',
         ].join(' ')}
-        title={
-          isHighlightDisabled
-            ? isIncluded
-              ? `${packageName} is not imported outside its own package`
-              : `${packageName} is not included in the graph`
-            : packageName
-        }
       >
         <span
           className="h-3 w-3 shrink-0 rounded-full transition"
@@ -85,7 +74,22 @@ export function PackageTreeNodeHeader({
         <span className="truncate font-medium" title={packageName}>
           {displayName}
         </span>
-      </button>
+      </div>
+
+      <ToggleSwitch
+        checked={isHighlighted}
+        onChange={onPackageHighlightChange}
+        ariaLabel={`Toggle highlight for ${packageName}`}
+        title={
+          isHighlightDisabled
+            ? isIncluded
+              ? `${packageName} is not imported outside its own package`
+              : `${packageName} is not included in the graph`
+            : `Toggle highlight for ${packageName}`
+        }
+        disabled={isHighlightDisabled}
+        color="selection"
+      />
 
       <ToggleSwitch
         checked={isIncluded}
@@ -97,6 +101,15 @@ export function PackageTreeNodeHeader({
 
       {hasChildren && (
         <>
+          <ToggleSwitch
+            checked={isSubtreeIncluded}
+            onChange={onSubtreeIncludeChange}
+            ariaLabel="Toggle subtree inclusion"
+            title="Toggle subtree inclusion"
+            disabled={isSubtreeIncludeDisabled}
+            color="visibility"
+          />
+
           <ToggleSwitch
             checked={isSubtreeHighlighted}
             onChange={onSubtreeHighlightChange}
