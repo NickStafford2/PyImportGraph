@@ -260,7 +260,7 @@ def _build_force_graph_snapshot(model: ProjectModel) -> dict[str, Any]:
         direct_sibling_module_names = [
             module_name
             for module_name in model.package_query(package_name).direct_module_names
-            if module_name != package_name and module_name in module_names
+            if module_name in module_names
         ]
 
         for source_module_name, target_module_name in combinations(
